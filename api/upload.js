@@ -7,21 +7,21 @@ export default async function handler(req, res) {
   res.setHeader("Access-Control-Allow-Headers", "Content-Type");
   if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
 
-  if (!process.env.BLOB_READ_WRITE_TOKEN) {
-    return res.status(500).json({ error: "Armazenamento de PDF não configurado (crie um Blob na Vercel)." });
-  }
-
   try {
     const { filename, dataBase64 } = req.body || {};
     if (!filename || !dataBase64) return res.status(400).json({ error: "Arquivo ausente." });
 
     const buffer = Buffer.from(dataBase64, "base64");
-    const blob = await put(`fechamentos/${filename}`, buffer, {
+    // Na Vercel, o store de Blob conectado autentica via OIDC (não precisa passar token).
+    // Em ambiente local, usa BLOB_READ_WRITE_TOKEN se estiver definido.
+    const opts = {
       access: "public",
       contentType: "application/pdf",
       addRandomSuffix: true,
-      token: process.env.BLOB_READ_WRITE_TOKEN,
-    });
+    };
+    if (process.env.BLOB_READ_WRITE_TOKEN) opts.token = process.env.BLOB_READ_WRITE_TOKEN;
+
+    const blob = await put(`fechamentos/${filename}`, buffer, opts);
 
     return res.status(200).json({ url: blob.url });
   } catch (e) {

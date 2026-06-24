@@ -120,6 +120,33 @@
     .btn-success { background: #d1fae5; color: #059669; }
     .btn-success:hover { background: #a7f3d0; }
 
+    /* Login */
+    #login-overlay {
+      position: fixed; inset: 0; z-index: 2000;
+      background: linear-gradient(135deg, #1a1a2e 0%, #312e81 60%, #4f46e5 100%);
+      display: flex; align-items: center; justify-content: center; padding: 16px;
+    }
+    #login-overlay.hidden { display: none; }
+    .login-box {
+      background: #fff; border-radius: 16px; padding: 36px 32px;
+      width: 100%; max-width: 360px; text-align: center;
+      box-shadow: 0 20px 60px rgba(0,0,0,.35);
+    }
+    .login-box .login-logo {
+      width: 54px; height: 54px; border-radius: 14px;
+      background: #312e81; color: #fff; font-weight: 800; font-size: 1.2rem;
+      display: flex; align-items: center; justify-content: center; margin: 0 auto 14px;
+    }
+    .login-box h2 { font-size: 1.15rem; color: #1a1a2e; margin-bottom: 4px; }
+    .login-box p { font-size: .8rem; color: #888; margin-bottom: 20px; }
+    .login-box input {
+      width: 100%; padding: 12px 14px; border: 1px solid #d1d5db;
+      border-radius: 10px; font-size: 1rem; outline: none;
+    }
+    .login-box input:focus { border-color: #4f46e5; }
+    .login-box #login-btn { width: 100%; justify-content: center; margin-top: 10px; }
+    #login-err { color: #dc2626; font-size: .82rem; min-height: 18px; margin-top: 8px; }
+
     .btn-row { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 14px; }
 
     /* Spinner */
@@ -447,6 +474,18 @@
 </head>
 <body>
 
+<div id="login-overlay">
+  <div class="login-box">
+    <div class="login-logo">BN</div>
+    <h2>Fechamento de Comissões</h2>
+    <p>BE NEWS · acesso restrito</p>
+    <input type="password" id="login-key" placeholder="Palavra-chave" autocomplete="current-password"
+           onkeydown="if(event.key==='Enter')fazerLogin()" />
+    <div id="login-err"></div>
+    <button class="btn btn-primary" id="login-btn" onclick="fazerLogin()">Entrar</button>
+  </div>
+</div>
+
 <header>
   <svg width="28" height="28" fill="none" viewBox="0 0 24 24" stroke="#fff" stroke-width="2">
     <path stroke-linecap="round" stroke-linejoin="round" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 11h.01M12 11h.01M15 11h.01M4 20h16a2 2 0 002-2V6a2 2 0 00-2-2H4a2 2 0 00-2 2v12a2 2 0 002 2z" />
@@ -729,6 +768,58 @@
   let fechamentos = [];
   let clienteAtivoId = '';
   let salvando = false;
+  let APP_KEY = sessionStorage.getItem('benews:key') || '';
+
+  // Cabeçalhos com a palavra-chave para as rotas protegidas
+  function authHeaders(extra) {
+    return Object.assign({ 'x-app-key': APP_KEY }, extra || {});
+  }
+
+  // ── Login ───────────────────────────────────────────────────────────────────
+  async function fazerLogin() {
+    const input = document.getElementById('login-key');
+    const key = input.value;
+    const err = document.getElementById('login-err');
+    const btn = document.getElementById('login-btn');
+    err.textContent = '';
+    btn.disabled = true;
+    try {
+      const r = await fetch('/api/login', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ key })
+      });
+      if (r.ok) {
+        APP_KEY = key;
+        sessionStorage.setItem('benews:key', key);
+        entrarNoApp();
+      } else {
+        err.textContent = 'Palavra-chave incorreta.';
+        input.select();
+      }
+    } catch (e) {
+      err.textContent = 'Erro de conexão. Tente de novo.';
+    } finally {
+      btn.disabled = false;
+    }
+  }
+
+  function entrarNoApp() {
+    document.getElementById('login-overlay').classList.add('hidden');
+    iniciarApp();
+  }
+
+  // Verifica acesso ao carregar: se não há senha configurada ou a chave salva é válida, entra direto
+  async function verificarAcesso() {
+    try {
+      const r = await fetch('/api/login', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ key: APP_KEY })
+      });
+      if (r.ok) { entrarNoApp(); return; }
+    } catch (e) {}
+    // 401 ou erro → mostra a tela de login
+    setTimeout(() => document.getElementById('login-key').focus(), 60);
+  }
 
   // ── Canais dinâmicos ────────────────────────────────────────────────────────
   function canalById(id) { return canais.find(c => c.id === id) || null; }
@@ -808,7 +899,7 @@
   // ── Armazenamento (nuvem com fallback local) ────────────────────────────────
   async function storeLoad(key) {
     try {
-      const r = await fetch('/api/store?key=' + encodeURIComponent(key));
+      const r = await fetch('/api/store?key=' + encodeURIComponent(key), { headers: authHeaders() });
       const d = await r.json();
       if (d.error) throw new Error(d.error);
       localStorage.setItem('benews:' + key, JSON.stringify(d.value || []));
@@ -822,7 +913,7 @@
     localStorage.setItem('benews:' + key, JSON.stringify(value));
     try {
       const r = await fetch('/api/store', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        method: 'POST', headers: authHeaders({ 'Content-Type': 'application/json' }),
         body: JSON.stringify({ key, value })
       });
       const d = await r.json();
@@ -974,7 +1065,7 @@
       const slug = c.razao.replace(/[^a-z0-9]+/gi, '-').toLowerCase().replace(/^-|-$/g, '');
       const filename = `fechamento-${slug}-${mes}.pdf`;
       const r = await fetch('/api/upload', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        method: 'POST', headers: authHeaders({ 'Content-Type': 'application/json' }),
         body: JSON.stringify({ filename, dataBase64 })
       });
       const d = await r.json();
@@ -1187,7 +1278,7 @@
     try {
       const res = await fetch('/api/analyze', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: authHeaders({ 'Content-Type': 'application/json' }),
         body: JSON.stringify({ imageBase64: imagemBase64, mediaType: imagemMediaType })
       });
       const data = await res.json();
@@ -1569,8 +1660,11 @@
     if (e.target.id === 'modal-canal') fecharModalCanal();
   });
 
-  // Carrega dados da nuvem
-  (async function () {
+  // Carrega dados da nuvem (só após o login liberar o acesso)
+  let appIniciado = false;
+  async function iniciarApp() {
+    if (appIniciado) return;
+    appIniciado = true;
     clientes = await storeLoad('clientes');
     fechamentos = await storeLoad('fechamentos');
     canais = await storeLoad('canais');
@@ -1583,7 +1677,10 @@
     renderCanais();
     renderTotaisGrid();
     atualizarTravaColagem();
-  })();
+  }
+
+  // Porta de entrada: verifica o acesso antes de carregar qualquer dado
+  verificarAcesso();
 </script>
 </body>
 </html>

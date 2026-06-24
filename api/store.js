@@ -1,6 +1,11 @@
 export default async function handler(req, res) {
   res.setHeader("Access-Control-Allow-Origin", "*");
-  res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type, x-app-key");
+
+  // Proteção por palavra-chave (ativa só quando APP_PASSWORD está definido)
+  if (process.env.APP_PASSWORD && req.headers["x-app-key"] !== process.env.APP_PASSWORD) {
+    return res.status(401).json({ error: "Não autorizado." });
+  }
 
   const URL = process.env.KV_REST_API_URL || process.env.UPSTASH_REDIS_REST_URL;
   const TOKEN = process.env.KV_REST_API_TOKEN || process.env.UPSTASH_REDIS_REST_TOKEN;

@@ -18,7 +18,7 @@ export default async function handler(req, res) {
           role: "user",
           content: [
             { type: "image", source: { type: "base64", media_type: mediaType, data: imageBase64 } },
-            { type: "text", text: "Extraia SOMENTE os valores líquidos recebidos em conta neste extrato de marketplace brasileiro. Ignore receita bruta, comissão da plataforma e outros descontos. Responda SOMENTE JSON válido: {\"repasses\": [{\"data\": \"DD/MM/AAAA\", \"valor\": 1234.56, \"nota\": \"descrição curta\"}]}" }
+            { type: "text", text: "Extraia SOMENTE os valores líquidos recebidos em conta neste extrato de marketplace brasileiro. Ignore receita bruta, comissão da plataforma e outros descontos.\n\nREGRA DE TOTALIZAÇÃO (muito importante):\n1. Se o extrato tiver uma linha de TOTAL (ex.: \"Total\", \"Total geral\", \"Valor total\", \"Total líquido\"), use APENAS esse valor único. NÃO some nem liste as linhas individuais (bandeiras como Mastercard/Visa, ciclos, etc.) que já estão somadas nesse total. Use a data de pagamento mais recente do extrato para esse repasse único.\n2. Se NÃO houver linha de Total, agrupe os valores por data de pagamento: gere um repasse por data, somando todas as linhas individuais que pertencem àquela data.\n3. Nunca conte um valor duas vezes (não inclua ao mesmo tempo o total e as linhas que o compõem).\n\nResponda SOMENTE JSON válido: {\"repasses\": [{\"data\": \"DD/MM/AAAA\", \"valor\": 1234.56, \"nota\": \"descrição curta\"}]}" }
           ]
         }]
       })

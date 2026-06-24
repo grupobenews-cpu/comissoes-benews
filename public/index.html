@@ -1177,6 +1177,18 @@
 
   async function excluirFechamento(id) {
     if (!confirm('Excluir este fechamento do histórico?')) return;
+    const fech = fechamentos.find(x => x.id === id);
+
+    // Apaga o PDF no Blob, se houver
+    if (fech && fech.pdfUrl) {
+      try {
+        await fetch('/api/upload', {
+          method: 'DELETE', headers: authHeaders({ 'Content-Type': 'application/json' }),
+          body: JSON.stringify({ url: fech.pdfUrl })
+        });
+      } catch (e) { /* segue mesmo se o arquivo já não existir */ }
+    }
+
     fechamentos = fechamentos.filter(x => x.id !== id);
     await storeSave('fechamentos', fechamentos);
     renderAnteriores();

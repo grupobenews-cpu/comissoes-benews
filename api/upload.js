@@ -1,15 +1,30 @@
-import { put } from "@vercel/blob";
+import { put, del } from "@vercel/blob";
 
 export const config = { api: { bodyParser: { sizeLimit: "10mb" } } };
 
 export default async function handler(req, res) {
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type, x-app-key");
-  if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
 
   if (process.env.APP_PASSWORD && req.headers["x-app-key"] !== process.env.APP_PASSWORD) {
     return res.status(401).json({ error: "Não autorizado." });
   }
+
+  const blobOpts = process.env.BLOB_READ_WRITE_TOKEN ? { token: process.env.BLOB_READ_WRITE_TOKEN } : {};
+
+  // DELETE: apaga o PDF do Blob pela URL
+  if (req.method === "DELETE") {
+    try {
+      const { url } = req.body || {};
+      if (!url) return res.status(400).json({ error: "URL ausente." });
+      await del(url, blobOpts);
+      return res.status(200).json({ ok: true });
+    } catch (e) {
+      return res.status(500).json({ error: e.message });
+    }
+  }
+
+  if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
 
   try {
     const { filename, dataBase64 } = req.body || {};
@@ -18,14 +33,12 @@ export default async function handler(req, res) {
     const buffer = Buffer.from(dataBase64, "base64");
     // Na Vercel, o store de Blob conectado autentica via OIDC (não precisa passar token).
     // Em ambiente local, usa BLOB_READ_WRITE_TOKEN se estiver definido.
-    const opts = {
+    const blob = await put(`fechamentos/${filename}`, buffer, {
       access: "public",
       contentType: "application/pdf",
       addRandomSuffix: true,
-    };
-    if (process.env.BLOB_READ_WRITE_TOKEN) opts.token = process.env.BLOB_READ_WRITE_TOKEN;
-
-    const blob = await put(`fechamentos/${filename}`, buffer, opts);
+      ...blobOpts,
+    });
 
     return res.status(200).json({ url: blob.url });
   } catch (e) {

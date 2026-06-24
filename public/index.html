@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Fechamento de Comissões – BE NEWS</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -53,9 +54,29 @@
     .canal-btn:hover { border-color: #4f46e5; background: #f0f0ff; }
     .canal-btn.active { border-color: #4f46e5; background: #eef2ff; color: #4f46e5; }
     .canal-btn .dot { width: 12px; height: 12px; border-radius: 50%; }
-    .dot-magalu { background: #0066cc; }
-    .dot-web { background: #e84393; }
-    .dot-cb { background: #e8232a; }
+    .canal-btn .nome { flex: 1; }
+    .canal-btn .rm {
+      width: 20px; height: 20px; border-radius: 50%; border: none;
+      background: #e5e7eb; color: #6b7280; cursor: pointer; font-size: .75rem;
+      display: flex; align-items: center; justify-content: center; flex: 0 0 auto;
+    }
+    .canal-btn .rm:hover { background: #fee2e2; color: #dc2626; }
+    .canal-add {
+      flex: 0 0 auto; min-width: 0;
+      padding: 14px 18px; border: 2px dashed #c4c4c4; border-radius: 10px;
+      background: #fff; cursor: pointer; font-size: .9rem; font-weight: 600; color: #6b7280;
+      display: flex; align-items: center; gap: 8px; transition: all .2s;
+    }
+    .canal-add:hover { border-color: #4f46e5; color: #4f46e5; background: #f5f5ff; }
+
+    /* Swatches de cor (modal canal) */
+    .cor-grid { display: flex; flex-wrap: wrap; gap: 10px; }
+    .cor-swatch {
+      width: 32px; height: 32px; border-radius: 50%; cursor: pointer;
+      border: 3px solid transparent; transition: transform .1s;
+    }
+    .cor-swatch:hover { transform: scale(1.1); }
+    .cor-swatch.sel { border-color: #1a1a2e; }
 
     /* Paste area */
     #paste-area {
@@ -77,6 +98,9 @@
     #paste-area svg { width: 40px; height: 40px; opacity: .4; }
     #paste-area p { font-size: .9rem; }
     #paste-area img { max-width: 100%; max-height: 360px; border-radius: 8px; object-fit: contain; }
+    #paste-area.locked { background: #f9fafb; border-color: #e5e7eb; cursor: not-allowed; color: #b91c1c; }
+    #paste-area.locked:hover { border-color: #e5e7eb; background: #f9fafb; }
+    #paste-area.locked svg { opacity: .5; }
 
     .btn {
       display: inline-flex; align-items: center; gap: 8px;
@@ -84,6 +108,7 @@
       border: none; border-radius: 8px;
       font-size: .9rem; font-weight: 600;
       cursor: pointer; transition: all .2s;
+      text-decoration: none;
     }
     .btn-primary { background: #4f46e5; color: #fff; }
     .btn-primary:hover { background: #4338ca; }
@@ -257,15 +282,64 @@
       .doc-head .meta { text-align: left; }
     }
 
+    /* Comprovantes (tela) */
+    #comprovantes-area { display: none; }
+    .comprov-group { margin-bottom: 20px; }
+    .comprov-group:last-child { margin-bottom: 0; }
+    .comprov-group .cg-head {
+      display: flex; align-items: center; gap: 10px; margin-bottom: 10px;
+    }
+    .comprov-group .cg-head .bar { width: 5px; height: 16px; border-radius: 3px; }
+    .comprov-group .cg-head h3 { font-size: .9rem; font-weight: 700; color: #1a1a2e; }
+    .comprov-group .cg-head .count { font-size: .76rem; color: #9ca3af; }
+    .comprov-grid { display: flex; flex-wrap: wrap; gap: 12px; }
+    .comprov-thumb {
+      position: relative; width: 150px;
+      border: 1px solid #e5e7eb; border-radius: 8px; overflow: hidden;
+      background: #fafafa;
+    }
+    .comprov-thumb img { width: 100%; height: 110px; object-fit: cover; display: block; cursor: zoom-in; }
+    .comprov-thumb .cap { font-size: .68rem; color: #6b7280; padding: 5px 8px; border-top: 1px solid #f0f0f0; }
+    .comprov-thumb .del {
+      position: absolute; top: 4px; right: 4px;
+      width: 22px; height: 22px; border-radius: 50%;
+      background: rgba(220,38,38,.92); color: #fff; border: none;
+      cursor: pointer; font-size: .8rem; line-height: 1;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .comprov-thumb .del:hover { background: #b91c1c; }
+
+    /* Comprovantes (relatório / PDF) */
+    .doc-comprov { margin-top: 26px; border-top: 2px dashed #e5e7eb; padding-top: 22px; }
+    .doc-comprov > .dc-title {
+      font-size: .82rem; font-weight: 700; text-transform: uppercase; letter-spacing: .5px;
+      color: #6b7280; margin-bottom: 16px;
+    }
+    .doc-comprov .dc-group { margin-bottom: 22px; }
+    .doc-comprov .dc-group:last-child { margin-bottom: 0; }
+    .doc-comprov .dc-group .dcg-head { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+    .doc-comprov .dc-group .dcg-head .bar { width: 5px; height: 16px; border-radius: 3px; }
+    .doc-comprov .dc-group .dcg-head h5 { font-size: .9rem; font-weight: 700; color: #1a1a2e; }
+    .doc-comprov .dc-img {
+      border: 1px solid #e5e7eb; border-radius: 8px; overflow: hidden;
+      margin-bottom: 12px; background: #fff;
+    }
+    .doc-comprov .dc-img img { width: 100%; height: auto; display: block; }
+
     @media print {
       body { background: #fff; }
-      header, main > .card, #toast { display: none !important; }
+      header, #toast, .modal-overlay { display: none !important; }
+      .card:not(#relatorio-area) { display: none !important; }
+      .tab-pane { display: block !important; }
       main { margin: 0; max-width: none; padding: 0; }
       #relatorio-area { display: block !important; }
       #relatorio-area > h2, #relatorio-area .btn-row { display: none !important; }
       .doc { box-shadow: none; border: none; border-radius: 0; max-width: none; }
       .doc-head { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
       .sum-total, .sum-comissao, .bar, .doc-head { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      .doc-comprov .dc-group { break-inside: avoid; page-break-inside: avoid; }
+      .doc-comprov .dc-img { break-inside: avoid; page-break-inside: avoid; }
+      .doc-comprov .dc-img img { max-height: none; }
     }
 
     /* Toast */
@@ -293,9 +367,81 @@
     .badge-web    { background: #fce7f3; color: #be185d; }
     .badge-cb     { background: #fee2e2; color: #b91c1c; }
 
+    /* Tabs no header */
+    .tabs { display: flex; gap: 4px; margin-left: 24px; }
+    .tab-btn {
+      background: transparent; border: none; color: rgba(255,255,255,.6);
+      padding: 8px 16px; border-radius: 8px; cursor: pointer;
+      font-size: .9rem; font-weight: 600; transition: all .2s;
+    }
+    .tab-btn:hover { color: #fff; background: rgba(255,255,255,.08); }
+    .tab-btn.active { color: #fff; background: rgba(255,255,255,.16); }
+    .tab-pane { display: none; }
+    .tab-pane.active { display: flex; flex-direction: column; gap: 24px; }
+
+    /* Cliente + período */
+    .cliente-row { display: flex; gap: 14px; flex-wrap: wrap; align-items: flex-end; }
+    .cliente-row .field { flex: 1; min-width: 200px; }
+    .cliente-info {
+      margin-top: 14px; padding: 12px 16px;
+      background: #f5f6ff; border: 1px solid #c7d2fe; border-radius: 10px;
+      font-size: .85rem; color: #3730a3; display: none;
+    }
+    .cliente-info.show { display: block; }
+    .cliente-info strong { font-weight: 700; }
+    .cliente-info .sep { color: #a5b4fc; margin: 0 8px; }
+
+    /* Modal */
+    .modal-overlay {
+      position: fixed; inset: 0; background: rgba(15,16,32,.55);
+      display: none; align-items: center; justify-content: center;
+      z-index: 1000; padding: 16px;
+    }
+    .modal-overlay.show { display: flex; }
+    .modal {
+      background: #fff; border-radius: 14px; width: 100%; max-width: 460px;
+      box-shadow: 0 20px 60px rgba(0,0,0,.3); overflow: hidden;
+      animation: modalIn .2s ease;
+    }
+    @keyframes modalIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+    .modal-head {
+      background: linear-gradient(135deg, #1a1a2e 0%, #312e81 100%); color: #fff;
+      padding: 18px 22px; display: flex; align-items: center; justify-content: space-between;
+    }
+    .modal-head h3 { font-size: 1.05rem; font-weight: 700; }
+    .modal-head .close { background: none; border: none; color: #fff; font-size: 1.3rem; cursor: pointer; opacity: .8; }
+    .modal-head .close:hover { opacity: 1; }
+    .modal-body { padding: 22px; display: flex; flex-direction: column; gap: 14px; }
+    .modal-body .field { width: 100%; }
+    .modal-body .field input { width: 100%; }
+    .modal-foot { padding: 0 22px 22px; display: flex; gap: 10px; justify-content: flex-end; }
+
+    /* Repasses anteriores */
+    .fechamento-card {
+      border: 1px solid #e5e7eb; border-radius: 12px; padding: 18px 20px;
+      margin-bottom: 14px; display: flex; align-items: center; gap: 18px;
+      transition: box-shadow .2s; background: #fff;
+    }
+    .fechamento-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,.08); }
+    .fechamento-card .fc-main { flex: 1; min-width: 0; }
+    .fechamento-card .fc-cliente { font-size: 1rem; font-weight: 700; color: #1a1a2e; }
+    .fechamento-card .fc-meta { font-size: .8rem; color: #6b7280; margin-top: 3px; }
+    .fechamento-card .fc-meta .mref {
+      display: inline-block; background: #eef2ff; color: #4f46e5;
+      padding: 1px 9px; border-radius: 12px; font-weight: 700; margin-right: 8px;
+    }
+    .fechamento-card .fc-nums { text-align: right; white-space: nowrap; }
+    .fechamento-card .fc-total { font-size: 1.15rem; font-weight: 800; color: #312e81; }
+    .fechamento-card .fc-comissao { font-size: .82rem; color: #059669; font-weight: 700; margin-top: 2px; }
+    .fechamento-card .fc-actions { display: flex; gap: 6px; }
+    .fc-empty { text-align: center; color: #aaa; padding: 40px 0; font-size: .92rem; }
+
     @media (max-width: 600px) {
       .canal-btn { min-width: 100%; }
       .manual-row { flex-direction: column; }
+      .tabs { margin-left: 0; width: 100%; }
+      .fechamento-card { flex-direction: column; align-items: stretch; }
+      .fechamento-card .fc-nums { text-align: left; }
     }
   </style>
 </head>
@@ -306,10 +452,42 @@
     <path stroke-linecap="round" stroke-linejoin="round" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 11h.01M12 11h.01M15 11h.01M4 20h16a2 2 0 002-2V6a2 2 0 00-2-2H4a2 2 0 00-2 2v12a2 2 0 002 2z" />
   </svg>
   <h1>Fechamento de Comissões</h1>
+  <div class="tabs">
+    <button class="tab-btn active" id="tabbtn-novo" onclick="trocarAba('novo')">Novo Fechamento</button>
+    <button class="tab-btn" id="tabbtn-anteriores" onclick="trocarAba('anteriores')">Repasses Anteriores</button>
+  </div>
   <span>BE NEWS</span>
 </header>
 
 <main>
+
+<div class="tab-pane active" id="tab-novo">
+
+  <!-- 0. Cliente e Período -->
+  <div class="card">
+    <h2>
+      <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a4 4 0 00-3-3.87M9 20H4v-2a4 4 0 013-3.87m6-1.13a4 4 0 10-4-4 4 4 0 004 4z"/></svg>
+      Cliente e Período de Referência
+    </h2>
+    <div class="cliente-row">
+      <div class="field">
+        <label>Cliente</label>
+        <select id="sel-cliente" onchange="onSelCliente()">
+          <option value="">— Selecione o cliente —</option>
+          <option value="__novo__">➕ Cadastrar novo cliente…</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Mês/Ano de referência</label>
+        <input type="month" id="mes-ref" onchange="renderClienteInfo()" />
+      </div>
+      <button class="btn btn-secondary" onclick="abrirModalCliente()" style="white-space:nowrap">
+        <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
+        Adicionar Cliente
+      </button>
+    </div>
+    <div class="cliente-info" id="cliente-info"></div>
+  </div>
 
   <!-- 1. Canal -->
   <div class="card">
@@ -317,17 +495,7 @@
       <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg>
       1. Selecione o Canal
     </h2>
-    <div class="canal-grid">
-      <button class="canal-btn" data-canal="magalu" onclick="selectCanal(this)">
-        <span class="dot dot-magalu"></span> Magazine Luiza
-      </button>
-      <button class="canal-btn" data-canal="web" onclick="selectCanal(this)">
-        <span class="dot dot-web"></span> Webcontinental
-      </button>
-      <button class="canal-btn" data-canal="cb" onclick="selectCanal(this)">
-        <span class="dot dot-cb"></span> Casas Bahia
-      </button>
-    </div>
+    <div class="canal-grid" id="canal-grid"></div>
   </div>
 
   <!-- 2. Imagem -->
@@ -376,11 +544,7 @@
     <div class="manual-row">
       <div class="field">
         <label>Canal</label>
-        <select id="m-canal">
-          <option value="magalu">Magazine Luiza</option>
-          <option value="web">Webcontinental</option>
-          <option value="cb">Casas Bahia</option>
-        </select>
+        <select id="m-canal"></select>
       </div>
       <div class="field">
         <label>Data</label>
@@ -420,40 +584,27 @@
     </table>
   </div>
 
+  <!-- 5b. Comprovantes -->
+  <div class="card" id="comprovantes-area">
+    <h2>
+      <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+      Comprovantes
+    </h2>
+    <div id="comprovantes-list"></div>
+  </div>
+
   <!-- 6. Totais -->
   <div class="card">
     <h2>
       <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z"/></svg>
       6. Totais e Comissão
     </h2>
-    <div class="totais-grid">
-      <div class="total-box">
-        <div class="label">Magazine Luiza</div>
-        <div class="value" id="t-magalu">R$ 0,00</div>
-      </div>
-      <div class="total-box">
-        <div class="label">Webcontinental</div>
-        <div class="value" id="t-web">R$ 0,00</div>
-      </div>
-      <div class="total-box">
-        <div class="label">Casas Bahia</div>
-        <div class="value" id="t-cb">R$ 0,00</div>
-      </div>
-      <div class="total-box destaque">
-        <div class="label">Total Geral</div>
-        <div class="value" id="t-total">R$ 0,00</div>
-      </div>
-      <div class="total-box comissao">
-        <div class="label">Comissão BE NEWS (3%)</div>
-        <div class="value" id="t-comissao">R$ 0,00</div>
-      </div>
-    </div>
+    <div class="totais-grid" id="totais-grid"></div>
     <div class="btn-row" style="margin-top:20px">
       <button class="btn btn-primary" onclick="gerarRelatorio()">
         <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-        Gerar Relatório
+        Gerar / Atualizar Relatório
       </button>
-      <button class="btn btn-danger" onclick="limparTudo()">Limpar Tudo</button>
     </div>
   </div>
 
@@ -467,60 +618,537 @@
     <div class="btn-row">
       <button class="btn btn-primary" onclick="imprimirRelatorio()">
         <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a1 1 0 001-1v-4a1 1 0 00-1-1H9a1 1 0 00-1 1v4a1 1 0 001 1zm0-12V5a1 1 0 011-1h4a1 1 0 011 1v4H8z"/></svg>
-        Imprimir / Salvar PDF
+        Imprimir / Visualizar PDF
       </button>
-      <button class="btn btn-secondary" onclick="copiarRelatorio()">
-        <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"/></svg>
-        Copiar Texto
+      <button class="btn btn-success" onclick="salvarFechamento()">
+        <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1-4l-3 3m0 0l-3-3m3 3V4"/></svg>
+        Salvar
+      </button>
+      <button class="btn btn-danger" onclick="cancelarLimpar()">
+        <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+        Cancelar / Limpar
       </button>
     </div>
   </div>
 
+</div><!-- /tab-novo -->
+
+<!-- Aba: Repasses Anteriores -->
+<div class="tab-pane" id="tab-anteriores">
+  <div class="card">
+    <h2>
+      <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+      Repasses Anteriores
+    </h2>
+    <div id="anteriores-list">
+      <div class="fc-empty">Nenhum fechamento salvo ainda.</div>
+    </div>
+  </div>
+</div><!-- /tab-anteriores -->
+
 </main>
+
+<!-- Modal de cadastro de cliente -->
+<div class="modal-overlay" id="modal-cliente">
+  <div class="modal">
+    <div class="modal-head">
+      <h3 id="modal-cliente-title">Novo Cliente</h3>
+      <button class="close" onclick="fecharModalCliente()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="field">
+        <label>Nome / Razão Social</label>
+        <input type="text" id="cli-razao" placeholder="Ex: Comercial Exemplo LTDA" />
+      </div>
+      <div class="field">
+        <label>CNPJ</label>
+        <input type="text" id="cli-cnpj" placeholder="00.000.000/0000-00" maxlength="18" oninput="maskCnpj(this)" />
+      </div>
+      <div class="field">
+        <label>Dia fixo de pagamento da comissão</label>
+        <select id="cli-dia">
+          <option value="">— Selecione o dia —</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-secondary" onclick="fecharModalCliente()">Cancelar</button>
+      <button class="btn btn-primary" onclick="salvarCliente()">Salvar Cliente</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal de cadastro de canal -->
+<div class="modal-overlay" id="modal-canal">
+  <div class="modal">
+    <div class="modal-head">
+      <h3>Novo Canal</h3>
+      <button class="close" onclick="fecharModalCanal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="field">
+        <label>Nome do canal</label>
+        <input type="text" id="can-nome" placeholder="Ex: Amazon" />
+      </div>
+      <div class="field">
+        <label>Cor de identificação</label>
+        <div class="cor-grid" id="cor-grid"></div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-secondary" onclick="fecharModalCanal()">Cancelar</button>
+      <button class="btn btn-primary" onclick="salvarCanal()">Salvar Canal</button>
+    </div>
+  </div>
+</div>
 
 <div id="toast"></div>
 
 <script>
   const COMISSAO_PCT = 0.03;
-  const CANAL_LABELS = { magalu: 'Magazine Luiza', web: 'Webcontinental', cb: 'Casas Bahia' };
-  const CANAL_BADGE  = { magalu: 'badge-magalu', web: 'badge-web', cb: 'badge-cb' };
+
+  const CANAIS_PADRAO = [
+    { id: 'magalu', nome: 'Magazine Luiza', cor: '#0066cc' },
+    { id: 'web',    nome: 'Webcontinental', cor: '#e84393' },
+    { id: 'cb',     nome: 'Casas Bahia',    cor: '#e8232a' },
+  ];
+  const CORES_CANAL = ['#0066cc', '#e84393', '#e8232a', '#059669', '#d97706', '#7c3aed', '#0891b2', '#be185d', '#475569', '#16a34a'];
+
+  let canais = [];
+  let corSelecionada = CORES_CANAL[0];
 
   let canalAtivo = null;
   let imagemBase64 = null;
   let imagemMediaType = null;
+  let imagemDataUrl = null;
   let lancamentos = [];
   let repasesDetectados = [];
+  let comprovantes = [];
+
+  let clientes = [];
+  let fechamentos = [];
+  let clienteAtivoId = '';
+  let salvando = false;
+
+  // ── Canais dinâmicos ────────────────────────────────────────────────────────
+  function canalById(id) { return canais.find(c => c.id === id) || null; }
+  function canalNome(id) { const c = canalById(id); return c ? c.nome : (id || 'Canal'); }
+  function canalCor(id)  { const c = canalById(id); return c ? c.cor : '#6b7280'; }
+
+  function renderCanais() {
+    const grid = document.getElementById('canal-grid');
+    let html = '';
+    canais.forEach(c => {
+      const ativo = canalAtivo === c.id ? ' active' : '';
+      html += `<button class="canal-btn${ativo}" data-canal="${c.id}" onclick="selectCanal('${c.id}')">
+        <span class="dot" style="background:${c.cor}"></span>
+        <span class="nome">${esc(c.nome)}</span>
+        <span class="rm" title="Remover canal" onclick="event.stopPropagation(); removerCanal('${c.id}')">✕</span>
+      </button>`;
+    });
+    html += `<button class="canal-add" onclick="abrirModalCanal()">
+      <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
+      Adicionar canal
+    </button>`;
+    grid.innerHTML = html;
+
+    // Sincroniza select do lançamento manual
+    const selM = document.getElementById('m-canal');
+    if (selM) {
+      const atual = selM.value;
+      selM.innerHTML = canais.map(c => `<option value="${c.id}">${esc(c.nome)}</option>`).join('');
+      if (canais.some(c => c.id === atual)) selM.value = atual;
+    }
+  }
+
+  function abrirModalCanal() {
+    document.getElementById('can-nome').value = '';
+    corSelecionada = CORES_CANAL[0];
+    const cg = document.getElementById('cor-grid');
+    cg.innerHTML = CORES_CANAL.map((cor, i) =>
+      `<div class="cor-swatch${i === 0 ? ' sel' : ''}" style="background:${cor}" onclick="selCor(this, '${cor}')"></div>`
+    ).join('');
+    document.getElementById('modal-canal').classList.add('show');
+    setTimeout(() => document.getElementById('can-nome').focus(), 50);
+  }
+  function fecharModalCanal() { document.getElementById('modal-canal').classList.remove('show'); }
+  function selCor(el, cor) {
+    document.querySelectorAll('#cor-grid .cor-swatch').forEach(s => s.classList.remove('sel'));
+    el.classList.add('sel');
+    corSelecionada = cor;
+  }
+  async function salvarCanal() {
+    const nome = document.getElementById('can-nome').value.trim();
+    if (!nome) { toast('Informe o nome do canal.'); return; }
+    const id = 'c' + novoId();
+    canais.push({ id, nome, cor: corSelecionada });
+    await storeSave('canais', canais);
+    renderCanais();
+    renderTotaisGrid();
+    atualizarTotais();
+    fecharModalCanal();
+    toast('Canal adicionado!');
+  }
+  async function removerCanal(id) {
+    if (lancamentos.some(l => l.canal === id)) {
+      toast('Há lançamentos neste canal. Remova-os primeiro.');
+      return;
+    }
+    if (!confirm('Remover o canal "' + canalNome(id) + '"?')) return;
+    canais = canais.filter(c => c.id !== id);
+    if (canalAtivo === id) canalAtivo = null;
+    await storeSave('canais', canais);
+    renderCanais();
+    renderTotaisGrid();
+    atualizarTotais();
+    atualizarTravaColagem();
+    toast('Canal removido.');
+  }
+
+  // ── Armazenamento (nuvem com fallback local) ────────────────────────────────
+  async function storeLoad(key) {
+    try {
+      const r = await fetch('/api/store?key=' + encodeURIComponent(key));
+      const d = await r.json();
+      if (d.error) throw new Error(d.error);
+      localStorage.setItem('benews:' + key, JSON.stringify(d.value || []));
+      return d.value || [];
+    } catch (e) {
+      const cached = localStorage.getItem('benews:' + key);
+      return cached ? JSON.parse(cached) : [];
+    }
+  }
+  async function storeSave(key, value) {
+    localStorage.setItem('benews:' + key, JSON.stringify(value));
+    try {
+      const r = await fetch('/api/store', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ key, value })
+      });
+      const d = await r.json();
+      if (d.error) throw new Error(d.error);
+      return true;
+    } catch (e) {
+      toast('Salvo neste navegador (nuvem indisponível)');
+      return false;
+    }
+  }
+
+  // ── Abas ────────────────────────────────────────────────────────────────────
+  function trocarAba(aba) {
+    document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('tab-' + aba).classList.add('active');
+    document.getElementById('tabbtn-' + aba).classList.add('active');
+    if (aba === 'anteriores') renderAnteriores();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  // ── Clientes ────────────────────────────────────────────────────────────────
+  function novoId() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 7); }
+
+  function renderClientesDropdown() {
+    const sel = document.getElementById('sel-cliente');
+    const atual = clienteAtivoId;
+    let opts = '<option value="">— Selecione o cliente —</option>';
+    clientes.forEach(c => { opts += `<option value="${c.id}">${esc(c.razao)}</option>`; });
+    opts += '<option value="__novo__">➕ Cadastrar novo cliente…</option>';
+    sel.innerHTML = opts;
+    sel.value = clientes.some(c => c.id === atual) ? atual : '';
+  }
+
+  function onSelCliente() {
+    const sel = document.getElementById('sel-cliente');
+    if (sel.value === '__novo__') {
+      sel.value = clienteAtivoId || '';
+      abrirModalCliente();
+      return;
+    }
+    clienteAtivoId = sel.value;
+    renderClienteInfo();
+  }
+
+  function clienteAtual() { return clientes.find(c => c.id === clienteAtivoId) || null; }
+
+  function renderClienteInfo() {
+    const box = document.getElementById('cliente-info');
+    const c = clienteAtual();
+    const mes = document.getElementById('mes-ref').value;
+    if (!c) { box.classList.remove('show'); box.innerHTML = ''; return; }
+    let html = `<strong>${esc(c.razao)}</strong>`;
+    if (c.cnpj) html += `<span class="sep">·</span>CNPJ ${esc(c.cnpj)}`;
+    if (c.dia)  html += `<span class="sep">·</span>Pagamento todo dia ${esc(c.dia)}`;
+    if (mes)    html += `<span class="sep">·</span>Ref.: ${mesLabel(mes)}`;
+    box.innerHTML = html;
+    box.classList.add('show');
+  }
+
+  function mesLabel(yyyymm) {
+    if (!yyyymm) return '';
+    const [y, m] = yyyymm.split('-');
+    const nomes = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+    return `${nomes[parseInt(m, 10) - 1]}/${y}`;
+  }
+
+  // ── Modal cliente ─────────────────────────────────────────────────────────
+  function abrirModalCliente() {
+    document.getElementById('cli-razao').value = '';
+    document.getElementById('cli-cnpj').value = '';
+    document.getElementById('cli-dia').value = '';
+    document.getElementById('modal-cliente').classList.add('show');
+    setTimeout(() => document.getElementById('cli-razao').focus(), 50);
+  }
+  function fecharModalCliente() {
+    document.getElementById('modal-cliente').classList.remove('show');
+  }
+  function maskCnpj(el) {
+    let v = el.value.replace(/\D/g, '').slice(0, 14);
+    v = v.replace(/^(\d{2})(\d)/, '$1.$2')
+         .replace(/^(\d{2})\.(\d{3})(\d)/, '$1.$2.$3')
+         .replace(/\.(\d{3})(\d)/, '.$1/$2')
+         .replace(/(\d{4})(\d)/, '$1-$2');
+    el.value = v;
+  }
+  async function salvarCliente() {
+    const razao = document.getElementById('cli-razao').value.trim();
+    const cnpj  = document.getElementById('cli-cnpj').value.trim();
+    const dia   = document.getElementById('cli-dia').value;
+    if (!razao) { toast('Informe o nome / razão social.'); return; }
+    const c = { id: novoId(), razao, cnpj, dia };
+    clientes.push(c);
+    await storeSave('clientes', clientes);
+    clienteAtivoId = c.id;
+    renderClientesDropdown();
+    renderClienteInfo();
+    fecharModalCliente();
+    toast('Cliente cadastrado!');
+  }
+
+  // ── Salvar / listar fechamentos ─────────────────────────────────────────────
+  function blobToBase64(blob) {
+    return new Promise((resolve, reject) => {
+      const r = new FileReader();
+      r.onload = () => resolve(String(r.result).split(',')[1]);
+      r.onerror = reject;
+      r.readAsDataURL(blob);
+    });
+  }
+
+  // Gera o PDF completo (números + imagens) a partir do relatório na tela
+  async function gerarPdfBase64() {
+    const el = document.querySelector('#relatorio-doc .doc');
+    if (!el || !window.html2pdf) return null;
+    const opt = {
+      margin: 6,
+      image: { type: 'jpeg', quality: 0.72 },
+      html2canvas: { scale: 1.6, useCORS: true, backgroundColor: '#ffffff' },
+      jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+      pagebreak: { mode: ['css', 'legacy'], avoid: ['.dc-group', '.dc-img', '.doc-section', '.doc-summary'] }
+    };
+    const blob = await window.html2pdf().set(opt).from(el).outputPdf('blob');
+    return blobToBase64(blob);
+  }
+
+  async function salvarFechamento() {
+    if (salvando) return;
+    if (lancamentos.length === 0) { toast('Nenhum lançamento para salvar.'); return; }
+    const c = clienteAtual();
+    if (!c) { toast('Selecione um cliente antes de salvar.'); return; }
+    const mes = document.getElementById('mes-ref').value;
+    if (!mes) { toast('Informe o mês/ano de referência.'); return; }
+
+    salvando = true;
+    // Garante o relatório montado para virar PDF
+    if (!document.querySelector('#relatorio-doc .doc')) gerarRelatorio();
+
+    const totais = calcTotais();
+    const total = somaTotais(totais);
+    const comissao = total * COMISSAO_PCT;
+
+    let pdfUrl = null;
+    try {
+      toast('Gerando PDF do fechamento…', 4000);
+      const dataBase64 = await gerarPdfBase64();
+      if (dataBase64) {
+        const slug = c.razao.replace(/[^a-z0-9]+/gi, '-').toLowerCase().replace(/^-|-$/g, '');
+        const filename = `fechamento-${slug}-${mes}.pdf`;
+        const r = await fetch('/api/upload', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ filename, dataBase64 })
+        });
+        const d = await r.json();
+        if (d.error) throw new Error(d.error);
+        pdfUrl = d.url;
+      }
+    } catch (e) {
+      toast('Fechamento salvo, mas o PDF não foi para a nuvem: ' + e.message, 5000);
+    }
+
+    const fech = {
+      id: novoId(),
+      clienteId: c.id, clienteRazao: c.razao, clienteCnpj: c.cnpj, clienteDia: c.dia,
+      mesRef: mes,
+      lancamentos: lancamentos.map(l => ({ ...l, canalNome: canalNome(l.canal) })),
+      total, comissao, pdfUrl,
+      criadoEm: new Date().toISOString()
+    };
+    fechamentos.unshift(fech);
+    await storeSave('fechamentos', fechamentos);
+    salvando = false;
+    toast(pdfUrl ? 'Fechamento e PDF salvos!' : 'Fechamento salvo em Repasses Anteriores!');
+    limparFormulario();
+  }
+
+  // Limpa o formulário (lançamentos, comprovantes, imagem, relatório, canal)
+  function limparFormulario() {
+    lancamentos = [];
+    comprovantes = [];
+    canalAtivo = null;
+    repasesDetectados = [];
+    document.querySelectorAll('.canal-btn').forEach(b => b.classList.remove('active'));
+    renderLancamentos();
+    renderComprovantes();
+    atualizarTotais();
+    limparImagem();
+    atualizarTravaColagem();
+    document.getElementById('relatorio-area').style.display = 'none';
+    document.getElementById('relatorio-doc').innerHTML = '';
+  }
+
+  function cancelarLimpar() {
+    if (!confirm('Descartar os dados deste fechamento e limpar o formulário?')) return;
+    limparFormulario();
+    toast('Formulário limpo.');
+  }
+
+  function renderAnteriores() {
+    const cont = document.getElementById('anteriores-list');
+    if (!fechamentos.length) {
+      cont.innerHTML = '<div class="fc-empty">Nenhum fechamento salvo ainda.</div>';
+      return;
+    }
+    let html = '';
+    fechamentos.forEach(f => {
+      const dt = new Date(f.criadoEm).toLocaleDateString('pt-BR');
+      html += `<div class="fechamento-card">
+        <div class="fc-main">
+          <div class="fc-cliente">${esc(f.clienteRazao)}</div>
+          <div class="fc-meta">
+            <span class="mref">${mesLabel(f.mesRef)}</span>
+            ${f.lancamentos.length} lançamento${f.lancamentos.length > 1 ? 's' : ''} · salvo em ${dt}
+            ${f.clienteDia ? '· pagto dia ' + esc(f.clienteDia) : ''}
+          </div>
+        </div>
+        <div class="fc-nums">
+          <div class="fc-total">${fmt(f.total)}</div>
+          <div class="fc-comissao">comissão ${fmt(f.comissao)}</div>
+        </div>
+        <div class="fc-actions">
+          ${f.pdfUrl ? `<a class="btn btn-primary" href="${f.pdfUrl}" target="_blank" rel="noopener">Baixar PDF</a>` : ''}
+          <button class="btn btn-secondary" onclick="abrirFechamento('${f.id}')">Abrir</button>
+          <button class="btn btn-danger" onclick="excluirFechamento('${f.id}')">Excluir</button>
+        </div>
+      </div>`;
+    });
+    cont.innerHTML = html;
+  }
+
+  function abrirFechamento(id) {
+    const f = fechamentos.find(x => x.id === id);
+    if (!f) return;
+    clienteAtivoId = f.clienteId;
+    lancamentos = f.lancamentos.map(l => ({ ...l }));
+    comprovantes = [];
+
+    // Restaura canais que tenham sido removidos desde que o fechamento foi salvo
+    let faltando = false;
+    lancamentos.forEach(l => {
+      if (!canalById(l.canal)) {
+        canais.push({ id: l.canal, nome: l.canalNome || 'Canal', cor: '#6b7280' });
+        faltando = true;
+      }
+    });
+    if (faltando) renderCanais();
+
+    document.getElementById('mes-ref').value = f.mesRef;
+    canalAtivo = null;
+    document.querySelectorAll('.canal-btn').forEach(b => b.classList.remove('active'));
+    renderClientesDropdown();
+    renderClienteInfo();
+    renderLancamentos();
+    renderComprovantes();
+    atualizarTotais();
+    atualizarTravaColagem();
+    trocarAba('novo');
+    gerarRelatorio();
+    toast('Fechamento carregado. Comprovantes não ficam no histórico.');
+  }
+
+  async function excluirFechamento(id) {
+    if (!confirm('Excluir este fechamento do histórico?')) return;
+    fechamentos = fechamentos.filter(x => x.id !== id);
+    await storeSave('fechamentos', fechamentos);
+    renderAnteriores();
+    toast('Fechamento excluído.');
+  }
 
   // ── Canal ──────────────────────────────────────────────────────────────────
-  function selectCanal(btn) {
-    document.querySelectorAll('.canal-btn').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-    canalAtivo = btn.dataset.canal;
-    document.getElementById('m-canal').value = canalAtivo;
-    toast('Canal: ' + CANAL_LABELS[canalAtivo]);
+  function selectCanal(id) {
+    canalAtivo = id;
+    document.querySelectorAll('.canal-btn').forEach(b => {
+      b.classList.toggle('active', b.dataset.canal === id);
+    });
+    const selM = document.getElementById('m-canal');
+    if (selM) selM.value = id;
+    atualizarTravaColagem();
+    toast('Canal: ' + canalNome(id));
   }
 
   // ── Paste / Drag ───────────────────────────────────────────────────────────
   const pasteArea = document.getElementById('paste-area');
 
-  pasteArea.addEventListener('focus', () => {});
+  function placeholderColagem() {
+    return `
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+      </svg>
+      <p><strong>Clique aqui</strong> e pressione <kbd>Ctrl+V</kbd> para colar a imagem</p>
+      <p style="font-size:.8rem">ou arraste e solte um arquivo de imagem</p>`;
+  }
+  function placeholderTravado() {
+    return `
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+        <rect x="5" y="11" width="14" height="10" rx="2"/><path stroke-linecap="round" stroke-linejoin="round" d="M8 11V7a4 4 0 018 0v4"/>
+      </svg>
+      <p><strong>Selecione um canal acima</strong> para liberar a colagem</p>`;
+  }
+
+  // Trava a colagem enquanto nenhum canal estiver selecionado
+  function atualizarTravaColagem() {
+    const travado = !canalAtivo;
+    pasteArea.classList.toggle('locked', travado);
+    if (imagemDataUrl) return; // já tem imagem carregada, não mexe
+    pasteArea.innerHTML = travado ? placeholderTravado() : placeholderColagem();
+  }
 
   document.addEventListener('paste', e => {
     const items = e.clipboardData?.items;
     if (!items) return;
     for (const item of items) {
       if (item.type.startsWith('image/')) {
+        if (!canalAtivo) { toast('Selecione o canal antes de colar o print.'); return; }
         processFile(item.getAsFile());
         break;
       }
     }
   });
 
-  pasteArea.addEventListener('dragover', e => { e.preventDefault(); pasteArea.classList.add('over'); });
+  pasteArea.addEventListener('dragover', e => { e.preventDefault(); if (canalAtivo) pasteArea.classList.add('over'); });
   pasteArea.addEventListener('dragleave', () => pasteArea.classList.remove('over'));
   pasteArea.addEventListener('drop', e => {
     e.preventDefault();
     pasteArea.classList.remove('over');
+    if (!canalAtivo) { toast('Selecione o canal antes de colar o print.'); return; }
     const file = e.dataTransfer.files[0];
     if (file && file.type.startsWith('image/')) processFile(file);
   });
@@ -531,6 +1159,7 @@
     reader.onload = ev => {
       const dataUrl = ev.target.result;
       imagemBase64 = dataUrl.split(',')[1];
+      imagemDataUrl = dataUrl;
       pasteArea.innerHTML = `<img src="${dataUrl}" alt="extrato" />`;
       document.getElementById('btn-analisar').disabled = false;
       toast('Imagem carregada! Clique em Analisar.');
@@ -541,12 +1170,8 @@
   function limparImagem() {
     imagemBase64 = null;
     imagemMediaType = null;
-    pasteArea.innerHTML = `
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-        <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
-      </svg>
-      <p><strong>Clique aqui</strong> e pressione <kbd>Ctrl+V</kbd> para colar a imagem</p>
-      <p style="font-size:.8rem">ou arraste e solte um arquivo de imagem</p>`;
+    imagemDataUrl = null;
+    atualizarTravaColagem();
     document.getElementById('btn-analisar').disabled = true;
     document.getElementById('result-area').style.display = 'none';
   }
@@ -604,16 +1229,71 @@
   }
 
   function confirmarRepasses() {
+    if (!canalAtivo) { toast('Selecione o canal destes repasses antes de confirmar.'); return; }
     const checks = document.querySelectorAll('#repasses-list .check');
+    const canal = canalAtivo;
+    let confirmados = 0;
     checks.forEach((el, i) => {
       if (el.dataset.sel === '1') {
         const r = repasesDetectados[i];
-        const canal = canalAtivo || 'magalu';
         adicionarLancamento({ canal, data: r.data || '', valor: r.valor, nota: r.nota || 'Repasse' });
+        confirmados++;
       }
     });
+    if (!confirmados) { toast('Marque ao menos um repasse.'); return; }
+
+    // Salva o print como comprovante do canal (evita duplicar a mesma imagem)
+    if (imagemDataUrl && !comprovantes.some(c => c.img === imagemDataUrl)) {
+      comprovantes.push({ canal, img: imagemDataUrl, ts: new Date().toLocaleDateString('pt-BR') });
+      renderComprovantes();
+    }
+
     document.getElementById('result-area').style.display = 'none';
-    toast('Repasses confirmados!');
+
+    // Limpa a colagem e força escolher o canal de novo para o próximo print
+    limparImagem();
+    canalAtivo = null;
+    document.querySelectorAll('.canal-btn').forEach(b => b.classList.remove('active'));
+    atualizarTravaColagem();
+
+    toast(confirmados + ' repasse(s) confirmado(s) em ' + canalNome(canal) + '. Selecione o canal do próximo print.');
+  }
+
+  // ── Comprovantes ───────────────────────────────────────────────────────────
+  function renderComprovantes() {
+    const area = document.getElementById('comprovantes-area');
+    const list = document.getElementById('comprovantes-list');
+    if (!comprovantes.length) { area.style.display = 'none'; list.innerHTML = ''; return; }
+
+    area.style.display = 'block';
+    let html = '';
+    canais.forEach(cn => {
+      const c = cn.id;
+      const itens = comprovantes.map((cp, idx) => ({ cp, idx })).filter(o => o.cp.canal === c);
+      if (!itens.length) return;
+      let thumbs = '';
+      itens.forEach(({ cp, idx }) => {
+        thumbs += `<div class="comprov-thumb">
+          <button class="del" onclick="removerComprovante(${idx})" title="Remover comprovante">✕</button>
+          <img src="${cp.img}" alt="comprovante" onclick="window.open(this.src)" />
+          <div class="cap">${cp.ts}</div>
+        </div>`;
+      });
+      html += `<div class="comprov-group">
+        <div class="cg-head">
+          <span class="bar" style="background:${cn.cor}"></span>
+          <h3>${esc(cn.nome)}</h3>
+          <span class="count">${itens.length} comprovante${itens.length > 1 ? 's' : ''}</span>
+        </div>
+        <div class="comprov-grid">${thumbs}</div>
+      </div>`;
+    });
+    list.innerHTML = html;
+  }
+
+  function removerComprovante(i) {
+    comprovantes.splice(i, 1);
+    renderComprovantes();
   }
 
   // ── Lançamento manual ──────────────────────────────────────────────────────
@@ -623,6 +1303,7 @@
     const valor = parseFloat(document.getElementById('m-valor').value);
     const nota  = document.getElementById('m-nota').value.trim() || 'Lançamento manual';
 
+    if (!canal) { toast('Cadastre/selecione um canal primeiro.'); return; }
     if (!valor || valor <= 0) { toast('Informe um valor válido.'); return; }
 
     const dataFmt = data ? data.split('-').reverse().join('/') : '';
@@ -655,9 +1336,10 @@
     }
 
     lancamentos.forEach((l, i) => {
+      const cor = canalCor(l.canal);
       const tr = document.createElement('tr');
       tr.innerHTML = `
-        <td><span class="badge ${CANAL_BADGE[l.canal]}">${CANAL_LABELS[l.canal]}</span></td>
+        <td><span class="badge" style="background:${cor}1a;color:${cor}">${esc(canalNome(l.canal))}</span></td>
         <td>${l.data}</td>
         <td>${l.nota}</td>
         <td style="text-align:right;font-weight:600;color:#059669">${fmt(l.valor)}</td>
@@ -667,22 +1349,41 @@
   }
 
   // ── Totais ─────────────────────────────────────────────────────────────────
-  function atualizarTotais() {
-    const totais = { magalu: 0, web: 0, cb: 0 };
-    lancamentos.forEach(l => { totais[l.canal] = (totais[l.canal] || 0) + l.valor; });
-    const total = totais.magalu + totais.web + totais.cb;
-    const comissao = total * COMISSAO_PCT;
+  function calcTotais() {
+    const t = {};
+    canais.forEach(c => { t[c.id] = 0; });
+    lancamentos.forEach(l => { t[l.canal] = (t[l.canal] || 0) + l.valor; });
+    return t;
+  }
+  function somaTotais(t) { return Object.values(t).reduce((a, b) => a + b, 0); }
 
-    document.getElementById('t-magalu').textContent = fmt(totais.magalu);
-    document.getElementById('t-web').textContent    = fmt(totais.web);
-    document.getElementById('t-cb').textContent     = fmt(totais.cb);
-    document.getElementById('t-total').textContent  = fmt(total);
-    document.getElementById('t-comissao').textContent = fmt(comissao);
+  function renderTotaisGrid() {
+    const grid = document.getElementById('totais-grid');
+    const t = calcTotais();
+    let html = '';
+    canais.forEach(c => {
+      html += `<div class="total-box">
+        <div class="label">${esc(c.nome)}</div>
+        <div class="value" id="t-${c.id}">${fmt(t[c.id] || 0)}</div>
+      </div>`;
+    });
+    const total = somaTotais(t);
+    html += `<div class="total-box destaque">
+      <div class="label">Total Geral</div>
+      <div class="value" id="t-total">${fmt(total)}</div>
+    </div>
+    <div class="total-box comissao">
+      <div class="label">Comissão BE NEWS (3%)</div>
+      <div class="value" id="t-comissao">${fmt(total * COMISSAO_PCT)}</div>
+    </div>`;
+    grid.innerHTML = html;
+  }
+
+  function atualizarTotais() {
+    renderTotaisGrid();
   }
 
   // ── Relatório ──────────────────────────────────────────────────────────────
-  const CANAL_BAR = { magalu: 'bar-magalu', web: 'bar-web', cb: 'bar-cb' };
-
   function esc(s) {
     return String(s ?? '').replace(/[&<>"]/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;' }[c]));
   }
@@ -691,14 +1392,16 @@
     if (lancamentos.length === 0) { toast('Nenhum lançamento para gerar relatório.'); return; }
 
     const hoje = new Date().toLocaleDateString('pt-BR');
-    const totais = { magalu: 0, web: 0, cb: 0 };
-    lancamentos.forEach(l => { totais[l.canal] = (totais[l.canal] || 0) + l.valor; });
-    const total = totais.magalu + totais.web + totais.cb;
+    const cli = clienteAtual();
+    const mes = document.getElementById('mes-ref').value;
+    const totais = calcTotais();
+    const total = somaTotais(totais);
     const comissao = total * COMISSAO_PCT;
     const qtd = lancamentos.length;
 
     let secoes = '';
-    ['magalu', 'web', 'cb'].forEach(c => {
+    canais.forEach(cn => {
+      const c = cn.id;
       const itens = lancamentos.filter(l => l.canal === c);
       if (!itens.length) return;
       let linhas = '';
@@ -712,19 +1415,40 @@
       secoes += `
         <div class="doc-section">
           <div class="sec-head">
-            <span class="bar ${CANAL_BAR[c]}"></span>
-            <h4>${CANAL_LABELS[c]}</h4>
+            <span class="bar" style="background:${cn.cor}"></span>
+            <h4>${esc(cn.nome)}</h4>
             <span class="sec-sub">${itens.length} repasse${itens.length > 1 ? 's' : ''}</span>
           </div>
           <table class="doc-table">
             ${linhas}
-            <tr class="sub">
+            ${itens.length > 1 ? `<tr class="sub">
               <td class="d-sub-label" colspan="2">Subtotal</td>
               <td class="d-valor">${fmt(totais[c])}</td>
-            </tr>
+            </tr>` : ''}
           </table>
         </div>`;
     });
+
+    // Comprovantes agrupados por canal (tamanho grande p/ impressão)
+    let comprovHtml = '';
+    if (comprovantes.length) {
+      let grupos = '';
+      canais.forEach(cn => {
+        const c = cn.id;
+        const itens = comprovantes.filter(cp => cp.canal === c);
+        if (!itens.length) return;
+        let imgs = '';
+        itens.forEach(cp => { imgs += `<div class="dc-img"><img src="${cp.img}" alt="comprovante ${esc(cn.nome)}" /></div>`; });
+        grupos += `<div class="dc-group">
+          <div class="dcg-head"><span class="bar" style="background:${cn.cor}"></span><h5>${esc(cn.nome)}</h5></div>
+          ${imgs}
+        </div>`;
+      });
+      comprovHtml = `<div class="doc-comprov">
+        <div class="dc-title">Comprovantes dos Repasses</div>
+        ${grupos}
+      </div>`;
+    }
 
     const html = `
       <div class="doc">
@@ -737,9 +1461,11 @@
             </div>
           </div>
           <div class="meta">
-            <strong>Fechamento</strong>
-            Emitido em ${hoje}<br>
-            ${qtd} lançamento${qtd > 1 ? 's' : ''}
+            <strong>${cli ? esc(cli.razao) : 'Fechamento'}</strong>
+            ${cli && cli.cnpj ? 'CNPJ ' + esc(cli.cnpj) + '<br>' : ''}
+            ${mes ? 'Ref.: ' + mesLabel(mes) + '<br>' : ''}
+            ${cli && cli.dia ? 'Pagamento todo dia ' + esc(cli.dia) + '<br>' : ''}
+            Emitido em ${hoje}
           </div>
         </div>
         <div class="doc-body">
@@ -755,6 +1481,7 @@
               <div class="s-base">sobre ${fmt(total)}</div>
             </div>
           </div>
+          ${comprovHtml}
         </div>
         <div class="doc-foot">
           <span>BE NEWS · Fechamento de Comissões</span>
@@ -776,34 +1503,25 @@
 
   async function copiarRelatorio() {
     const hoje = new Date().toLocaleDateString('pt-BR');
-    const totais = { magalu: 0, web: 0, cb: 0 };
-    lancamentos.forEach(l => { totais[l.canal] = (totais[l.canal] || 0) + l.valor; });
-    const total = totais.magalu + totais.web + totais.cb;
+    const totais = calcTotais();
+    const total = somaTotais(totais);
     const comissao = total * COMISSAO_PCT;
 
     const sep = '─'.repeat(52);
     let txt = `RELATÓRIO DE COMISSÕES – BE NEWS\nEmitido em: ${hoje}\n${sep}\n\n`;
-    ['magalu', 'web', 'cb'].forEach(c => {
+    canais.forEach(cn => {
+      const c = cn.id;
       const itens = lancamentos.filter(l => l.canal === c);
       if (!itens.length) return;
-      txt += `${CANAL_LABELS[c].toUpperCase()}\n`;
+      txt += `${cn.nome.toUpperCase()}\n`;
       itens.forEach(l => { txt += `  ${(l.data || '—').padEnd(12)} ${l.nota.padEnd(26)} ${fmtR(l.valor)}\n`; });
-      txt += `Subtotal: ${fmtR(totais[c])}\n\n`;
+      if (itens.length > 1) txt += `Subtotal: ${fmtR(totais[c])}\n`;
+      txt += `\n`;
     });
     txt += `${sep}\nTOTAL GERAL${' '.repeat(28)}${fmtR(total)}\nCOMISSÃO BE NEWS (3%)${' '.repeat(18)}${fmtR(comissao)}\n${sep}\n`;
 
     await navigator.clipboard.writeText(txt);
     toast('Texto do relatório copiado!');
-  }
-
-  function limparTudo() {
-    if (!confirm('Limpar todos os lançamentos?')) return;
-    lancamentos = [];
-    renderLancamentos();
-    atualizarTotais();
-    document.getElementById('relatorio-area').style.display = 'none';
-    limparImagem();
-    toast('Tudo limpo.');
   }
 
   // ── Helpers ────────────────────────────────────────────────────────────────
@@ -823,6 +1541,49 @@
 
   // ── Init ───────────────────────────────────────────────────────────────────
   document.getElementById('m-data').valueAsDate = new Date();
+
+  // dias 1-31 no modal
+  (function () {
+    const selDia = document.getElementById('cli-dia');
+    for (let d = 1; d <= 31; d++) {
+      const o = document.createElement('option');
+      o.value = d; o.textContent = 'Todo dia ' + d;
+      selDia.appendChild(o);
+    }
+  })();
+
+  // mês de referência padrão = mês anterior
+  (function () {
+    const d = new Date();
+    d.setDate(1);
+    d.setMonth(d.getMonth() - 1);
+    document.getElementById('mes-ref').value =
+      d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0');
+  })();
+
+  // Fecha modais ao clicar fora
+  document.getElementById('modal-cliente').addEventListener('click', e => {
+    if (e.target.id === 'modal-cliente') fecharModalCliente();
+  });
+  document.getElementById('modal-canal').addEventListener('click', e => {
+    if (e.target.id === 'modal-canal') fecharModalCanal();
+  });
+
+  // Carrega dados da nuvem
+  (async function () {
+    clientes = await storeLoad('clientes');
+    fechamentos = await storeLoad('fechamentos');
+    canais = await storeLoad('canais');
+    if (!canais.length) {
+      canais = CANAIS_PADRAO.map(c => ({ ...c }));
+      await storeSave('canais', canais);
+    }
+    renderClientesDropdown();
+    renderClienteInfo();
+    renderCanais();
+    renderTotaisGrid();
+    atualizarTravaColagem();
+  })();
 </script>
 </body>
 </html>

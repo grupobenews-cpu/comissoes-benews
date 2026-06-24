@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Fechamento de Comissões – BE NEWS</title>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.12.1/html2pdf.bundle.min.js"></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -968,18 +968,18 @@
     let pdfUrl = null;
     try {
       toast('Gerando PDF do fechamento…', 4000);
+      if (!window.html2pdf) throw new Error('biblioteca de PDF não carregou (verifique a conexão)');
       const dataBase64 = await gerarPdfBase64();
-      if (dataBase64) {
-        const slug = c.razao.replace(/[^a-z0-9]+/gi, '-').toLowerCase().replace(/^-|-$/g, '');
-        const filename = `fechamento-${slug}-${mes}.pdf`;
-        const r = await fetch('/api/upload', {
-          method: 'POST', headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ filename, dataBase64 })
-        });
-        const d = await r.json();
-        if (d.error) throw new Error(d.error);
-        pdfUrl = d.url;
-      }
+      if (!dataBase64) throw new Error('não foi possível gerar o PDF');
+      const slug = c.razao.replace(/[^a-z0-9]+/gi, '-').toLowerCase().replace(/^-|-$/g, '');
+      const filename = `fechamento-${slug}-${mes}.pdf`;
+      const r = await fetch('/api/upload', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ filename, dataBase64 })
+      });
+      const d = await r.json();
+      if (d.error) throw new Error(d.error);
+      pdfUrl = d.url;
     } catch (e) {
       toast('Fechamento salvo, mas o PDF não foi para a nuvem: ' + e.message, 5000);
     }

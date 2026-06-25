@@ -26,7 +26,7 @@ export default async function handler(req, res) {
   }
 
   // Apenas chaves conhecidas, prefixadas
-  const ALLOWED = ["clientes", "fechamentos", "canais", "prompts"];
+  const ALLOWED = ["clientes", "fechamentos", "canais"];
 
   try {
     if (req.method === "GET") {

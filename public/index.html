@@ -336,11 +336,23 @@
     }
     .comprov-thumb .del:hover { background: #b91c1c; }
 
-    /* Comprovantes (relatório / PDF) */
-    .doc-comprov { margin-top: 26px; border-top: 2px dashed #e5e7eb; padding-top: 22px; }
+    /* Comprovantes (relatório / PDF) — sempre começam em página nova */
+    .doc-comprov {
+      padding-top: 4px;
+      break-before: page; page-break-before: always;
+    }
     .doc-comprov > .dc-title {
-      font-size: .82rem; font-weight: 700; text-transform: uppercase; letter-spacing: .5px;
-      color: #6b7280; margin-bottom: 16px;
+      background: linear-gradient(135deg, #1a1a2e 0%, #312e81 65%, #4f46e5 100%);
+      color: #fff; border-radius: 12px; padding: 18px 22px; margin-bottom: 22px;
+      break-after: avoid; page-break-after: avoid;
+      -webkit-print-color-adjust: exact; print-color-adjust: exact;
+    }
+    .doc-comprov > .dc-title .dc-title-main {
+      display: block; font-size: 1.15rem; font-weight: 800;
+      letter-spacing: .5px; text-transform: uppercase;
+    }
+    .doc-comprov > .dc-title .dc-title-sub {
+      display: block; font-size: .8rem; opacity: .8; margin-top: 3px; font-weight: 500;
     }
     .doc-comprov .dc-group { margin-bottom: 22px; }
     .doc-comprov .dc-group:last-child { margin-bottom: 0; }
@@ -517,7 +529,7 @@
         </select>
       </div>
       <div class="field">
-        <label>Mês/Ano de referência</label>
+        <label>Recebimentos referente ao mês/ano:</label>
         <input type="month" id="mes-ref" onchange="renderClienteInfo()" />
       </div>
       <button class="btn btn-secondary" onclick="abrirModalCliente()" style="white-space:nowrap">
@@ -1034,7 +1046,7 @@
       image: { type: 'jpeg', quality: 0.72 },
       html2canvas: { scale: 1.6, useCORS: true, backgroundColor: '#ffffff' },
       jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
-      pagebreak: { mode: ['css', 'legacy'], avoid: ['.dc-group', '.dc-img', '.doc-section', '.doc-summary'] }
+      pagebreak: { mode: ['css', 'legacy'], before: ['.doc-comprov'], avoid: ['.dc-group', '.dc-img', '.doc-section', '.doc-summary'] }
     };
     const blob = await window.html2pdf().set(opt).from(el).outputPdf('blob');
     return blobToBase64(blob);
@@ -1548,7 +1560,10 @@
         </div>`;
       });
       comprovHtml = `<div class="doc-comprov">
-        <div class="dc-title">Comprovantes dos Repasses</div>
+        <div class="dc-title">
+          <span class="dc-title-main">Comprovantes dos Repasses</span>
+          <span class="dc-title-sub">agrupados por canal</span>
+        </div>
         ${grupos}
       </div>`;
     }

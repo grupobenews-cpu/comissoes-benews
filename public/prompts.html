@@ -59,6 +59,33 @@
   .empty-state { text-align: center; color: var(--mut); padding: 70px 20px; }
   .empty-state h3 { color: var(--txt); margin-bottom: 8px; font-size: 1.1rem; }
 
+  /* Alternador de visão (grade / lista) */
+  .viewtoggle { display: flex; gap: 4px; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 3px; }
+  .viewtoggle button { background: transparent; border: none; color: var(--mut); padding: 7px 12px; border-radius: 8px; cursor: pointer; font-size: .85rem; display: inline-flex; align-items: center; gap: 6px; font-weight: 600; }
+  .viewtoggle button.active { background: var(--panel2); color: var(--txt); }
+
+  /* Visão em lista (tabela) */
+  .ptable-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 14px; background: var(--panel); }
+  .ptable { width: 100%; border-collapse: collapse; font-size: .9rem; }
+  .ptable th, .ptable td { text-align: left; padding: 11px 14px; border-bottom: 1px solid var(--line); vertical-align: middle; }
+  .ptable thead th { color: var(--mut); font-size: .78rem; text-transform: uppercase; letter-spacing: .5px; font-weight: 700; background: var(--panel2); position: sticky; top: 0; z-index: 1; white-space: nowrap; }
+  .ptable th.sortable { cursor: pointer; user-select: none; }
+  .ptable th.sortable:hover { color: var(--txt); }
+  .ptable th .arrow { display: inline-block; margin-left: 5px; opacity: .35; font-size: .72rem; }
+  .ptable th.sorted .arrow { opacity: 1; color: var(--accent); }
+  .ptable tbody tr { cursor: pointer; }
+  .ptable tbody tr:hover { background: var(--panel2); }
+  .ptable tbody tr:last-child td { border-bottom: none; }
+  .ptable .c-title { font-weight: 700; color: var(--txt); min-width: 160px; }
+  .ptable .c-title .snip { display: block; font-weight: 400; color: var(--mut); font-size: .78rem; margin-top: 3px; max-width: 320px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .ptable .tcell { display: flex; gap: 5px; flex-wrap: wrap; max-width: 220px; }
+  .ptable .tcell .t { background: var(--chip); color: var(--accent); font-size: .72rem; padding: 3px 9px; border-radius: 999px; white-space: nowrap; }
+  .ptable .tcell .none { color: var(--mut); font-size: .8rem; }
+  .ptable .mini { display: flex; gap: 5px; }
+  .ptable .mini img { width: 42px; height: 42px; object-fit: cover; border-radius: 7px; border: 1px solid var(--line); background: #000; }
+  .ptable .mini .more { width: 42px; height: 42px; border-radius: 7px; background: var(--panel2); border: 1px solid var(--line); color: var(--mut); font-size: .72rem; display: grid; place-items: center; }
+  .ptable .mini .none { color: var(--mut); font-size: .8rem; align-self: center; }
+
   /* Overlay / modal */
   .overlay { position: fixed; inset: 0; background: rgba(5,7,12,.72); backdrop-filter: blur(3px); z-index: 50; display: none; align-items: flex-start; justify-content: center; padding: 30px 16px; overflow-y: auto; }
   .overlay.show { display: flex; }
@@ -150,10 +177,15 @@
     <input id="busca" placeholder="Buscar por título, prompt ou tag…" oninput="render()" />
   </div>
   <div id="tags-filter" class="tags-filter"></div>
+  <div class="viewtoggle">
+    <button id="vt-grade" class="active" onclick="setVista('grade')" title="Cartões">▦ Cartões</button>
+    <button id="vt-lista" onclick="setVista('lista')" title="Lista">☰ Lista</button>
+  </div>
 </div>
 
 <main>
   <div id="grid" class="grid"></div>
+  <div id="lista" class="ptable-wrap" style="display:none"></div>
   <div id="empty" class="empty-state" style="display:none">
     <h3>Nenhum prompt ainda</h3>
     <p>Clique em <b>+ Novo prompt</b> para registrar seu primeiro: cole o texto e os prints que você usou no Gemini.</p>
@@ -234,6 +266,8 @@
   let activeZone = 'inputs';
   let tagFiltro = '';
   let detalheId = null;
+  let vista = localStorage.getItem('benews:prompts-vista') || 'grade';  // 'grade' | 'lista'
+  let sort = { col: null, dir: 'asc' };  // col: 'titulo' | 'tags' | null (padrão: mais recentes)
 
   function authHeaders(extra) { return Object.assign({ 'x-app-key': APP_KEY }, extra || {}); }
   function esc(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
@@ -294,6 +328,35 @@
     prompts.forEach(p => (p.tags || []).forEach(t => s.add(t)));
     return [...s].sort();
   }
+  // valor de ordenação por coluna (tags = concatenação para agrupar mesma tag)
+  function chaveOrdenacao(p, col) {
+    if (col === 'tags') return (p.tags || []).join(', ').toLowerCase();
+    return (p.titulo || '').toLowerCase();
+  }
+  function ordenar(lista) {
+    if (!sort.col) return lista.sort((a, b) => (b.criadoEm || 0) - (a.criadoEm || 0));
+    const dir = sort.dir === 'asc' ? 1 : -1;
+    return lista.sort((a, b) => {
+      const va = chaveOrdenacao(a, sort.col), vb = chaveOrdenacao(b, sort.col);
+      // entradas vazias sempre por último
+      if (!va && vb) return 1; if (va && !vb) return -1;
+      if (va < vb) return -1 * dir; if (va > vb) return 1 * dir;
+      // desempate por mais recente
+      return (b.criadoEm || 0) - (a.criadoEm || 0);
+    });
+  }
+  function setVista(v) {
+    vista = v; localStorage.setItem('benews:prompts-vista', v);
+    document.getElementById('vt-grade').classList.toggle('active', v === 'grade');
+    document.getElementById('vt-lista').classList.toggle('active', v === 'lista');
+    render();
+  }
+  function ordenarPor(col) {
+    if (sort.col === col) { sort.dir = sort.dir === 'asc' ? 'desc' : 'asc'; }
+    else { sort.col = col; sort.dir = 'asc'; }
+    render();
+  }
+
   function render() {
     // filtro de tags
     const tf = document.getElementById('tags-filter');
@@ -301,17 +364,21 @@
     tf.innerHTML = tags.map(t => `<span class="tagchip${tagFiltro === t ? ' active' : ''}" onclick="filtrarTag('${esc(t).replace(/'/g, "\\'")}')">${esc(t)}</span>`).join('');
 
     const q = document.getElementById('busca').value.trim().toLowerCase();
-    let lista = prompts.slice().sort((a, b) => (b.criadoEm || 0) - (a.criadoEm || 0));
+    let lista = prompts.slice();
     if (tagFiltro) lista = lista.filter(p => (p.tags || []).includes(tagFiltro));
     if (q) lista = lista.filter(p =>
       (p.titulo || '').toLowerCase().includes(q) ||
       (p.prompt || '').toLowerCase().includes(q) ||
       (p.tags || []).join(' ').toLowerCase().includes(q));
+    lista = ordenar(lista);
 
     const grid = document.getElementById('grid');
+    const tabela = document.getElementById('lista');
     const empty = document.getElementById('empty');
+
     if (!lista.length) {
-      grid.innerHTML = '';
+      grid.innerHTML = ''; grid.style.display = 'none';
+      tabela.innerHTML = ''; tabela.style.display = 'none';
       empty.style.display = 'block';
       empty.querySelector('p').innerHTML = prompts.length
         ? 'Nenhum prompt corresponde ao filtro.'
@@ -319,7 +386,20 @@
       return;
     }
     empty.style.display = 'none';
-    grid.innerHTML = lista.map(p => {
+
+    if (vista === 'lista') {
+      grid.style.display = 'none';
+      tabela.style.display = 'block';
+      tabela.innerHTML = renderTabela(lista);
+    } else {
+      tabela.style.display = 'none';
+      grid.style.display = 'grid';
+      grid.innerHTML = renderGrade(lista);
+    }
+  }
+
+  function renderGrade(lista) {
+    return lista.map(p => {
       const imgs = [...(p.inputs || []), ...(p.resultado || [])].slice(0, 4);
       const thumbs = imgs.length
         ? `<div class="thumbs">${imgs.map(u => `<img src="${esc(u)}" loading="lazy" />`).join('')}</div>`
@@ -335,6 +415,41 @@
         </div>
       </div>`;
     }).join('');
+  }
+
+  function miniaturas(urls) {
+    const arr = urls || [];
+    if (!arr.length) return `<span class="none">—</span>`;
+    const vis = arr.slice(0, 3).map(u => `<img src="${esc(u)}" loading="lazy" onclick="event.stopPropagation(); lightbox('${esc(u)}')" />`).join('');
+    const extra = arr.length > 3 ? `<span class="more">+${arr.length - 3}</span>` : '';
+    return `<div class="mini">${vis}${extra}</div>`;
+  }
+  function setaOrd(col) {
+    if (sort.col !== col) return `<span class="arrow">↕</span>`;
+    return `<span class="arrow">${sort.dir === 'asc' ? '↑' : '↓'}</span>`;
+  }
+  function renderTabela(lista) {
+    const rows = lista.map(p => {
+      const tags = (p.tags || []).length
+        ? (p.tags || []).map(t => `<span class="t">${esc(t)}</span>`).join('')
+        : `<span class="none">—</span>`;
+      const snip = (p.prompt || '').trim();
+      return `<tr onclick="abrirDetalhe('${p.id}')">
+        <td class="c-title">${esc(p.titulo || 'Sem título')}${snip ? `<span class="snip">${esc(snip)}</span>` : ''}</td>
+        <td><div class="tcell">${tags}</div></td>
+        <td>${miniaturas(p.inputs)}</td>
+        <td>${miniaturas(p.resultado)}</td>
+      </tr>`;
+    }).join('');
+    return `<table class="ptable">
+      <thead><tr>
+        <th class="sortable${sort.col === 'titulo' ? ' sorted' : ''}" onclick="ordenarPor('titulo')">Título ${setaOrd('titulo')}</th>
+        <th class="sortable${sort.col === 'tags' ? ' sorted' : ''}" onclick="ordenarPor('tags')">Tags ${setaOrd('tags')}</th>
+        <th>Inputs</th>
+        <th>Resultado</th>
+      </tr></thead>
+      <tbody>${rows}</tbody>
+    </table>`;
   }
   function filtrarTag(t) { tagFiltro = (tagFiltro === t) ? '' : t; render(); }
 
@@ -521,6 +636,10 @@
   // Clicar fora do modal fecha
   document.getElementById('editor').addEventListener('click', (e) => { if (e.target.id === 'editor') fecharEditor(); });
   document.getElementById('detalhe').addEventListener('click', (e) => { if (e.target.id === 'detalhe') fecharDetalhe(); });
+
+  // Reflete a visão salva (grade/lista) nos botões antes de carregar
+  document.getElementById('vt-grade').classList.toggle('active', vista === 'grade');
+  document.getElementById('vt-lista').classList.toggle('active', vista === 'lista');
 
   verificarAcesso();
 </script>

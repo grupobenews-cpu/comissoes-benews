@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Biblioteca de Prompts – Gemini</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #0f1117; --panel: #171a23; --panel2: #1f2330; --line: #2a2f3d;
+    --txt: #e7eaf0; --mut: #9aa3b2; --accent: #6c8cff; --accent2: #8a6cff;
+    --danger: #ff5d6c; --ok: #34d399; --chip: #232838;
+  }
+  body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--txt); min-height: 100vh; }
+
+  header {
+    position: sticky; top: 0; z-index: 30;
+    background: linear-gradient(135deg, #141826 0%, #1a1430 100%);
+    border-bottom: 1px solid var(--line);
+    padding: 14px 22px; display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
+  }
+  header .logo { width: 30px; height: 30px; border-radius: 8px; background: linear-gradient(135deg, var(--accent), var(--accent2)); display: grid; place-items: center; font-weight: 800; }
+  header h1 { font-size: 1.12rem; font-weight: 700; letter-spacing: .3px; }
+  header .sub { font-size: .78rem; color: var(--mut); }
+  header .spacer { flex: 1; }
+  .btn { border: none; border-radius: 9px; padding: 9px 14px; font-size: .9rem; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 7px; transition: .15s; }
+  .btn-primary { background: linear-gradient(135deg, var(--accent), var(--accent2)); color: #fff; }
+  .btn-primary:hover { filter: brightness(1.08); }
+  .btn-ghost { background: var(--panel2); color: var(--txt); border: 1px solid var(--line); }
+  .btn-ghost:hover { border-color: var(--accent); }
+  .btn-danger { background: transparent; color: var(--danger); border: 1px solid transparent; }
+  .btn-danger:hover { background: rgba(255,93,108,.12); }
+  .btn:disabled { opacity: .55; cursor: default; }
+
+  .toolbar { max-width: 1180px; margin: 22px auto 8px; padding: 0 18px; display: flex; gap: 12px; flex-wrap: wrap; align-items: center; }
+  .search { flex: 1; min-width: 200px; position: relative; }
+  .search input { width: 100%; background: var(--panel); border: 1px solid var(--line); color: var(--txt); border-radius: 10px; padding: 11px 14px 11px 38px; font-size: .92rem; }
+  .search input:focus { outline: none; border-color: var(--accent); }
+  .search svg { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--mut); }
+  .tags-filter { display: flex; gap: 8px; flex-wrap: wrap; }
+  .tagchip { background: var(--chip); color: var(--mut); border: 1px solid var(--line); border-radius: 999px; padding: 6px 12px; font-size: .8rem; cursor: pointer; }
+  .tagchip.active { background: rgba(108,140,255,.18); color: var(--accent); border-color: var(--accent); }
+
+  main { max-width: 1180px; margin: 14px auto 60px; padding: 0 18px; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(290px, 1fr)); gap: 16px; }
+
+  .pcard { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; overflow: hidden; cursor: pointer; transition: .15s; display: flex; flex-direction: column; }
+  .pcard:hover { border-color: var(--accent); transform: translateY(-2px); }
+  .pcard .thumbs { display: flex; gap: 0; background: #000; aspect-ratio: 16/9; overflow: hidden; }
+  .pcard .thumbs img { flex: 1; min-width: 0; object-fit: cover; height: 100%; }
+  .pcard .thumbs.empty { display: grid; place-items: center; color: var(--mut); font-size: .8rem; aspect-ratio: 16/9; background: var(--panel2); }
+  .pcard .body { padding: 13px 15px 15px; display: flex; flex-direction: column; gap: 8px; flex: 1; }
+  .pcard .title { font-weight: 700; font-size: .98rem; line-height: 1.3; }
+  .pcard .snippet { color: var(--mut); font-size: .82rem; line-height: 1.45; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+  .pcard .meta { display: flex; gap: 6px; flex-wrap: wrap; margin-top: auto; }
+  .pcard .meta .t { background: var(--chip); color: var(--accent); font-size: .72rem; padding: 3px 9px; border-radius: 999px; }
+  .pcard .count { color: var(--mut); font-size: .72rem; }
+
+  .empty-state { text-align: center; color: var(--mut); padding: 70px 20px; }
+  .empty-state h3 { color: var(--txt); margin-bottom: 8px; font-size: 1.1rem; }
+
+  /* Overlay / modal */
+  .overlay { position: fixed; inset: 0; background: rgba(5,7,12,.72); backdrop-filter: blur(3px); z-index: 50; display: none; align-items: flex-start; justify-content: center; padding: 30px 16px; overflow-y: auto; }
+  .overlay.show { display: flex; }
+  .modal { background: var(--panel); border: 1px solid var(--line); border-radius: 16px; width: 100%; max-width: 760px; margin: auto; }
+  .modal .head { padding: 18px 22px; border-bottom: 1px solid var(--line); display: flex; align-items: center; gap: 12px; position: sticky; top: 0; background: var(--panel); border-radius: 16px 16px 0 0; z-index: 2; }
+  .modal .head h2 { font-size: 1.05rem; flex: 1; }
+  .modal .head .x { background: var(--panel2); border: 1px solid var(--line); color: var(--mut); width: 32px; height: 32px; border-radius: 8px; cursor: pointer; font-size: 1.1rem; }
+  .modal .content { padding: 20px 22px; display: flex; flex-direction: column; gap: 18px; }
+
+  label.fld { display: block; font-size: .82rem; color: var(--mut); margin-bottom: 7px; font-weight: 600; }
+  input.in, textarea.in { width: 100%; background: var(--panel2); border: 1px solid var(--line); color: var(--txt); border-radius: 10px; padding: 11px 13px; font-size: .92rem; font-family: inherit; }
+  input.in:focus, textarea.in:focus { outline: none; border-color: var(--accent); }
+  textarea.in { resize: vertical; min-height: 120px; line-height: 1.5; }
+
+  .zone { border: 1.5px dashed var(--line); border-radius: 12px; background: var(--panel2); padding: 14px; cursor: text; transition: .15s; }
+  .zone:focus, .zone.drag { outline: none; border-color: var(--accent); background: rgba(108,140,255,.06); }
+  .zone .hint { color: var(--mut); font-size: .82rem; text-align: center; padding: 12px 0; }
+  .zone .hint b { color: var(--accent); }
+  .zone .imgs { display: flex; gap: 10px; flex-wrap: wrap; }
+  .zone .imgs .ph { position: relative; width: 96px; height: 96px; border-radius: 9px; overflow: hidden; border: 1px solid var(--line); background: #000; }
+  .zone .imgs .ph img { width: 100%; height: 100%; object-fit: cover; }
+  .zone .imgs .ph .rm { position: absolute; top: 3px; right: 3px; background: rgba(0,0,0,.7); color: #fff; border: none; width: 22px; height: 22px; border-radius: 6px; cursor: pointer; font-size: .85rem; }
+  .zone .imgs .ph.loading { display: grid; place-items: center; color: var(--mut); font-size: .72rem; }
+  .zone .imgs .ph .spin { width: 22px; height: 22px; border: 2px solid var(--line); border-top-color: var(--accent); border-radius: 50%; animation: sp 1s linear infinite; }
+  @keyframes sp { to { transform: rotate(360deg); } }
+
+  /* Detalhe */
+  .detail .prompt-box { background: var(--panel2); border: 1px solid var(--line); border-radius: 12px; padding: 16px; white-space: pre-wrap; line-height: 1.55; font-size: .92rem; position: relative; }
+  .detail .gal { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; }
+  .detail .gal img { width: 100%; border-radius: 10px; border: 1px solid var(--line); cursor: zoom-in; background: #000; }
+  .detail .seclabel { font-size: .78rem; color: var(--mut); text-transform: uppercase; letter-spacing: .6px; font-weight: 700; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+  .detail .notes { color: var(--mut); font-size: .9rem; line-height: 1.55; white-space: pre-wrap; }
+
+  .row { display: flex; gap: 10px; flex-wrap: wrap; }
+  .row > * { flex: 1; min-width: 0; }
+  .foot { display: flex; gap: 10px; justify-content: flex-end; padding-top: 4px; }
+
+  /* Lightbox */
+  .lightbox { position: fixed; inset: 0; background: rgba(0,0,0,.92); z-index: 80; display: none; align-items: center; justify-content: center; padding: 24px; cursor: zoom-out; }
+  .lightbox.show { display: flex; }
+  .lightbox img { max-width: 100%; max-height: 100%; border-radius: 8px; }
+
+  /* Login */
+  #login { position: fixed; inset: 0; background: var(--bg); z-index: 100; display: flex; align-items: center; justify-content: center; padding: 20px; }
+  #login.hidden { display: none; }
+  #login .box { background: var(--panel); border: 1px solid var(--line); border-radius: 16px; padding: 32px; width: 100%; max-width: 360px; text-align: center; }
+  #login h2 { margin-bottom: 6px; }
+  #login p { color: var(--mut); font-size: .85rem; margin-bottom: 20px; }
+  #login input { width: 100%; margin-bottom: 12px; }
+  #login .err { color: var(--danger); font-size: .82rem; min-height: 18px; }
+
+  .toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(80px); background: var(--panel2); border: 1px solid var(--line); color: var(--txt); padding: 12px 20px; border-radius: 10px; font-size: .9rem; z-index: 200; opacity: 0; transition: .25s; }
+  .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+
+  @media (max-width: 560px) {
+    header h1 { font-size: 1rem; }
+    .modal .content { padding: 16px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Login -->
+<div id="login" class="hidden">
+  <div class="box">
+    <div class="logo" style="margin:0 auto 14px;width:44px;height:44px;border-radius:12px;background:linear-gradient(135deg,var(--accent),var(--accent2));display:grid;place-items:center;font-weight:800;font-size:1.2rem;">P</div>
+    <h2>Biblioteca de Prompts</h2>
+    <p>Digite a palavra-chave para acessar.</p>
+    <input id="login-key" class="in" type="password" placeholder="Palavra-chave" onkeydown="if(event.key==='Enter')fazerLogin()" />
+    <button id="login-btn" class="btn btn-primary" style="width:100%;justify-content:center" onclick="fazerLogin()">Entrar</button>
+    <div id="login-err" class="err"></div>
+  </div>
+</div>
+
+<header>
+  <div class="logo">P</div>
+  <div>
+    <h1>Biblioteca de Prompts</h1>
+    <div class="sub">Gemini · prompt + prints de uso</div>
+  </div>
+  <div class="spacer"></div>
+  <a class="btn btn-ghost" href="/" title="Voltar ao app de comissões">← App</a>
+  <button class="btn btn-primary" onclick="abrirEditor()">+ Novo prompt</button>
+</header>
+
+<div class="toolbar">
+  <div class="search">
+    <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3" stroke-linecap="round"/></svg>
+    <input id="busca" placeholder="Buscar por título, prompt ou tag…" oninput="render()" />
+  </div>
+  <div id="tags-filter" class="tags-filter"></div>
+</div>
+
+<main>
+  <div id="grid" class="grid"></div>
+  <div id="empty" class="empty-state" style="display:none">
+    <h3>Nenhum prompt ainda</h3>
+    <p>Clique em <b>+ Novo prompt</b> para registrar seu primeiro: cole o texto e os prints que você usou no Gemini.</p>
+  </div>
+</main>
+
+<!-- Editor -->
+<div id="editor" class="overlay">
+  <div class="modal">
+    <div class="head">
+      <h2 id="editor-title">Novo prompt</h2>
+      <button class="x" onclick="fecharEditor()">✕</button>
+    </div>
+    <div class="content">
+      <div>
+        <label class="fld">Título</label>
+        <input id="f-titulo" class="in" placeholder="Ex.: Colchão ambientado 1:1" />
+      </div>
+      <div>
+        <label class="fld">Tags (separadas por vírgula)</label>
+        <input id="f-tags" class="in" placeholder="Ex.: produto, colchão, ambientação" />
+      </div>
+      <div>
+        <label class="fld">Prompt (texto enviado ao Gemini)</label>
+        <textarea id="f-prompt" class="in" placeholder="Cole aqui o prompt completo…"></textarea>
+      </div>
+
+      <div>
+        <label class="fld">Imagens de entrada / inputs <span style="font-weight:400">(os prints que você enviou)</span></label>
+        <div class="zone" id="zone-inputs" tabindex="0" data-target="inputs">
+          <div class="imgs" id="imgs-inputs"></div>
+          <div class="hint">Clique aqui e <b>cole (Ctrl+V)</b> os prints, ou arraste imagens. <a href="#" onclick="escolherArquivo('inputs');return false" style="color:var(--accent)">escolher arquivo</a></div>
+        </div>
+      </div>
+
+      <div>
+        <label class="fld">Resultado <span style="font-weight:400">(o que o Gemini gerou)</span></label>
+        <div class="zone" id="zone-resultado" tabindex="0" data-target="resultado">
+          <div class="imgs" id="imgs-resultado"></div>
+          <div class="hint">Clique aqui e <b>cole (Ctrl+V)</b> o resultado, ou arraste imagens. <a href="#" onclick="escolherArquivo('resultado');return false" style="color:var(--accent)">escolher arquivo</a></div>
+        </div>
+      </div>
+
+      <div>
+        <label class="fld">Observações (opcional)</label>
+        <textarea id="f-notas" class="in" style="min-height:70px" placeholder="Ajustes, o que funcionou, variações…"></textarea>
+      </div>
+
+      <div class="foot">
+        <button class="btn btn-ghost" onclick="fecharEditor()">Cancelar</button>
+        <button id="btn-salvar" class="btn btn-primary" onclick="salvarPrompt()">Salvar prompt</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Detalhe -->
+<div id="detalhe" class="overlay">
+  <div class="modal detail">
+    <div class="head">
+      <h2 id="d-titulo"></h2>
+      <button class="btn btn-ghost" onclick="editarAtual()">Editar</button>
+      <button class="x" onclick="fecharDetalhe()">✕</button>
+    </div>
+    <div class="content" id="d-content"></div>
+  </div>
+</div>
+
+<input type="file" id="file-input" accept="image/*" multiple style="display:none" />
+<div id="lightbox" class="lightbox" onclick="this.classList.remove('show')"><img id="lb-img" src="" alt=""/></div>
+<div id="toast" class="toast"></div>
+
+<script>
+  let APP_KEY = sessionStorage.getItem('benews:key') || '';
+  let prompts = [];
+  let editId = null;           // id sendo editado (null = novo)
+  let draft = { inputs: [], resultado: [] };  // urls de imagens no editor
+  let activeZone = 'inputs';
+  let tagFiltro = '';
+  let detalheId = null;
+
+  function authHeaders(extra) { return Object.assign({ 'x-app-key': APP_KEY }, extra || {}); }
+  function esc(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+  function novoId() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 7); }
+  function toast(msg) { const t = document.getElementById('toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(t._t); t._t = setTimeout(() => t.classList.remove('show'), 2400); }
+
+  // ── Login ─────────────────────────────────────────────────────────────
+  async function fazerLogin() {
+    const input = document.getElementById('login-key');
+    const key = input.value;
+    const err = document.getElementById('login-err');
+    const btn = document.getElementById('login-btn');
+    err.textContent = ''; btn.disabled = true;
+    try {
+      const r = await fetch('/api/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ key }) });
+      if (r.ok) { APP_KEY = key; sessionStorage.setItem('benews:key', key); entrar(); }
+      else { err.textContent = 'Palavra-chave incorreta.'; input.select(); }
+    } catch (e) { err.textContent = 'Erro de conexão. Tente de novo.'; }
+    finally { btn.disabled = false; }
+  }
+  function entrar() { document.getElementById('login').classList.add('hidden'); carregar(); }
+  async function verificarAcesso() {
+    try {
+      const r = await fetch('/api/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ key: APP_KEY }) });
+      if (r.ok) { entrar(); return; }
+    } catch (e) {}
+    document.getElementById('login').classList.remove('hidden');
+    setTimeout(() => document.getElementById('login-key').focus(), 60);
+  }
+
+  // ── Armazenamento (KV com fallback local) ─────────────────────────────
+  async function carregar() {
+    try {
+      const r = await fetch('/api/store?key=prompts', { headers: authHeaders() });
+      const d = await r.json();
+      if (d.error) throw new Error(d.error);
+      prompts = d.value || [];
+      localStorage.setItem('benews:prompts', JSON.stringify(prompts));
+    } catch (e) {
+      const cached = localStorage.getItem('benews:prompts');
+      prompts = cached ? JSON.parse(cached) : [];
+    }
+    render();
+  }
+  async function salvarTudo() {
+    localStorage.setItem('benews:prompts', JSON.stringify(prompts));
+    try {
+      const r = await fetch('/api/store', { method: 'POST', headers: authHeaders({ 'Content-Type': 'application/json' }), body: JSON.stringify({ key: 'prompts', value: prompts }) });
+      const d = await r.json();
+      if (d.error) throw new Error(d.error);
+      return true;
+    } catch (e) { toast('Salvo neste navegador (nuvem indisponível)'); return false; }
+  }
+
+  // ── Render lista ──────────────────────────────────────────────────────
+  function todasTags() {
+    const s = new Set();
+    prompts.forEach(p => (p.tags || []).forEach(t => s.add(t)));
+    return [...s].sort();
+  }
+  function render() {
+    // filtro de tags
+    const tf = document.getElementById('tags-filter');
+    const tags = todasTags();
+    tf.innerHTML = tags.map(t => `<span class="tagchip${tagFiltro === t ? ' active' : ''}" onclick="filtrarTag('${esc(t).replace(/'/g, "\\'")}')">${esc(t)}</span>`).join('');
+
+    const q = document.getElementById('busca').value.trim().toLowerCase();
+    let lista = prompts.slice().sort((a, b) => (b.criadoEm || 0) - (a.criadoEm || 0));
+    if (tagFiltro) lista = lista.filter(p => (p.tags || []).includes(tagFiltro));
+    if (q) lista = lista.filter(p =>
+      (p.titulo || '').toLowerCase().includes(q) ||
+      (p.prompt || '').toLowerCase().includes(q) ||
+      (p.tags || []).join(' ').toLowerCase().includes(q));
+
+    const grid = document.getElementById('grid');
+    const empty = document.getElementById('empty');
+    if (!lista.length) {
+      grid.innerHTML = '';
+      empty.style.display = 'block';
+      empty.querySelector('p').innerHTML = prompts.length
+        ? 'Nenhum prompt corresponde ao filtro.'
+        : 'Clique em <b>+ Novo prompt</b> para registrar seu primeiro: cole o texto e os prints que você usou no Gemini.';
+      return;
+    }
+    empty.style.display = 'none';
+    grid.innerHTML = lista.map(p => {
+      const imgs = [...(p.inputs || []), ...(p.resultado || [])].slice(0, 4);
+      const thumbs = imgs.length
+        ? `<div class="thumbs">${imgs.map(u => `<img src="${esc(u)}" loading="lazy" />`).join('')}</div>`
+        : `<div class="thumbs empty">sem imagens</div>`;
+      const tags = (p.tags || []).slice(0, 3).map(t => `<span class="t">${esc(t)}</span>`).join('');
+      const nImgs = (p.inputs || []).length + (p.resultado || []).length;
+      return `<div class="pcard" onclick="abrirDetalhe('${p.id}')">
+        ${thumbs}
+        <div class="body">
+          <div class="title">${esc(p.titulo || 'Sem título')}</div>
+          <div class="snippet">${esc(p.prompt || '')}</div>
+          <div class="meta">${tags}${nImgs ? `<span class="count">📎 ${nImgs}</span>` : ''}</div>
+        </div>
+      </div>`;
+    }).join('');
+  }
+  function filtrarTag(t) { tagFiltro = (tagFiltro === t) ? '' : t; render(); }
+
+  // ── Detalhe ───────────────────────────────────────────────────────────
+  function abrirDetalhe(id) {
+    const p = prompts.find(x => x.id === id);
+    if (!p) return;
+    detalheId = id;
+    document.getElementById('d-titulo').textContent = p.titulo || 'Sem título';
+    const tags = (p.tags || []).map(t => `<span class="t" style="background:var(--chip);color:var(--accent);font-size:.74rem;padding:3px 10px;border-radius:999px">${esc(t)}</span>`).join(' ');
+    const galInputs = (p.inputs || []).length
+      ? `<div><div class="seclabel">📥 Inputs (${p.inputs.length})</div><div class="gal">${p.inputs.map(u => `<img src="${esc(u)}" onclick="lightbox('${esc(u)}')" />`).join('')}</div></div>` : '';
+    const galRes = (p.resultado || []).length
+      ? `<div><div class="seclabel">✨ Resultado (${p.resultado.length})</div><div class="gal">${p.resultado.map(u => `<img src="${esc(u)}" onclick="lightbox('${esc(u)}')" />`).join('')}</div></div>` : '';
+    const notas = p.notas ? `<div><div class="seclabel">📝 Observações</div><div class="notes">${esc(p.notas)}</div></div>` : '';
+    document.getElementById('d-content').innerHTML = `
+      ${tags ? `<div class="row" style="gap:6px">${tags}</div>` : ''}
+      <div>
+        <div class="seclabel">💬 Prompt <button class="btn btn-ghost" style="padding:4px 10px;font-size:.78rem" onclick="copiar('${p.id}')">Copiar</button></div>
+        <div class="prompt-box" id="d-prompt">${esc(p.prompt || '')}</div>
+      </div>
+      ${galInputs}${galRes}${notas}
+      <div class="foot"><button class="btn btn-danger" onclick="excluir('${p.id}')">Excluir prompt</button></div>`;
+    document.getElementById('detalhe').classList.add('show');
+  }
+  function fecharDetalhe() { document.getElementById('detalhe').classList.remove('show'); detalheId = null; }
+  function editarAtual() { const id = detalheId; fecharDetalhe(); abrirEditor(id); }
+  function copiar(id) {
+    const p = prompts.find(x => x.id === id);
+    if (!p) return;
+    navigator.clipboard.writeText(p.prompt || '').then(() => toast('Prompt copiado!')).catch(() => toast('Não foi possível copiar.'));
+  }
+  function lightbox(url) { document.getElementById('lb-img').src = url; document.getElementById('lightbox').classList.add('show'); }
+
+  // ── Editor ────────────────────────────────────────────────────────────
+  function abrirEditor(id) {
+    editId = id || null;
+    const p = id ? prompts.find(x => x.id === id) : null;
+    document.getElementById('editor-title').textContent = p ? 'Editar prompt' : 'Novo prompt';
+    document.getElementById('f-titulo').value = p ? (p.titulo || '') : '';
+    document.getElementById('f-tags').value = p ? (p.tags || []).join(', ') : '';
+    document.getElementById('f-prompt').value = p ? (p.prompt || '') : '';
+    document.getElementById('f-notas').value = p ? (p.notas || '') : '';
+    draft = { inputs: (p && p.inputs ? p.inputs.slice() : []), resultado: (p && p.resultado ? p.resultado.slice() : []) };
+    renderZone('inputs'); renderZone('resultado');
+    document.getElementById('editor').classList.add('show');
+    setTimeout(() => document.getElementById('f-titulo').focus(), 60);
+  }
+  function fecharEditor() { document.getElementById('editor').classList.remove('show'); editId = null; }
+
+  function renderZone(target) {
+    const cont = document.getElementById('imgs-' + target);
+    cont.innerHTML = draft[target].map((u, i) => {
+      if (u === '__loading__') return `<div class="ph loading"><div class="spin"></div></div>`;
+      return `<div class="ph"><img src="${esc(u)}" /><button class="rm" onclick="removerImg('${target}', ${i})">✕</button></div>`;
+    }).join('');
+  }
+  function removerImg(target, i) {
+    const url = draft[target][i];
+    draft[target].splice(i, 1);
+    renderZone(target);
+    if (url && url !== '__loading__') apagarBlob(url); // limpa órfão best-effort
+  }
+
+  // Comprime a imagem antes de subir (mantém legível, reduz tamanho)
+  function comprimir(file) {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      const reader = new FileReader();
+      reader.onload = () => { img.src = reader.result; };
+      reader.onerror = reject;
+      img.onload = () => {
+        const maxW = 1600;
+        let { width, height } = img;
+        if (width > maxW) { height = Math.round(height * maxW / width); width = maxW; }
+        const canvas = document.createElement('canvas');
+        canvas.width = width; canvas.height = height;
+        canvas.getContext('2d').drawImage(img, 0, 0, width, height);
+        resolve(canvas.toDataURL('image/jpeg', 0.85));
+      };
+      img.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  }
+  async function subirImagem(file, target) {
+    const slot = draft[target].push('__loading__') - 1;
+    renderZone(target);
+    try {
+      const dataUrl = await comprimir(file);
+      const base64 = dataUrl.split(',')[1];
+      const r = await fetch('/api/upload', {
+        method: 'POST', headers: authHeaders({ 'Content-Type': 'application/json' }),
+        body: JSON.stringify({ filename: 'prompt-' + novoId() + '.jpg', dataBase64: base64, contentType: 'image/jpeg', folder: 'prompts' })
+      });
+      const d = await r.json();
+      if (d.error) throw new Error(d.error);
+      draft[target][slot] = d.url;
+    } catch (e) {
+      draft[target].splice(slot, 1);
+      toast('Falha ao subir imagem: ' + e.message);
+    }
+    renderZone(target);
+  }
+  function processarArquivos(files, target) {
+    [...files].filter(f => f.type.startsWith('image/')).forEach(f => subirImagem(f, target));
+  }
+  async function apagarBlob(url) {
+    try { await fetch('/api/upload', { method: 'DELETE', headers: authHeaders({ 'Content-Type': 'application/json' }), body: JSON.stringify({ url }) }); } catch (e) {}
+  }
+  function escolherArquivo(target) {
+    const fi = document.getElementById('file-input');
+    fi.onchange = () => { processarArquivos(fi.files, target); fi.value = ''; };
+    fi.click();
+  }
+
+  async function salvarPrompt() {
+    if (draft.inputs.includes('__loading__') || draft.resultado.includes('__loading__')) { toast('Aguarde as imagens terminarem de subir.'); return; }
+    const titulo = document.getElementById('f-titulo').value.trim();
+    const promptTxt = document.getElementById('f-prompt').value.trim();
+    if (!titulo && !promptTxt) { toast('Informe ao menos um título ou o prompt.'); return; }
+    const tags = document.getElementById('f-tags').value.split(',').map(t => t.trim()).filter(Boolean);
+    const notas = document.getElementById('f-notas').value.trim();
+    const btn = document.getElementById('btn-salvar'); btn.disabled = true;
+
+    if (editId) {
+      const p = prompts.find(x => x.id === editId);
+      if (p) Object.assign(p, { titulo, tags, prompt: promptTxt, notas, inputs: draft.inputs.slice(), resultado: draft.resultado.slice(), atualizadoEm: Date.now() });
+    } else {
+      prompts.push({ id: novoId(), titulo, tags, prompt: promptTxt, notas, inputs: draft.inputs.slice(), resultado: draft.resultado.slice(), criadoEm: Date.now() });
+    }
+    await salvarTudo();
+    btn.disabled = false;
+    fecharEditor();
+    render();
+    toast('Prompt salvo!');
+  }
+
+  async function excluir(id) {
+    const p = prompts.find(x => x.id === id);
+    if (!p) return;
+    if (!confirm('Excluir "' + (p.titulo || 'este prompt') + '"? As imagens também serão apagadas.')) return;
+    [...(p.inputs || []), ...(p.resultado || [])].forEach(apagarBlob);
+    prompts = prompts.filter(x => x.id !== id);
+    await salvarTudo();
+    fecharDetalhe();
+    render();
+    toast('Prompt excluído.');
+  }
+
+  // ── Colar / arrastar ──────────────────────────────────────────────────
+  document.getElementById('zone-inputs').addEventListener('focus', () => activeZone = 'inputs');
+  document.getElementById('zone-resultado').addEventListener('focus', () => activeZone = 'resultado');
+  ['zone-inputs', 'zone-resultado'].forEach(zid => {
+    const z = document.getElementById(zid);
+    const target = z.dataset.target;
+    z.addEventListener('click', () => { activeZone = target; z.focus(); });
+    z.addEventListener('paste', (e) => {
+      e.stopPropagation(); // evita o handler global de colagem (upload duplicado)
+      const items = (e.clipboardData || {}).items || [];
+      let achou = false;
+      for (const it of items) { if (it.type.startsWith('image/')) { const f = it.getAsFile(); if (f) { subirImagem(f, target); achou = true; } } }
+      if (achou) e.preventDefault();
+    });
+    z.addEventListener('dragover', (e) => { e.preventDefault(); z.classList.add('drag'); });
+    z.addEventListener('dragleave', () => z.classList.remove('drag'));
+    z.addEventListener('drop', (e) => { e.preventDefault(); z.classList.remove('drag'); processarArquivos(e.dataTransfer.files, target); });
+  });
+  // Colar global quando o editor está aberto (caso o foco não esteja na zona)
+  document.addEventListener('paste', (e) => {
+    if (!document.getElementById('editor').classList.contains('show')) return;
+    const tag = (document.activeElement && document.activeElement.tagName) || '';
+    if (tag === 'TEXTAREA' || tag === 'INPUT') return; // não rouba paste de campos de texto
+    const items = (e.clipboardData || {}).items || [];
+    for (const it of items) { if (it.type.startsWith('image/')) { const f = it.getAsFile(); if (f) { subirImagem(f, activeZone); e.preventDefault(); } } }
+  });
+
+  // Esc fecha overlays
+  document.addEventListener('keydown', (e) => {
+    if (e.key !== 'Escape') return;
+    if (document.getElementById('lightbox').classList.contains('show')) { document.getElementById('lightbox').classList.remove('show'); return; }
+    if (document.getElementById('editor').classList.contains('show')) { fecharEditor(); return; }
+    if (document.getElementById('detalhe').classList.contains('show')) { fecharDetalhe(); }
+  });
+  // Clicar fora do modal fecha
+  document.getElementById('editor').addEventListener('click', (e) => { if (e.target.id === 'editor') fecharEditor(); });
+  document.getElementById('detalhe').addEventListener('click', (e) => { if (e.target.id === 'detalhe') fecharDetalhe(); });
+
+  verificarAcesso();
+</script>
+</body>
+</html>

@@ -27,15 +27,18 @@ export default async function handler(req, res) {
   if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
 
   try {
-    const { filename, dataBase64 } = req.body || {};
+    const { filename, dataBase64, contentType, folder } = req.body || {};
     if (!filename || !dataBase64) return res.status(400).json({ error: "Arquivo ausente." });
 
     const buffer = Buffer.from(dataBase64, "base64");
+    // Pasta e tipo são opcionais: por padrão sobe PDF de fechamento (compatível com o uso antigo);
+    // a biblioteca de prompts passa folder:"prompts" e contentType de imagem (ex.: image/jpeg).
+    const safeFolder = String(folder || "fechamentos").replace(/[^a-zA-Z0-9/_-]/g, "") || "fechamentos";
     // Na Vercel, o store de Blob conectado autentica via OIDC (não precisa passar token).
     // Em ambiente local, usa BLOB_READ_WRITE_TOKEN se estiver definido.
-    const blob = await put(`fechamentos/${filename}`, buffer, {
+    const blob = await put(`${safeFolder}/${filename}`, buffer, {
       access: "public",
-      contentType: "application/pdf",
+      contentType: contentType || "application/pdf",
       addRandomSuffix: true,
       ...blobOpts,
     });

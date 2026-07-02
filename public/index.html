@@ -536,6 +536,14 @@
         <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
         Adicionar Cliente
       </button>
+      <button class="btn btn-secondary" id="btn-editar-cliente" onclick="editarCliente()" style="white-space:nowrap; display:none">
+        <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+        Editar
+      </button>
+      <button class="btn btn-danger" id="btn-remover-cliente" onclick="removerCliente()" style="white-space:nowrap; display:none">
+        <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+        Remover
+      </button>
     </div>
     <div class="cliente-info" id="cliente-info"></div>
   </div>
@@ -977,6 +985,10 @@
     const box = document.getElementById('cliente-info');
     const c = clienteAtual();
     const mes = document.getElementById('mes-ref').value;
+    const btnEd = document.getElementById('btn-editar-cliente');
+    const btnRm = document.getElementById('btn-remover-cliente');
+    if (btnEd) btnEd.style.display = c ? '' : 'none';
+    if (btnRm) btnRm.style.display = c ? '' : 'none';
     if (!c) { box.classList.remove('show'); box.innerHTML = ''; return; }
     let html = `<strong>${esc(c.razao)}</strong>`;
     if (c.cnpj) html += `<span class="sep">·</span>CNPJ ${esc(c.cnpj)}`;
@@ -994,12 +1006,42 @@
   }
 
   // ── Modal cliente ─────────────────────────────────────────────────────────
+  let editandoClienteId = null;
+
   function abrirModalCliente() {
+    editandoClienteId = null;
+    document.getElementById('modal-cliente-title').textContent = 'Novo Cliente';
     document.getElementById('cli-razao').value = '';
     document.getElementById('cli-cnpj').value = '';
     document.getElementById('cli-dia').value = '';
     document.getElementById('modal-cliente').classList.add('show');
     setTimeout(() => document.getElementById('cli-razao').focus(), 50);
+  }
+  function editarCliente() {
+    const c = clienteAtual();
+    if (!c) { toast('Selecione um cliente para editar.'); return; }
+    editandoClienteId = c.id;
+    document.getElementById('modal-cliente-title').textContent = 'Editar Cliente';
+    document.getElementById('cli-razao').value = c.razao || '';
+    document.getElementById('cli-cnpj').value = c.cnpj || '';
+    document.getElementById('cli-dia').value = c.dia || '';
+    document.getElementById('modal-cliente').classList.add('show');
+    setTimeout(() => document.getElementById('cli-razao').focus(), 50);
+  }
+  async function removerCliente() {
+    const c = clienteAtual();
+    if (!c) { toast('Selecione um cliente para remover.'); return; }
+    const usados = fechamentos.filter(f => f.clienteId === c.id).length;
+    const aviso = usados
+      ? `Remover "${c.razao}"?\n\nExistem ${usados} fechamento(s) salvo(s) deste cliente em Repasses Anteriores — eles NÃO serão apagados (continuam no histórico).`
+      : `Remover o cliente "${c.razao}"?`;
+    if (!confirm(aviso)) return;
+    clientes = clientes.filter(x => x.id !== c.id);
+    clienteAtivoId = '';
+    await storeSave('clientes', clientes);
+    renderClientesDropdown();
+    renderClienteInfo();
+    toast('Cliente removido.');
   }
   function fecharModalCliente() {
     document.getElementById('modal-cliente').classList.remove('show');
@@ -1017,6 +1059,19 @@
     const cnpj  = document.getElementById('cli-cnpj').value.trim();
     const dia   = document.getElementById('cli-dia').value;
     if (!razao) { toast('Informe o nome / razão social.'); return; }
+
+    if (editandoClienteId) {
+      const c = clientes.find(x => x.id === editandoClienteId);
+      if (c) { c.razao = razao; c.cnpj = cnpj; c.dia = dia; }
+      clienteAtivoId = editandoClienteId;
+      await storeSave('clientes', clientes);
+      renderClientesDropdown();
+      renderClienteInfo();
+      fecharModalCliente();
+      toast('Cliente atualizado!');
+      return;
+    }
+
     const c = { id: novoId(), razao, cnpj, dia };
     clientes.push(c);
     await storeSave('clientes', clientes);
@@ -1052,6 +1107,29 @@
     return blobToBase64(blob);
   }
 
+  // Sobe uma imagem de comprovante (data URL) pro Blob e devolve a URL pública
+  async function uploadComprovante(dataUrl, filename) {
+    const base64 = dataUrl.split(',')[1];
+    const contentType = (dataUrl.match(/^data:([^;]+);/) || [])[1] || 'image/png';
+    const r = await fetch('/api/upload', {
+      method: 'POST', headers: authHeaders({ 'Content-Type': 'application/json' }),
+      body: JSON.stringify({ filename, dataBase64: base64, contentType, folder: 'comprovantes' })
+    });
+    const d = await r.json();
+    if (d.error) throw new Error(d.error);
+    return d.url;
+  }
+
+  // Converte uma URL de imagem em data URL (evita problemas de CORS no PDF)
+  function urlToDataUrl(url) {
+    return fetch(url).then(r => r.blob()).then(b => new Promise((res, rej) => {
+      const fr = new FileReader();
+      fr.onload = () => res(fr.result);
+      fr.onerror = rej;
+      fr.readAsDataURL(b);
+    }));
+  }
+
   async function salvarFechamento() {
     if (salvando) return;
     if (lancamentos.length === 0) { toast('Nenhum lançamento para salvar.'); return; }
@@ -1061,6 +1139,7 @@
     if (!mes) { toast('Informe o mês/ano de referência.'); return; }
 
     salvando = true;
+    const slug = c.razao.replace(/[^a-z0-9]+/gi, '-').toLowerCase().replace(/^-|-$/g, '');
     // Garante o relatório montado para virar PDF
     if (!document.querySelector('#relatorio-doc .doc')) gerarRelatorio();
 
@@ -1068,13 +1147,31 @@
     const total = somaTotais(totais);
     const comissao = total * COMISSAO_PCT;
 
+    // 1) Persiste os comprovantes no Blob (reaproveita URL se já veio de um fechamento salvo)
+    let comprovMeta = [];
+    try {
+      for (let i = 0; i < comprovantes.length; i++) {
+        const cp = comprovantes[i];
+        let url = cp.url || null;
+        if (!url && cp.img && cp.img.startsWith('data:')) {
+          const ext = cp.img.includes('image/jpeg') || cp.img.includes('image/jpg') ? 'jpg' : 'png';
+          url = await uploadComprovante(cp.img, `comprovante-${slug}-${mes}-${i + 1}.${ext}`);
+        } else if (!url && cp.img) {
+          url = cp.img; // já era uma URL
+        }
+        comprovMeta.push({ canal: cp.canal, url, ts: cp.ts });
+      }
+    } catch (e) {
+      toast('Aviso: alguns comprovantes não subiram: ' + e.message, 5000);
+    }
+
+    // 2) Gera e sobe o PDF completo (já com os comprovantes embutidos)
     let pdfUrl = null;
     try {
       toast('Gerando PDF do fechamento…', 4000);
       if (!window.html2pdf) throw new Error('biblioteca de PDF não carregou (verifique a conexão)');
       const dataBase64 = await gerarPdfBase64();
       if (!dataBase64) throw new Error('não foi possível gerar o PDF');
-      const slug = c.razao.replace(/[^a-z0-9]+/gi, '-').toLowerCase().replace(/^-|-$/g, '');
       const filename = `fechamento-${slug}-${mes}.pdf`;
       const r = await fetch('/api/upload', {
         method: 'POST', headers: authHeaders({ 'Content-Type': 'application/json' }),
@@ -1092,6 +1189,7 @@
       clienteId: c.id, clienteRazao: c.razao, clienteCnpj: c.cnpj, clienteDia: c.dia,
       mesRef: mes,
       lancamentos: lancamentos.map(l => ({ ...l, canalNome: canalNome(l.canal) })),
+      comprovantes: comprovMeta,
       total, comissao, pdfUrl,
       criadoEm: new Date().toISOString()
     };
@@ -1156,7 +1254,7 @@
     cont.innerHTML = html;
   }
 
-  function abrirFechamento(id) {
+  async function abrirFechamento(id) {
     const f = fechamentos.find(x => x.id === id);
     if (!f) return;
     clienteAtivoId = f.clienteId;
@@ -1179,24 +1277,40 @@
     renderClientesDropdown();
     renderClienteInfo();
     renderLancamentos();
-    renderComprovantes();
     atualizarTotais();
     atualizarTravaColagem();
     trocarAba('novo');
+
+    // Restaura os comprovantes salvos (imagens no Blob → data URL pro relatório/PDF)
+    if (f.comprovantes && f.comprovantes.length) {
+      toast('Carregando comprovantes…');
+      const restaurados = [];
+      for (const cp of f.comprovantes) {
+        if (!cp.url) continue;
+        let img = cp.url;
+        try { img = await urlToDataUrl(cp.url); } catch (e) { /* usa a URL direta se falhar */ }
+        restaurados.push({ canal: cp.canal, img, ts: cp.ts, url: cp.url });
+      }
+      comprovantes = restaurados;
+    }
+    renderComprovantes();
     gerarRelatorio();
-    toast('Fechamento carregado. Comprovantes não ficam no histórico.');
+    toast('Fechamento carregado.');
   }
 
   async function excluirFechamento(id) {
     if (!confirm('Excluir este fechamento do histórico?')) return;
     const fech = fechamentos.find(x => x.id === id);
 
-    // Apaga o PDF no Blob, se houver
-    if (fech && fech.pdfUrl) {
+    // Apaga do Blob: o PDF e as imagens dos comprovantes
+    const urls = [];
+    if (fech && fech.pdfUrl) urls.push(fech.pdfUrl);
+    if (fech && fech.comprovantes) fech.comprovantes.forEach(cp => { if (cp.url) urls.push(cp.url); });
+    for (const url of urls) {
       try {
         await fetch('/api/upload', {
           method: 'DELETE', headers: authHeaders({ 'Content-Type': 'application/json' }),
-          body: JSON.stringify({ url: fech.pdfUrl })
+          body: JSON.stringify({ url })
         });
       } catch (e) { /* segue mesmo se o arquivo já não existir */ }
     }

@@ -16,13 +16,23 @@
     }
 
     header {
-      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+      background: linear-gradient(135deg, #121212 0%, #232323 100%);
+      border-bottom: 3px solid #FBAE17;
       color: #fff;
       padding: 20px 32px;
       display: flex;
       align-items: center;
       gap: 16px;
       box-shadow: 0 2px 12px rgba(0,0,0,.3);
+    }
+
+    /* Logotipo "be" */
+    .be-b { color: #2E2E2E; }
+    .be-e { color: #FBAE17; }
+    .logo-app {
+      background: #fff; border-radius: 10px; padding: 0 10px 3px;
+      font-weight: 800; font-size: 1.5rem; letter-spacing: -1px; line-height: 1.35;
+      display: inline-block;
     }
     header h1 { font-size: 1.4rem; font-weight: 700; letter-spacing: .5px; }
     header span { font-size: .85rem; opacity: .7; margin-left: auto; }
@@ -35,7 +45,7 @@
       padding: 24px;
       box-shadow: 0 2px 8px rgba(0,0,0,.07);
     }
-    .card h2 { font-size: 1rem; font-weight: 600; color: #16213e; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+    .card h2 { font-size: 1rem; font-weight: 600; color: #1c1c1c; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
 
     /* Canal selector */
     .canal-grid { display: flex; gap: 12px; flex-wrap: wrap; }
@@ -51,8 +61,8 @@
       transition: all .2s;
       display: flex; align-items: center; gap: 10px;
     }
-    .canal-btn:hover { border-color: #4f46e5; background: #f0f0ff; }
-    .canal-btn.active { border-color: #4f46e5; background: #eef2ff; color: #4f46e5; }
+    .canal-btn:hover { border-color: #FBAE17; background: #fff8e6; }
+    .canal-btn.active { border-color: #FBAE17; background: #fff4d6; color: #9a6c00; }
     .canal-btn .dot { width: 12px; height: 12px; border-radius: 50%; }
     .canal-btn .nome { flex: 1; }
     .canal-btn .rm {
@@ -67,7 +77,7 @@
       background: #fff; cursor: pointer; font-size: .9rem; font-weight: 600; color: #6b7280;
       display: flex; align-items: center; gap: 8px; transition: all .2s;
     }
-    .canal-add:hover { border-color: #4f46e5; color: #4f46e5; background: #f5f5ff; }
+    .canal-add:hover { border-color: #FBAE17; color: #9a6c00; background: #fffaf0; }
 
     /* Swatches de cor (modal canal) */
     .cor-grid { display: flex; flex-wrap: wrap; gap: 10px; }
@@ -94,7 +104,7 @@
       position: relative;
       overflow: hidden;
     }
-    #paste-area:hover, #paste-area.over { border-color: #4f46e5; background: #f5f5ff; }
+    #paste-area:hover, #paste-area.over { border-color: #FBAE17; background: #fffaf0; }
     #paste-area svg { width: 40px; height: 40px; opacity: .4; }
     #paste-area p { font-size: .9rem; }
     #paste-area img { max-width: 100%; max-height: 360px; border-radius: 8px; object-fit: contain; }
@@ -110,9 +120,9 @@
       cursor: pointer; transition: all .2s;
       text-decoration: none;
     }
-    .btn-primary { background: #4f46e5; color: #fff; }
-    .btn-primary:hover { background: #4338ca; }
-    .btn-primary:disabled { background: #a5b4fc; cursor: not-allowed; }
+    .btn-primary { background: #FBAE17; color: #1c1c1c; }
+    .btn-primary:hover { background: #e59c0a; }
+    .btn-primary:disabled { background: #fbd88a; cursor: not-allowed; }
     .btn-secondary { background: #f3f4f6; color: #374151; }
     .btn-secondary:hover { background: #e5e7eb; }
     .btn-danger { background: #fee2e2; color: #dc2626; }
@@ -123,7 +133,7 @@
     /* Login */
     #login-overlay {
       position: fixed; inset: 0; z-index: 2000;
-      background: linear-gradient(135deg, #1a1a2e 0%, #312e81 60%, #4f46e5 100%);
+      background: linear-gradient(135deg, #0f0f0f 0%, #1e1e1e 55%, #333 100%);
       display: flex; align-items: center; justify-content: center; padding: 16px;
     }
     #login-overlay.hidden { display: none; }
@@ -133,9 +143,8 @@
       box-shadow: 0 20px 60px rgba(0,0,0,.35);
     }
     .login-box .login-logo {
-      width: 54px; height: 54px; border-radius: 14px;
-      background: #312e81; color: #fff; font-weight: 800; font-size: 1.2rem;
-      display: flex; align-items: center; justify-content: center; margin: 0 auto 14px;
+      font-weight: 800; font-size: 2.6rem; letter-spacing: -2px; line-height: 1;
+      margin: 0 auto 12px;
     }
     .login-box h2 { font-size: 1.15rem; color: #1a1a2e; margin-bottom: 4px; }
     .login-box p { font-size: .8rem; color: #888; margin-bottom: 20px; }
@@ -143,7 +152,7 @@
       width: 100%; padding: 12px 14px; border: 1px solid #d1d5db;
       border-radius: 10px; font-size: 1rem; outline: none;
     }
-    .login-box input:focus { border-color: #4f46e5; }
+    .login-box input:focus { border-color: #FBAE17; }
     .login-box #login-btn { width: 100%; justify-content: center; margin-top: 10px; }
     #login-err { color: #dc2626; font-size: .82rem; min-height: 18px; margin-top: 8px; }
 
@@ -187,7 +196,7 @@
       outline: none;
       transition: border .2s;
     }
-    .field input:focus, .field select:focus { border-color: #4f46e5; }
+    .field input:focus, .field select:focus { border-color: #FBAE17; }
 
     /* Lançamentos */
     #lancamentos-tbody tr:nth-child(even) { background: #f9fafb; }
@@ -211,8 +220,8 @@
     }
     .total-box .label { font-size: .78rem; color: #888; font-weight: 600; text-transform: uppercase; letter-spacing: .5px; }
     .total-box .value { font-size: 1.5rem; font-weight: 700; margin-top: 4px; }
-    .total-box.destaque { background: #eef2ff; border-color: #c7d2fe; }
-    .total-box.destaque .value { color: #4f46e5; }
+    .total-box.destaque { background: #fff8e1; border-color: #f3d98c; }
+    .total-box.destaque .value { color: #9a6c00; }
     .total-box.comissao { background: #d1fae5; border-color: #a7f3d0; }
     .total-box.comissao .value { color: #059669; }
 
@@ -229,7 +238,8 @@
       margin: 0 auto;
     }
     .doc-head {
-      background: linear-gradient(135deg, #1a1a2e 0%, #312e81 60%, #4f46e5 100%);
+      background: linear-gradient(135deg, #121212 0%, #1e1e1e 55%, #2e2e2e 100%);
+      border-bottom: 4px solid #FBAE17;
       color: #fff;
       padding: 28px 32px;
       display: flex;
@@ -237,12 +247,31 @@
       justify-content: space-between;
       gap: 16px;
     }
+    .doc-head .head-esq { display: flex; flex-direction: column; gap: 14px; }
     .doc-head .brand { display: flex; align-items: center; gap: 12px; }
+    .doc-pagto {
+      background: rgba(255,255,255,.12); border: 1px solid rgba(255,255,255,.28);
+      border-radius: 10px; padding: 10px 14px;
+      font-size: .78rem; line-height: 1.55; max-width: 360px;
+    }
+    .doc-pagto .dp-title {
+      font-size: .68rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: .6px; opacity: .78; margin-bottom: 4px;
+    }
+    .doc-pagto .dp-pix {
+      margin-top: 7px; background: #FBAE17; color: #1c1c1c;
+      border-radius: 7px; padding: 6px 10px;
+      font-weight: 700; font-size: .82rem; word-break: break-all;
+    }
+    .doc-pagto .dp-pix span {
+      font-weight: 700; opacity: .65; font-size: .68rem;
+      text-transform: uppercase; letter-spacing: .4px; margin-right: 7px;
+    }
     .doc-head .brand .logo {
-      width: 44px; height: 44px; border-radius: 11px;
-      background: rgba(255,255,255,.14);
+      width: 48px; height: 44px; border-radius: 11px;
+      background: #fff;
       display: flex; align-items: center; justify-content: center;
-      font-weight: 800; font-size: 1rem; letter-spacing: .5px;
+      font-weight: 800; font-size: 1.35rem; letter-spacing: -1px;
     }
     .doc-head .brand h3 { font-size: 1.15rem; font-weight: 700; line-height: 1.2; }
     .doc-head .brand p { font-size: .78rem; opacity: .75; margin-top: 2px; }
@@ -285,15 +314,15 @@
     .sum-total, .sum-comissao {
       border-radius: 12px; padding: 18px 22px;
     }
-    .sum-total { background: #f5f6ff; border: 1px solid #c7d2fe; }
+    .sum-total { background: #fff8e1; border: 1px solid #f3d98c; }
     .sum-comissao { background: #ecfdf5; border: 1px solid #a7f3d0; }
     .sum-total .s-label, .sum-comissao .s-label {
       font-size: .76rem; font-weight: 700; text-transform: uppercase; letter-spacing: .5px;
     }
-    .sum-total .s-label { color: #4f46e5; }
+    .sum-total .s-label { color: #9a6c00; }
     .sum-comissao .s-label { color: #059669; }
     .sum-total .s-value, .sum-comissao .s-value { font-size: 1.7rem; font-weight: 800; margin-top: 4px; }
-    .sum-total .s-value { color: #312e81; }
+    .sum-total .s-value { color: #1c1c1c; }
     .sum-comissao .s-value { color: #047857; }
     .sum-comissao .s-base { font-size: .72rem; color: #6b7280; margin-top: 2px; }
 
@@ -342,8 +371,9 @@
       break-before: page; page-break-before: always;
     }
     .doc-comprov > .dc-title {
-      background: linear-gradient(135deg, #1a1a2e 0%, #312e81 65%, #4f46e5 100%);
-      color: #fff; border-radius: 12px; padding: 18px 22px; margin-bottom: 22px;
+      background: linear-gradient(135deg, #121212 0%, #2e2e2e 100%);
+      border-left: 6px solid #FBAE17; border-radius: 0 12px 12px 0;
+      color: #fff; padding: 18px 22px; margin-bottom: 22px;
       break-after: avoid; page-break-after: avoid;
       -webkit-print-color-adjust: exact; print-color-adjust: exact;
     }
@@ -352,7 +382,7 @@
       letter-spacing: .5px; text-transform: uppercase;
     }
     .doc-comprov > .dc-title .dc-title-sub {
-      display: block; font-size: .8rem; opacity: .8; margin-top: 3px; font-weight: 500;
+      display: block; font-size: .8rem; color: #FBAE17; margin-top: 3px; font-weight: 600;
     }
     .doc-comprov .dc-group { margin-bottom: 22px; }
     .doc-comprov .dc-group:last-child { margin-bottom: 0; }
@@ -414,7 +444,7 @@
       font-size: .9rem; font-weight: 600; transition: all .2s;
     }
     .tab-btn:hover { color: #fff; background: rgba(255,255,255,.08); }
-    .tab-btn.active { color: #fff; background: rgba(255,255,255,.16); }
+    .tab-btn.active { color: #1c1c1c; background: #FBAE17; }
     .tab-pane { display: none; }
     .tab-pane.active { display: flex; flex-direction: column; gap: 24px; }
 
@@ -423,12 +453,12 @@
     .cliente-row .field { flex: 1; min-width: 200px; }
     .cliente-info {
       margin-top: 14px; padding: 12px 16px;
-      background: #f5f6ff; border: 1px solid #c7d2fe; border-radius: 10px;
-      font-size: .85rem; color: #3730a3; display: none;
+      background: #fff8e1; border: 1px solid #f3d98c; border-radius: 10px;
+      font-size: .85rem; color: #7a5c08; display: none;
     }
     .cliente-info.show { display: block; }
     .cliente-info strong { font-weight: 700; }
-    .cliente-info .sep { color: #a5b4fc; margin: 0 8px; }
+    .cliente-info .sep { color: #e3c36b; margin: 0 8px; }
 
     /* Modal */
     .modal-overlay {
@@ -444,7 +474,8 @@
     }
     @keyframes modalIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
     .modal-head {
-      background: linear-gradient(135deg, #1a1a2e 0%, #312e81 100%); color: #fff;
+      background: linear-gradient(135deg, #121212 0%, #2a2a2a 100%); color: #fff;
+      border-bottom: 3px solid #FBAE17;
       padding: 18px 22px; display: flex; align-items: center; justify-content: space-between;
     }
     .modal-head h3 { font-size: 1.05rem; font-weight: 700; }
@@ -466,11 +497,11 @@
     .fechamento-card .fc-cliente { font-size: 1rem; font-weight: 700; color: #1a1a2e; }
     .fechamento-card .fc-meta { font-size: .8rem; color: #6b7280; margin-top: 3px; }
     .fechamento-card .fc-meta .mref {
-      display: inline-block; background: #eef2ff; color: #4f46e5;
+      display: inline-block; background: #fff4d6; color: #9a6c00;
       padding: 1px 9px; border-radius: 12px; font-weight: 700; margin-right: 8px;
     }
     .fechamento-card .fc-nums { text-align: right; white-space: nowrap; }
-    .fechamento-card .fc-total { font-size: 1.15rem; font-weight: 800; color: #312e81; }
+    .fechamento-card .fc-total { font-size: 1.15rem; font-weight: 800; color: #1c1c1c; }
     .fechamento-card .fc-comissao { font-size: .82rem; color: #059669; font-weight: 700; margin-top: 2px; }
     .fechamento-card .fc-actions { display: flex; gap: 6px; }
     .fc-empty { text-align: center; color: #aaa; padding: 40px 0; font-size: .92rem; }
@@ -488,7 +519,7 @@
 
 <div id="login-overlay">
   <div class="login-box">
-    <div class="login-logo">BN</div>
+    <div class="login-logo"><span class="be-b">b</span><span class="be-e">e</span></div>
     <h2>Fechamento de Comissões</h2>
     <p>BE NEWS · acesso restrito</p>
     <input type="password" id="login-key" placeholder="Palavra-chave" autocomplete="current-password"
@@ -499,9 +530,7 @@
 </div>
 
 <header>
-  <svg width="28" height="28" fill="none" viewBox="0 0 24 24" stroke="#fff" stroke-width="2">
-    <path stroke-linecap="round" stroke-linejoin="round" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 11h.01M12 11h.01M15 11h.01M4 20h16a2 2 0 002-2V6a2 2 0 00-2-2H4a2 2 0 00-2 2v12a2 2 0 002 2z" />
-  </svg>
+  <span class="logo-app"><span class="be-b">b</span><span class="be-e">e</span></span>
   <h1>Fechamento de Comissões</h1>
   <div class="tabs">
     <button class="tab-btn active" id="tabbtn-novo" onclick="trocarAba('novo')">Novo Fechamento</button>
@@ -541,6 +570,27 @@
         Editar
       </button>
       <button class="btn btn-danger" id="btn-remover-cliente" onclick="removerCliente()" style="white-space:nowrap; display:none">
+        <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+        Remover
+      </button>
+    </div>
+    <div class="cliente-row" style="margin-top:14px">
+      <div class="field">
+        <label>Conta para recebimento (sai no relatório com a chave PIX)</label>
+        <select id="sel-conta" onchange="onSelConta()">
+          <option value="">— Sem dados de pagamento —</option>
+          <option value="__nova__">➕ Cadastrar nova conta…</option>
+        </select>
+      </div>
+      <button class="btn btn-secondary" onclick="abrirModalConta()" style="white-space:nowrap">
+        <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
+        Adicionar Conta
+      </button>
+      <button class="btn btn-secondary" id="btn-editar-conta" onclick="editarConta()" style="white-space:nowrap; display:none">
+        <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+        Editar
+      </button>
+      <button class="btn btn-danger" id="btn-remover-conta" onclick="removerConta()" style="white-space:nowrap; display:none">
         <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
         Remover
       </button>
@@ -757,6 +807,48 @@
     <div class="modal-foot">
       <button class="btn btn-secondary" onclick="fecharModalCanal()">Cancelar</button>
       <button class="btn btn-primary" onclick="salvarCanal()">Salvar Canal</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal de cadastro de conta de recebimento -->
+<div class="modal-overlay" id="modal-conta">
+  <div class="modal">
+    <div class="modal-head">
+      <h3 id="modal-conta-title">Nova Conta</h3>
+      <button class="close" onclick="fecharModalConta()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="field">
+        <label>Apelido da conta</label>
+        <input type="text" id="ct-apelido" placeholder="Ex: Banco Inter - BE NEWS" />
+      </div>
+      <div class="field">
+        <label>Banco</label>
+        <input type="text" id="ct-banco" placeholder="Ex: Banco Inter (077)" />
+      </div>
+      <div style="display:flex; gap:12px">
+        <div class="field" style="flex:1">
+          <label>Agência</label>
+          <input type="text" id="ct-agencia" placeholder="0001" />
+        </div>
+        <div class="field" style="flex:1">
+          <label>Conta</label>
+          <input type="text" id="ct-conta" placeholder="12345678-9" />
+        </div>
+      </div>
+      <div class="field">
+        <label>Titular</label>
+        <input type="text" id="ct-titular" placeholder="Ex: BE NEWS LTDA" />
+      </div>
+      <div class="field">
+        <label>Chave PIX</label>
+        <input type="text" id="ct-pix" placeholder="CNPJ, e-mail, telefone ou chave aleatória" />
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-secondary" onclick="fecharModalConta()">Cancelar</button>
+      <button class="btn btn-primary" onclick="salvarConta()">Salvar Conta</button>
     </div>
   </div>
 </div>
@@ -1082,6 +1174,107 @@
     toast('Cliente cadastrado!');
   }
 
+  // ── Contas de recebimento (dados de pagamento / PIX) ────────────────────────
+  let contas = [];
+  let contaAtivaId = '';
+  let editandoContaId = null;
+
+  function contaAtual() { return contas.find(c => c.id === contaAtivaId) || null; }
+
+  function renderContasDropdown() {
+    const sel = document.getElementById('sel-conta');
+    const atual = contaAtivaId;
+    let opts = '<option value="">— Sem dados de pagamento —</option>';
+    contas.forEach(c => { opts += `<option value="${c.id}">${esc(c.apelido || c.banco || 'Conta')}</option>`; });
+    opts += '<option value="__nova__">➕ Cadastrar nova conta…</option>';
+    sel.innerHTML = opts;
+    sel.value = contas.some(c => c.id === atual) ? atual : '';
+    atualizarBotoesConta();
+  }
+
+  function atualizarBotoesConta() {
+    const c = contaAtual();
+    const be = document.getElementById('btn-editar-conta');
+    const br = document.getElementById('btn-remover-conta');
+    if (be) be.style.display = c ? '' : 'none';
+    if (br) br.style.display = c ? '' : 'none';
+  }
+
+  function onSelConta() {
+    const sel = document.getElementById('sel-conta');
+    if (sel.value === '__nova__') {
+      sel.value = contaAtivaId || '';
+      abrirModalConta();
+      return;
+    }
+    contaAtivaId = sel.value;
+    atualizarBotoesConta();
+  }
+
+  function abrirModalConta() {
+    editandoContaId = null;
+    document.getElementById('modal-conta-title').textContent = 'Nova Conta';
+    ['ct-apelido', 'ct-banco', 'ct-agencia', 'ct-conta', 'ct-titular', 'ct-pix']
+      .forEach(id => { document.getElementById(id).value = ''; });
+    document.getElementById('modal-conta').classList.add('show');
+    setTimeout(() => document.getElementById('ct-apelido').focus(), 50);
+  }
+  function editarConta() {
+    const c = contaAtual();
+    if (!c) { toast('Selecione uma conta para editar.'); return; }
+    editandoContaId = c.id;
+    document.getElementById('modal-conta-title').textContent = 'Editar Conta';
+    document.getElementById('ct-apelido').value = c.apelido || '';
+    document.getElementById('ct-banco').value = c.banco || '';
+    document.getElementById('ct-agencia').value = c.agencia || '';
+    document.getElementById('ct-conta').value = c.conta || '';
+    document.getElementById('ct-titular').value = c.titular || '';
+    document.getElementById('ct-pix').value = c.pix || '';
+    document.getElementById('modal-conta').classList.add('show');
+    setTimeout(() => document.getElementById('ct-apelido').focus(), 50);
+  }
+  function fecharModalConta() { document.getElementById('modal-conta').classList.remove('show'); }
+
+  async function salvarConta() {
+    const apelido = document.getElementById('ct-apelido').value.trim();
+    const banco   = document.getElementById('ct-banco').value.trim();
+    const agencia = document.getElementById('ct-agencia').value.trim();
+    const conta   = document.getElementById('ct-conta').value.trim();
+    const titular = document.getElementById('ct-titular').value.trim();
+    const pix     = document.getElementById('ct-pix').value.trim();
+    if (!apelido && !banco) { toast('Informe ao menos o apelido ou o banco.'); return; }
+
+    if (editandoContaId) {
+      const c = contas.find(x => x.id === editandoContaId);
+      if (c) Object.assign(c, { apelido, banco, agencia, conta, titular, pix });
+      contaAtivaId = editandoContaId;
+      await storeSave('contas', contas);
+      renderContasDropdown();
+      fecharModalConta();
+      toast('Conta atualizada!');
+      return;
+    }
+
+    const c = { id: novoId(), apelido, banco, agencia, conta, titular, pix };
+    contas.push(c);
+    contaAtivaId = c.id;
+    await storeSave('contas', contas);
+    renderContasDropdown();
+    fecharModalConta();
+    toast('Conta cadastrada!');
+  }
+
+  async function removerConta() {
+    const c = contaAtual();
+    if (!c) { toast('Selecione uma conta para remover.'); return; }
+    if (!confirm(`Remover a conta "${c.apelido || c.banco}"?`)) return;
+    contas = contas.filter(x => x.id !== c.id);
+    contaAtivaId = '';
+    await storeSave('contas', contas);
+    renderContasDropdown();
+    toast('Conta removida.');
+  }
+
   // ── Salvar / listar fechamentos ─────────────────────────────────────────────
   function blobToBase64(blob) {
     return new Promise((resolve, reject) => {
@@ -1190,6 +1383,7 @@
       mesRef: mes,
       lancamentos: lancamentos.map(l => ({ ...l, canalNome: canalNome(l.canal) })),
       comprovantes: comprovMeta,
+      conta: contaAtual() ? { ...contaAtual() } : null,
       total, comissao, pdfUrl,
       criadoEm: new Date().toISOString()
     };
@@ -1274,6 +1468,14 @@
     document.getElementById('mes-ref').value = f.mesRef;
     canalAtivo = null;
     document.querySelectorAll('.canal-btn').forEach(b => b.classList.remove('active'));
+
+    // Restaura a conta de recebimento usada no fechamento
+    if (f.conta && f.conta.id) {
+      if (!contas.some(x => x.id === f.conta.id)) contas.push({ ...f.conta });
+      contaAtivaId = f.conta.id;
+    }
+    renderContasDropdown();
+
     renderClientesDropdown();
     renderClienteInfo();
     renderLancamentos();
@@ -1682,15 +1884,32 @@
       </div>`;
     }
 
+    // Dados de pagamento (conta selecionada) — sai no cabeçalho com a chave PIX
+    const ct = contaAtual();
+    let pagtoHtml = '';
+    if (ct) {
+      const linhaBanco = [ct.banco, ct.agencia ? 'Ag ' + ct.agencia : '', ct.conta ? 'CC ' + ct.conta : '']
+        .filter(Boolean).map(esc).join(' · ');
+      pagtoHtml = `<div class="doc-pagto">
+        <div class="dp-title">Dados para pagamento</div>
+        ${linhaBanco ? `<div>${linhaBanco}</div>` : ''}
+        ${ct.titular ? `<div>Titular: ${esc(ct.titular)}</div>` : ''}
+        ${ct.pix ? `<div class="dp-pix"><span>Chave PIX</span>${esc(ct.pix)}</div>` : ''}
+      </div>`;
+    }
+
     const html = `
       <div class="doc">
         <div class="doc-head">
-          <div class="brand">
-            <div class="logo">BN</div>
-            <div>
-              <h3>BE NEWS</h3>
-              <p>Relatório de Comissões</p>
+          <div class="head-esq">
+            <div class="brand">
+              <div class="logo"><span class="be-b">b</span><span class="be-e">e</span></div>
+              <div>
+                <h3>BE NEWS</h3>
+                <p>Relatório de Comissões</p>
+              </div>
             </div>
+            ${pagtoHtml}
           </div>
           <div class="meta">
             <strong>${cli ? esc(cli.razao) : 'Fechamento'}</strong>
@@ -1800,6 +2019,9 @@
   document.getElementById('modal-canal').addEventListener('click', e => {
     if (e.target.id === 'modal-canal') fecharModalCanal();
   });
+  document.getElementById('modal-conta').addEventListener('click', e => {
+    if (e.target.id === 'modal-conta') fecharModalConta();
+  });
 
   // Carrega dados da nuvem (só após o login liberar o acesso)
   let appIniciado = false;
@@ -1809,12 +2031,14 @@
     clientes = await storeLoad('clientes');
     fechamentos = await storeLoad('fechamentos');
     canais = await storeLoad('canais');
+    contas = await storeLoad('contas');
     if (!canais.length) {
       canais = CANAIS_PADRAO.map(c => ({ ...c }));
       await storeSave('canais', canais);
     }
     renderClientesDropdown();
     renderClienteInfo();
+    renderContasDropdown();
     renderCanais();
     renderTotaisGrid();
     atualizarTravaColagem();

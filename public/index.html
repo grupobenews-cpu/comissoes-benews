@@ -280,7 +280,7 @@
 
     .doc-body { padding: 28px 32px; }
 
-    .doc-section { margin-bottom: 26px; }
+    .doc-section { margin-bottom: 16px; }
     .doc-section:last-of-type { margin-bottom: 0; }
     .doc-section .sec-head {
       display: flex; align-items: center; gap: 10px;
@@ -295,11 +295,11 @@
     .bar-cb     { background: #e8232a; }
 
     .doc-table { width: 100%; border-collapse: collapse; font-size: .86rem; }
-    .doc-table td { padding: 9px 6px; border-bottom: 1px solid #f3f4f6; vertical-align: top; }
+    .doc-table td { padding: 4px 6px; border-bottom: 1px solid #f3f4f6; vertical-align: top; line-height: 1.35; }
     .doc-table .d-data { color: #6b7280; white-space: nowrap; width: 92px; }
     .doc-table .d-nota { color: #374151; }
     .doc-table .d-valor { text-align: right; font-weight: 700; color: #111827; white-space: nowrap; }
-    .doc-table tr.sub td { border-top: 2px solid #ececef; border-bottom: none; padding-top: 10px; font-weight: 700; }
+    .doc-table tr.sub td { border-top: 2px solid #ececef; border-bottom: none; padding-top: 7px; font-weight: 700; }
     .doc-table tr.sub .d-sub-label { color: #6b7280; text-transform: uppercase; font-size: .74rem; letter-spacing: .5px; }
     .doc-table tr.sub .d-valor { color: #111827; }
 
@@ -310,9 +310,11 @@
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 14px;
+      break-inside: avoid; page-break-inside: avoid;
     }
     .sum-total, .sum-comissao {
       border-radius: 12px; padding: 18px 22px;
+      break-inside: avoid; page-break-inside: avoid;
     }
     .sum-total { background: #fff8e1; border: 1px solid #f3d98c; }
     .sum-comissao { background: #ecfdf5; border: 1px solid #a7f3d0; }
@@ -395,6 +397,7 @@
     }
     .doc-comprov .dc-img img { width: 100%; height: auto; display: block; }
 
+    @page { margin: 0; }
     @media print {
       body { background: #fff; }
       header, #toast, .modal-overlay { display: none !important; }
@@ -409,6 +412,7 @@
       .doc-comprov .dc-group { break-inside: avoid; page-break-inside: avoid; }
       .doc-comprov .dc-img { break-inside: avoid; page-break-inside: avoid; }
       .doc-comprov .dc-img img { max-height: none; }
+      .doc-summary, .sum-total, .sum-comissao, .doc-section { break-inside: avoid; page-break-inside: avoid; }
     }
 
     /* Toast */
@@ -1294,7 +1298,7 @@
       image: { type: 'jpeg', quality: 0.72 },
       html2canvas: { scale: 1.6, useCORS: true, backgroundColor: '#ffffff' },
       jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
-      pagebreak: { mode: ['css', 'legacy'], before: ['.doc-comprov'], avoid: ['.dc-group', '.dc-img', '.doc-section', '.doc-summary'] }
+      pagebreak: { mode: ['css', 'legacy'], before: ['.doc-comprov'], avoid: ['.dc-group', '.dc-img', '.doc-section', '.doc-summary', '.sum-total', '.sum-comissao'] }
     };
     const blob = await window.html2pdf().set(opt).from(el).outputPdf('blob');
     return blobToBase64(blob);
@@ -1913,10 +1917,11 @@
           </div>
           <div class="meta">
             <strong>${cli ? esc(cli.razao) : 'Fechamento'}</strong>
-            ${cli && cli.cnpj ? 'CNPJ ' + esc(cli.cnpj) + '<br>' : ''}
-            ${mes ? 'Ref.: ' + mesLabel(mes) + '<br>' : ''}
-            ${cli && cli.dia ? 'Pagamento todo dia ' + esc(cli.dia) + '<br>' : ''}
-            Emitido em ${hoje}
+            ${[
+              cli && cli.cnpj ? 'CNPJ ' + esc(cli.cnpj) : '',
+              mes ? 'Ref.: ' + mesLabel(mes) : '',
+              cli && cli.dia ? 'Pagamento todo dia ' + esc(cli.dia) : ''
+            ].filter(Boolean).map(s => '<br>' + s).join('')}
           </div>
         </div>
         <div class="doc-body">

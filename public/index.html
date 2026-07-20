@@ -47,6 +47,14 @@
     }
     .card h2 { font-size: 1rem; font-weight: 600; color: #1c1c1c; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
 
+    /* Seção recolhível */
+    .h2-toggle { cursor: pointer; user-select: none; margin-bottom: 0 !important; }
+    .h2-toggle .h2-hint { font-size: .78rem; color: #9ca3af; font-weight: 500; }
+    .h2-toggle .chev { margin-left: auto; font-size: 1.1rem; color: #9ca3af; transition: transform .2s; }
+    .card:not(.collapsed) .h2-toggle { margin-bottom: 16px !important; }
+    .card:not(.collapsed) .h2-toggle .chev { transform: rotate(180deg); }
+    .card.collapsed .manual-row { display: none; }
+
     /* Canal selector */
     .canal-grid { display: flex; gap: 12px; flex-wrap: wrap; }
     .canal-btn {
@@ -368,32 +376,36 @@
     .comprov-thumb .del:hover { background: #b91c1c; }
 
     /* Comprovantes (relatório / PDF) — sempre começam em página nova */
+    /* Comprovantes começam em página nova; cada canal repete o banner e flui em linha */
     .doc-comprov {
       padding-top: 4px;
       break-before: page; page-break-before: always;
     }
-    .doc-comprov > .dc-title {
+    .doc-comprov .dc-group {
+      margin-bottom: 22px;
+      break-inside: avoid; page-break-inside: avoid;
+    }
+    .doc-comprov .dc-imgs {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 12px; align-items: start;
+    }
+    .doc-comprov .dc-title {
       background: linear-gradient(135deg, #121212 0%, #2e2e2e 100%);
       border-left: 6px solid #FBAE17; border-radius: 0 12px 12px 0;
-      color: #fff; padding: 18px 22px; margin-bottom: 22px;
+      color: #fff; padding: 18px 22px; margin-bottom: 18px;
       break-after: avoid; page-break-after: avoid;
       -webkit-print-color-adjust: exact; print-color-adjust: exact;
     }
-    .doc-comprov > .dc-title .dc-title-main {
+    .doc-comprov .dc-title .dc-title-main {
       display: block; font-size: 1.15rem; font-weight: 800;
       letter-spacing: .5px; text-transform: uppercase;
     }
-    .doc-comprov > .dc-title .dc-title-sub {
-      display: block; font-size: .8rem; color: #FBAE17; margin-top: 3px; font-weight: 600;
+    .doc-comprov .dc-title .dc-title-sub {
+      display: block; font-size: .85rem; color: #FBAE17; margin-top: 3px; font-weight: 700;
     }
-    .doc-comprov .dc-group { margin-bottom: 22px; }
-    .doc-comprov .dc-group:last-child { margin-bottom: 0; }
-    .doc-comprov .dc-group .dcg-head { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
-    .doc-comprov .dc-group .dcg-head .bar { width: 5px; height: 16px; border-radius: 3px; }
-    .doc-comprov .dc-group .dcg-head h5 { font-size: .9rem; font-weight: 700; color: #1a1a2e; }
     .doc-comprov .dc-img {
       border: 1px solid #e5e7eb; border-radius: 8px; overflow: hidden;
-      margin-bottom: 12px; background: #fff;
+      background: #fff;
+      break-inside: avoid; page-break-inside: avoid;
     }
     .doc-comprov .dc-img img { width: 100%; height: auto; display: block; }
 
@@ -404,12 +416,18 @@
       .card:not(#relatorio-area) { display: none !important; }
       .tab-pane { display: block !important; }
       main { margin: 0; max-width: none; padding: 0; }
-      #relatorio-area { display: block !important; }
-      #relatorio-area > h2, #relatorio-area .btn-row { display: none !important; }
+      #relatorio-area {
+        display: block !important;
+        padding: 0 !important; border: none !important; border-radius: 0 !important;
+        box-shadow: none !important; background: transparent !important;
+        position: static !important; left: auto !important; width: auto !important;
+      }
       .doc { box-shadow: none; border: none; border-radius: 0; max-width: none; }
       .doc-head { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
       .sum-total, .sum-comissao, .bar, .doc-head { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      .doc-comprov { break-before: page; page-break-before: always; }
       .doc-comprov .dc-group { break-inside: avoid; page-break-inside: avoid; }
+      .doc-comprov .dc-title { break-after: avoid; page-break-after: avoid; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
       .doc-comprov .dc-img { break-inside: avoid; page-break-inside: avoid; }
       .doc-comprov .dc-img img { max-height: none; }
       .doc-summary, .sum-total, .sum-comissao, .doc-section { break-inside: avoid; page-break-inside: avoid; }
@@ -648,11 +666,13 @@
     </div>
   </div>
 
-  <!-- 4. Manual -->
-  <div class="card">
-    <h2>
+  <!-- 4. Manual (recolhido por padrão) -->
+  <div class="card collapsed" id="card-manual">
+    <h2 class="h2-toggle" onclick="toggleManual()" title="Clique para expandir/recolher">
       <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
       4. Lançamento Manual
+      <span class="h2-hint">opcional</span>
+      <span class="chev">⌄</span>
     </h2>
     <div class="manual-row">
       <div class="field">
@@ -718,18 +738,7 @@
         <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
         Gerar / Atualizar Relatório
       </button>
-    </div>
-  </div>
-
-  <!-- 7. Relatório -->
-  <div class="card" id="relatorio-area">
-    <h2>
-      <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-      Relatório Gerado
-    </h2>
-    <div id="relatorio-doc"></div>
-    <div class="btn-row">
-      <button class="btn btn-primary" onclick="imprimirRelatorio()">
+      <button class="btn btn-secondary" onclick="imprimirRelatorio()">
         <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a1 1 0 001-1v-4a1 1 0 00-1-1H9a1 1 0 00-1 1v4a1 1 0 001 1zm0-12V5a1 1 0 011-1h4a1 1 0 011 1v4H8z"/></svg>
         Imprimir / Visualizar PDF
       </button>
@@ -742,6 +751,11 @@
         Cancelar / Limpar
       </button>
     </div>
+  </div>
+
+  <!-- 7. Relatório (fica oculto no app; usado para gerar o PDF e imprimir) -->
+  <div class="card" id="relatorio-area">
+    <div id="relatorio-doc"></div>
   </div>
 
 </div><!-- /tab-novo -->
@@ -1293,6 +1307,10 @@
   async function gerarPdfBase64() {
     const el = document.querySelector('#relatorio-doc .doc');
     if (!el || !window.html2pdf) return null;
+    // O relatório fica oculto no app; posiciona fora da tela para o html2canvas conseguir renderizar
+    const area = document.getElementById('relatorio-area');
+    const estiloAnterior = area.getAttribute('style') || '';
+    area.setAttribute('style', 'display:block;position:absolute;left:-10000px;top:0;width:820px;padding:0;border:none;box-shadow:none;background:transparent;');
     const opt = {
       margin: 6,
       image: { type: 'jpeg', quality: 0.72 },
@@ -1300,8 +1318,12 @@
       jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
       pagebreak: { mode: ['css', 'legacy'], before: ['.doc-comprov'], avoid: ['.dc-group', '.dc-img', '.doc-section', '.doc-summary', '.sum-total', '.sum-comissao'] }
     };
-    const blob = await window.html2pdf().set(opt).from(el).outputPdf('blob');
-    return blobToBase64(blob);
+    try {
+      const blob = await window.html2pdf().set(opt).from(el).outputPdf('blob');
+      return await blobToBase64(blob);
+    } finally {
+      area.setAttribute('style', estiloAnterior);
+    }
   }
 
   // Sobe uma imagem de comprovante (data URL) pro Blob e devolve a URL pública
@@ -1410,7 +1432,6 @@
     atualizarTotais();
     limparImagem();
     atualizarTravaColagem();
-    document.getElementById('relatorio-area').style.display = 'none';
     document.getElementById('relatorio-doc').innerHTML = '';
   }
 
@@ -1732,6 +1753,10 @@
   }
 
   // ── Lançamento manual ──────────────────────────────────────────────────────
+  function toggleManual() {
+    document.getElementById('card-manual').classList.toggle('collapsed');
+  }
+
   function lancarManual() {
     const canal = document.getElementById('m-canal').value;
     const data  = document.getElementById('m-data').value;
@@ -1864,7 +1889,7 @@
         </div>`;
     });
 
-    // Comprovantes agrupados por canal (tamanho grande p/ impressão)
+    // Comprovantes agrupados por canal — cada canal começa em página nova com o banner
     let comprovHtml = '';
     if (comprovantes.length) {
       let grupos = '';
@@ -1875,17 +1900,14 @@
         let imgs = '';
         itens.forEach(cp => { imgs += `<div class="dc-img"><img src="${cp.img}" alt="comprovante ${esc(cn.nome)}" /></div>`; });
         grupos += `<div class="dc-group">
-          <div class="dcg-head"><span class="bar" style="background:${cn.cor}"></span><h5>${esc(cn.nome)}</h5></div>
-          ${imgs}
+          <div class="dc-title" style="border-left-color:${cn.cor}">
+            <span class="dc-title-main">Comprovantes dos Repasses</span>
+            <span class="dc-title-sub">${esc(cn.nome)}</span>
+          </div>
+          <div class="dc-imgs">${imgs}</div>
         </div>`;
       });
-      comprovHtml = `<div class="doc-comprov">
-        <div class="dc-title">
-          <span class="dc-title-main">Comprovantes dos Repasses</span>
-          <span class="dc-title-sub">agrupados por canal</span>
-        </div>
-        ${grupos}
-      </div>`;
+      comprovHtml = `<div class="doc-comprov">${grupos}</div>`;
     }
 
     // Dados de pagamento (conta selecionada) — sai no cabeçalho com a chave PIX
@@ -1939,15 +1961,11 @@
           </div>
           ${comprovHtml}
         </div>
-        <div class="doc-foot">
-          <span>BE NEWS · Fechamento de Comissões</span>
-          <span>Documento gerado automaticamente em ${hoje}</span>
-        </div>
       </div>`;
 
+    // O relatório fica montado (oculto) só para gerar o PDF / imprimir
     document.getElementById('relatorio-doc').innerHTML = html;
-    document.getElementById('relatorio-area').style.display = 'block';
-    document.getElementById('relatorio-area').scrollIntoView({ behavior: 'smooth' });
+    toast('Relatório gerado. Use "Imprimir / Visualizar PDF" ou "Salvar".', 3500);
   }
 
   function imprimirRelatorio() {

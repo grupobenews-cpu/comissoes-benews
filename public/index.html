@@ -2035,15 +2035,18 @@
       d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0');
   })();
 
-  // Fecha modais ao clicar fora
-  document.getElementById('modal-cliente').addEventListener('click', e => {
-    if (e.target.id === 'modal-cliente') fecharModalCliente();
-  });
-  document.getElementById('modal-canal').addEventListener('click', e => {
-    if (e.target.id === 'modal-canal') fecharModalCanal();
-  });
-  document.getElementById('modal-conta').addEventListener('click', e => {
-    if (e.target.id === 'modal-conta') fecharModalConta();
+  // Modais só fecham no X, no Cancelar ou com ESC (clicar fora não fecha,
+  // pra não perder o que já foi digitado por um clique sem querer).
+  document.addEventListener('keydown', e => {
+    if (e.key !== 'Escape') return;
+    const abertos = [
+      ['modal-conta',   fecharModalConta],
+      ['modal-canal',   fecharModalCanal],
+      ['modal-cliente', fecharModalCliente],
+    ].filter(([id]) => document.getElementById(id).classList.contains('show'));
+    if (!abertos.length) return;
+    e.preventDefault();
+    abertos[0][1]();
   });
 
   // Carrega dados da nuvem (só após o login liberar o acesso)

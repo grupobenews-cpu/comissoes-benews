@@ -1,0 +1,6 @@
+out/snaps/
+out/test*.mp4
+out/.segments-*/
+out/*-video-only.mp4
+__pycache__/
+node_modules/

@@ -429,7 +429,16 @@
     tl.to(target, { keyframes: kf }, at);
   }
 
-  const helpers = { fixGradient, rng, clamp, lerp, smooth, hexA, el, svg, uid, icon, logo, gearPath, gear, canvas, glowDot, ellipsePt, orbit, text, eyebrow, chip, split, strike, flash, shake, W, H, P, BEAT, BAR };
+  // Retângulo de um elemento em coordenadas do palco 1920×1080 (independe da escala do preview)
+  function rect(e) {
+    const sr = stage.getBoundingClientRect();
+    const sc = sr.width / W || 1;
+    const r = e.getBoundingClientRect();
+    const x = (r.left - sr.left) / sc, y = (r.top - sr.top) / sc, w = r.width / sc, hh = r.height / sc;
+    return { x, y, w, h: hh, left: x, top: y, right: x + w, bottom: y + hh, cx: x + w / 2, cy: y + hh / 2 };
+  }
+
+  const helpers = { rect, fixGradient, rng, clamp, lerp, smooth, hexA, el, svg, uid, icon, logo, gearPath, gear, canvas, glowDot, ellipsePt, orbit, text, eyebrow, chip, split, strike, flash, shake, W, H, P, BEAT, BAR };
 
   // ---------------------------------------------------------------- cenas
   const defs = [];

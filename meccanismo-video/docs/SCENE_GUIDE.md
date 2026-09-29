@@ -65,11 +65,19 @@ MECCA.scene({
   `h.ellipsePt(cx, cy, rx, ry, rot, ang)`, `h.glowDot(ctx, x, y, r, color, alpha)`.
 - `h.strike(tl, el, at, {color, thickness, top, dur})` → risco animado sobre um texto.
 - `h.flash(tl, root, at, {color, peak, dur, blend})`, `h.shake(tl, target, at, {amp, n, dur, seed})`.
+- `h.rect(el)` → `{x, y, w, h, cx, cy, right, bottom}` em coordenadas do palco 1920×1080 (use para medir a posição de glifos/palavras após o split — ex.: o “.” final — ANTES de aplicar transforms).
 - `h.rng(seed)` (aleatório determinístico), `h.clamp h.lerp h.smooth h.hexA`, `h.P` (paleta), `h.W h.H`.
 
 Easings: `mecca.out` (entrada), `mecca.in` (saída), `mecca.inOut`, `mecca.snap`, `mecca.back` (overshoot leve),
 `mecca.gear` (engate mecânico com overshoot) + todos os do GSAP (`expo.out`, `power4.inOut`, `back.out(1.6)`, `elastic.out(1,0.5)`...).
 Plugins: SplitText, DrawSVGPlugin, MorphSVGPlugin, MotionPathPlugin, CustomEase.
+
+## Continuidade entre cenas (match cuts)
+- Todas as cenas têm `tail` 0: o ÚLTIMO quadro da cena N (t = D − 1/30) tem de ser visualmente idêntico ao PRIMEIRO quadro da cena N+1 (t = 0).
+  O storyboard da sua cena descreve “PRIMEIRO QUADRO” (no layout) e “ÚLTIMO QUADRO” (no transition_out) com posições exatas — respeite-os ao pixel.
+- Fundo: no t = 0 da sua cena, faça `tl.set(bg, {…estado do corte de entrada…}, 0)` com TODOS os valores listados nos motivos globais para aquele corte
+  (assim a cena funciona isolada no modo solo). Até o fim da cena, anime `bg` até o estado do corte de saída.
+- O “Ponto” (núcleo #FBF8FF r 10 + glow lavanda) é desenhado pela SUA cena no SEU canvas; ele só precisa estar onde o storyboard manda no primeiro/último quadro.
 
 ## Regras de determinismo (obrigatórias)
 - Proibido: `Math.random`, `Date`, `performance.now`, `requestAnimationFrame`, `setTimeout/setInterval`, `tl.call`/`onComplete` com efeitos

@@ -299,7 +299,7 @@ def build_music(duration, arrangement):
             continue
         L = set(s.get('layers', []))
         t0 = b * BAR
-        ch = PROG[b % 4]
+        ch = PROG[(b + int(s.get('prog_offset', 0))) % 4]
         span = max(1, int(s['to']) - int(s['from']))
         k = (b - int(s['from'])) / span  # progresso dentro da seção
         cut0, cut1 = s.get('cutoff', [1400, 1400])

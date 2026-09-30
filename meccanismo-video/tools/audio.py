@@ -196,7 +196,18 @@ def bell(m, dur=2.4):
     return x * 0.28
 
 # ------------------------------------------------------------------ efeitos
+def sfx_thump(g=1.0):
+    # impacto leve (acentos secundários): corpo curto, pouco sub, sem cauda longa
+    n = int(0.6 * SR)
+    t = np.arange(n) / SR
+    f = 60 + 90 * np.exp(-t * 25)
+    body = np.sin(2 * np.pi * np.cumsum(f) / SR) * np.exp(-t * 9)
+    snap = bp(RNG.standard_normal(n), 1200, 6000) * np.exp(-t * 45) * 0.35
+    return np.tanh((body + snap) * 1.2) * 0.6 * g
+
 def sfx_impact(g=1.0):
+    if g < 0.65:
+        return sfx_thump(g / 0.65 * 0.9)
     n = int(2.2 * SR)
     t = np.arange(n) / SR
     f = 30 + 45 * np.exp(-t * 7)
@@ -374,7 +385,9 @@ def main():
     n = music.shape[1]
     sfx = np.zeros((2, n))
     sfx_send = np.zeros((2, n))
-    for i, c in enumerate(cj['cues']):
+    cues = list(cj['cues']) + [dict(c, scene='arrangement') for c in arr.get('extra_cues', [])]
+    cues.sort(key=lambda c: float(c['t']))
+    for i, c in enumerate(cues):
         kind = c['kind']
         if kind not in SFX:
             continue

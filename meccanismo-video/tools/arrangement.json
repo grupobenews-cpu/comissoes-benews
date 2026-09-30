@@ -1,25 +1,316 @@
 {
  "_doc": "Seções por compasso (0-based, 'to' exclusivo; 1 compasso = 2 s a 120 BPM). prog_offset desloca a progressão i–VI–III–VII para os drops caírem em Ré menor.",
  "sections": [
-  {"name": "INTRO — ignição",            "from": 0,  "to": 3,  "layers": ["pad", "ticks"], "cutoff": [500, 1100], "gain": 0.8, "prog_offset": 0},
-  {"name": "BUILD 1 — range",            "from": 3,  "to": 7,  "layers": ["pad", "sub", "kick-half", "ticks"], "cutoff": [900, 1400], "gain": 0.85, "prog_offset": 1},
-  {"name": "BUILD 2 — duas caixas",      "from": 7,  "to": 10, "layers": ["pad", "sub", "bass", "kick"], "cutoff": [1200, 1800], "gain": 0.9, "prog_offset": 1},
-  {"name": "BUILD 2b — hora H",          "from": 10, "to": 11, "layers": ["pad", "sub", "bass", "kick", "arp"], "cutoff": [2000, 2400], "gain": 0.92, "prog_offset": 1},
-  {"name": "BUILD 2b — filtro fecha",    "from": 11, "to": 12, "layers": ["pad", "sub", "arp"], "cutoff": [1400, 600], "gain": 0.8, "prog_offset": 1},
-  {"name": "RISER — a virada",           "from": 12, "to": 15, "layers": ["pad", "sub", "bass", "kick", "clap", "ticks"], "cutoff": [2400, 5000], "gain": 0.92, "prog_offset": 1},
-  {"name": "DROP A — Somos o meccanismo","from": 15, "to": 17, "layers": ["kick", "clap", "hats", "bass", "sub", "arp", "pad", "bell"], "cutoff": [6000, 6000], "gain": 1.0, "prog_offset": 1},
-  {"name": "POR DENTRO",                 "from": 17, "to": 21, "layers": ["kick-half", "sub", "bass", "pad", "ticks"], "cutoff": [1600, 2200], "gain": 0.9, "prog_offset": 1},
-  {"name": "GROOVE — plano de voo",      "from": 21, "to": 27, "layers": ["kick", "hats", "bass", "sub", "pad", "ticks"], "cutoff": [1800, 3000], "gain": 0.92, "prog_offset": 1},
-  {"name": "DROP B — sete engrenagens",  "from": 27, "to": 35, "layers": ["kick", "clap", "hats", "bass", "sub", "arp", "pad"], "cutoff": [3200, 5000], "gain": 1.0, "prog_offset": 1},
-  {"name": "DROP B' — um só mecanismo",  "from": 35, "to": 38, "layers": ["kick", "clap", "hats", "bass", "sub", "arp", "pad", "bell"], "cutoff": [6000, 6000], "gain": 1.0, "prog_offset": 1},
-  {"name": "BREAKDOWN — noite/rotinas",  "from": 38, "to": 41, "layers": ["pad", "arp", "ticks", "sub", "bell"], "cutoff": [1600, 1000], "gain": 0.75, "prog_offset": 1},
-  {"name": "BUILD 3 — diferenciais",     "from": 41, "to": 44, "layers": ["kick-half", "bass", "sub", "pad", "hats"], "cutoff": [1200, 2200], "gain": 0.9, "prog_offset": 1},
-  {"name": "BUILD 3b — entra o arp",     "from": 44, "to": 46, "layers": ["kick-half", "bass", "sub", "pad", "hats", "arp"], "cutoff": [2200, 3500], "gain": 0.9, "prog_offset": 1},
-  {"name": "DROP FINAL — não para mais", "from": 46, "to": 48, "layers": ["kick", "clap", "hats", "bass", "sub", "arp", "pad", "bell"], "cutoff": [6000, 6000], "gain": 1.05, "prog_offset": 2},
-  {"name": "OUTRO — assinatura",         "from": 48, "to": 50, "layers": ["pad", "bell", "sub"], "cutoff": [2400, 700], "gain": 0.85, "prog_offset": 2}
+  {
+   "name": "INTRO — ignição",
+   "from": 0,
+   "to": 3,
+   "layers": [
+    "pad",
+    "ticks"
+   ],
+   "cutoff": [
+    500,
+    1100
+   ],
+   "gain": 0.8,
+   "prog_offset": 0
+  },
+  {
+   "name": "BUILD 1 — range",
+   "from": 3,
+   "to": 7,
+   "layers": [
+    "pad",
+    "sub",
+    "kick-half",
+    "ticks"
+   ],
+   "cutoff": [
+    900,
+    1400
+   ],
+   "gain": 0.85,
+   "prog_offset": 1
+  },
+  {
+   "name": "BUILD 2 — duas caixas",
+   "from": 7,
+   "to": 10,
+   "layers": [
+    "pad",
+    "sub",
+    "bass",
+    "kick"
+   ],
+   "cutoff": [
+    1200,
+    1800
+   ],
+   "gain": 0.9,
+   "prog_offset": 1
+  },
+  {
+   "name": "BUILD 2b — hora H",
+   "from": 10,
+   "to": 11,
+   "layers": [
+    "pad",
+    "sub",
+    "bass",
+    "kick",
+    "arp"
+   ],
+   "cutoff": [
+    2000,
+    2400
+   ],
+   "gain": 0.92,
+   "prog_offset": 1
+  },
+  {
+   "name": "BUILD 2b — filtro fecha",
+   "from": 11,
+   "to": 12,
+   "layers": [
+    "pad",
+    "sub",
+    "arp"
+   ],
+   "cutoff": [
+    1400,
+    600
+   ],
+   "gain": 0.8,
+   "prog_offset": 1
+  },
+  {
+   "name": "RISER — a virada",
+   "from": 12,
+   "to": 15,
+   "layers": [
+    "pad",
+    "sub",
+    "bass",
+    "kick",
+    "clap",
+    "ticks"
+   ],
+   "cutoff": [
+    2400,
+    5000
+   ],
+   "gain": 0.92,
+   "prog_offset": 1
+  },
+  {
+   "name": "DROP A — Somos o meccanismo",
+   "from": 15,
+   "to": 17,
+   "layers": [
+    "kick",
+    "clap",
+    "hats",
+    "bass",
+    "sub",
+    "arp",
+    "pad",
+    "bell"
+   ],
+   "cutoff": [
+    6000,
+    6000
+   ],
+   "gain": 1.0,
+   "prog_offset": 1
+  },
+  {
+   "name": "POR DENTRO",
+   "from": 17,
+   "to": 21,
+   "layers": [
+    "kick-half",
+    "sub",
+    "bass",
+    "pad",
+    "ticks"
+   ],
+   "cutoff": [
+    1600,
+    2200
+   ],
+   "gain": 0.9,
+   "prog_offset": 1
+  },
+  {
+   "name": "GROOVE — plano de voo",
+   "from": 21,
+   "to": 27,
+   "layers": [
+    "kick",
+    "hats",
+    "bass",
+    "sub",
+    "pad",
+    "ticks"
+   ],
+   "cutoff": [
+    1800,
+    3000
+   ],
+   "gain": 0.92,
+   "prog_offset": 1
+  },
+  {
+   "name": "DROP B — sete engrenagens",
+   "from": 27,
+   "to": 35,
+   "layers": [
+    "kick",
+    "clap",
+    "hats",
+    "bass",
+    "sub",
+    "arp",
+    "pad"
+   ],
+   "cutoff": [
+    3200,
+    5000
+   ],
+   "gain": 1.0,
+   "prog_offset": 1
+  },
+  {
+   "name": "DROP B' — um só mecanismo",
+   "from": 35,
+   "to": 38,
+   "layers": [
+    "kick",
+    "clap",
+    "hats",
+    "bass",
+    "sub",
+    "arp",
+    "pad",
+    "bell"
+   ],
+   "cutoff": [
+    6000,
+    6000
+   ],
+   "gain": 1.0,
+   "prog_offset": 1
+  },
+  {
+   "name": "BREAKDOWN — noite/rotinas",
+   "from": 38,
+   "to": 41,
+   "layers": [
+    "pad",
+    "arp",
+    "ticks",
+    "sub",
+    "bell"
+   ],
+   "cutoff": [
+    1600,
+    1000
+   ],
+   "gain": 0.75,
+   "prog_offset": 1
+  },
+  {
+   "name": "BUILD 3 — diferenciais",
+   "from": 41,
+   "to": 44,
+   "layers": [
+    "kick-half",
+    "bass",
+    "sub",
+    "pad",
+    "hats"
+   ],
+   "cutoff": [
+    1200,
+    2200
+   ],
+   "gain": 0.9,
+   "prog_offset": 1
+  },
+  {
+   "name": "BUILD 3b — entra o arp",
+   "from": 44,
+   "to": 46,
+   "layers": [
+    "kick-half",
+    "bass",
+    "sub",
+    "pad",
+    "hats",
+    "arp"
+   ],
+   "cutoff": [
+    2200,
+    3500
+   ],
+   "gain": 0.9,
+   "prog_offset": 1
+  },
+  {
+   "name": "DROP FINAL — não para mais",
+   "from": 46,
+   "to": 48,
+   "layers": [
+    "kick",
+    "clap",
+    "hats",
+    "bass",
+    "sub",
+    "arp",
+    "pad",
+    "bell"
+   ],
+   "cutoff": [
+    6000,
+    6000
+   ],
+   "gain": 1.05,
+   "prog_offset": 2
+  },
+  {
+   "name": "OUTRO — assinatura",
+   "from": 48,
+   "to": 50,
+   "layers": [
+    "pad",
+    "bell",
+    "sub"
+   ],
+   "cutoff": [
+    2400,
+    700
+   ],
+   "gain": 0.85,
+   "prog_offset": 2
+  }
  ],
  "music_gain": 0.78,
  "sfx_gain": 0.9,
  "reverb_gain": 0.55,
- "fade_out": 1.5
+ "fade_out": 1.5,
+ "extra_cues": [
+  {
+   "t": 29.0,
+   "kind": "riser",
+   "gain": 0.6,
+   "note": "sobe até o silêncio antes do drop A"
+  },
+  {
+   "t": 54.0,
+   "kind": "reverse",
+   "gain": 0.5,
+   "note": "entrada do drop B (sete engrenagens)"
+  }
+ ]
 }

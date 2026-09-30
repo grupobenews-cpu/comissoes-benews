@@ -474,15 +474,21 @@
       records.push({ id: d.id, root, start: d.start, end: d.start + d.duration + tail, hooks });
     });
     if (!DURATION) DURATION = master.duration();
+    // fora da janela a cena sai do layout (display:none): nenhum filho com visibility:visible consegue vazar
+    for (const r of records) r.root.style.display = 'none';
   }
 
   let lastFrame = -1;
+  // EPS: o GSAP não renderiza tweens de duração zero posicionados exatamente no início de uma timeline
+  // filha quando o playhead cai em cima dele; avançar 0,1 ms garante o estado correto no 1º quadro de cada cena.
+  const EPS = 1e-4;
   function seek(t, fps = 30) {
-    master.seek(t, false);
+    master.seek(t + EPS, false);
     const last = records[records.length - 1];
     for (const r of records) {
       const on = t >= r.start && (t < r.end || (r === last && t <= r.end + 1e-6));
       r.root.classList.toggle('is-on', on);
+      r.root.style.display = on ? '' : 'none';
       if (on) for (const fn of r.hooks) { try { fn(t - r.start, t); } catch (e) { if (errors.length < 50) errors.push(`${r.id} onFrame: ${e.message}`); } }
     }
     drawBg(t);
@@ -515,7 +521,8 @@
 
   const ready = (async () => {
     await loadFonts();
-    await loadScripts((window.MECCA_SCENES || []).map(f => `scenes/${f}`));
+    const files = (window.MECCA_SCENES || []).filter(f => !SOLO || SOLO.some(p => f.startsWith(p)));
+    await loadScripts(files.map(f => `scenes/${f}`));
     build();
     seek(Number(params.get('t') || 0));
     return true;

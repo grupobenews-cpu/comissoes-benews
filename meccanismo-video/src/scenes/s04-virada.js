@@ -1,3 +1,4 @@
+(() => {
 /*
  * S04 — A VIRADA · "Não somos agência. Somos o meccanismo."  (global 24–34 s, D 10, tail 0)
  *
@@ -608,3 +609,4 @@ ${SEL} .eyebrow { letter-spacing:.22em; }
     root.dataset.s4 = JSON.stringify({ S1end, S2end, emW: Math.round(emR.w), enRight: Math.round(enR.right), meRight: Math.round(h.rect(ME.txt).right) });
   },
 });
+})();

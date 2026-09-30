@@ -1,3 +1,4 @@
+(() => {
 /*
  * S08 — O que gira por dentro.  (global 76–82 s, D = 6 s, tail 0)
  *
@@ -594,3 +595,4 @@ ${SEL} .s8-dia { display:inline-block; width:9px; height:9px; margin:0 17px 0 1p
     });
   },
 });
+})();

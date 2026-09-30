@@ -483,14 +483,17 @@
   // filha quando o playhead cai em cima dele; avançar 0,1 ms garante o estado correto no 1º quadro de cada cena.
   const EPS = 1e-4;
   function seek(t, fps = 30) {
+    // todas as cenas ficam no layout durante o seek (o GSAP pode medir transforms na 1ª renderização de um tween);
+    // logo depois, as que estão fora da janela saem do layout de novo
+    for (const r of records) r.root.style.display = '';
     master.seek(t + EPS, false);
     const last = records[records.length - 1];
     for (const r of records) {
       const on = t >= r.start && (t < r.end || (r === last && t <= r.end + 1e-6));
       r.root.classList.toggle('is-on', on);
-      r.root.style.display = on ? '' : 'none';
       if (on) for (const fn of r.hooks) { try { fn(t - r.start, t); } catch (e) { if (errors.length < 50) errors.push(`${r.id} onFrame: ${e.message}`); } }
     }
+    for (const r of records) if (!r.root.classList.contains('is-on')) r.root.style.display = 'none';
     drawBg(t);
     const frame = Math.round(t * fps);
     if (frame !== lastFrame) { drawGrain(frame); lastFrame = frame; }

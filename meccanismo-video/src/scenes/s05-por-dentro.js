@@ -1,3 +1,4 @@
+(() => {
 /*
  * S05 — POR DENTRO · "A gente entra por dentro do seu negócio, monta as engrenagens que faltam —
  * e fica operando o motor com você."   (global 34–42 s, D 8, tail 0)
@@ -720,3 +721,4 @@ ${SEL} .chip { font-size:20px; }
     });
   },
 });
+})();

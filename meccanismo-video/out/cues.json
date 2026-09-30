@@ -1,27 +1,968 @@
 {
- "duration": 6,
+ "duration": 100,
  "fps": 30,
  "scenes": [
   {
-   "id": "zz-test",
+   "id": "s01-toda-empresa",
    "start": 0,
    "end": 6
+  },
+  {
+   "id": "s02-range",
+   "start": 6,
+   "end": 14
+  },
+  {
+   "id": "s03-duas-caixas",
+   "start": 14,
+   "end": 24
+  },
+  {
+   "id": "s04-virada",
+   "start": 24,
+   "end": 34
+  },
+  {
+   "id": "s05-por-dentro",
+   "start": 34,
+   "end": 42
+  },
+  {
+   "id": "s06-plano-de-voo",
+   "start": 42,
+   "end": 54
+  },
+  {
+   "id": "s07-sete-engrenagens",
+   "start": 54,
+   "end": 76
+  },
+  {
+   "id": "s08-rotinas",
+   "start": 76,
+   "end": 82
+  },
+  {
+   "id": "s09-diferenciais",
+   "start": 82,
+   "end": 92
+  },
+  {
+   "id": "s10-assinatura",
+   "start": 92,
+   "end": 100
   }
  ],
  "cues": [
   {
-   "t": 0.5,
-   "kind": "whoosh",
-   "note": "",
-   "gain": 1,
-   "scene": "zz-test"
+   "t": 0,
+   "kind": "tick",
+   "note": "primeira batida no escuro",
+   "gain": 0.6,
+   "scene": "s01-toda-empresa"
+  },
+  {
+   "t": 1,
+   "kind": "click",
+   "note": "Toda empresa",
+   "gain": 0.3,
+   "scene": "s01-toda-empresa"
+  },
+  {
+   "t": 1.5,
+   "kind": "click",
+   "note": "é uma",
+   "gain": 0.3,
+   "scene": "s01-toda-empresa"
+  },
+  {
+   "t": 2,
+   "kind": "impact",
+   "note": "máquina.",
+   "gain": 0.6,
+   "scene": "s01-toda-empresa"
   },
   {
    "t": 3,
+   "kind": "click",
+   "note": "Ponto pousa como ponto final",
+   "gain": 0.8,
+   "scene": "s01-toda-empresa"
+  },
+  {
+   "t": 4,
+   "kind": "chime",
+   "note": "riders",
+   "gain": 0.25,
+   "scene": "s01-toda-empresa"
+  },
+  {
+   "t": 5.75,
+   "kind": "whoosh",
+   "note": "colapso",
+   "gain": 0.7,
+   "scene": "s01-toda-empresa"
+  },
+  {
+   "t": 6,
+   "kind": "whoosh",
+   "note": "discos viram engrenagens",
+   "gain": 0.3,
+   "scene": "s02-range"
+  },
+  {
+   "t": 6.5,
+   "kind": "glitch",
+   "note": "trava",
+   "gain": 0.4,
+   "scene": "s02-range"
+  },
+  {
+   "t": 7,
+   "kind": "glitch",
+   "note": "rangido",
+   "gain": 0.25,
+   "scene": "s02-range"
+  },
+  {
+   "t": 7.5,
+   "kind": "click",
+   "note": "rangido",
+   "gain": 0.35,
+   "scene": "s02-range"
+  },
+  {
+   "t": 8,
+   "kind": "glitch",
+   "note": "rangido",
+   "gain": 0.25,
+   "scene": "s02-range"
+  },
+  {
+   "t": 8.5,
+   "kind": "click",
+   "note": "rangido",
+   "gain": 0.35,
+   "scene": "s02-range"
+  },
+  {
+   "t": 9,
+   "kind": "glitch",
+   "note": "rangido",
+   "gain": 0.25,
+   "scene": "s02-range"
+  },
+  {
+   "t": 9.5,
+   "kind": "whoosh",
+   "note": "letras desabam",
+   "gain": 0.3,
+   "scene": "s02-range"
+  },
+  {
+   "t": 10,
    "kind": "impact",
-   "note": "",
+   "note": "esforço",
+   "gain": 0.5,
+   "scene": "s02-range"
+  },
+  {
+   "t": 10,
+   "kind": "glitch",
+   "note": "esforço",
+   "gain": 0.5,
+   "scene": "s02-range"
+  },
+  {
+   "t": 10.5,
+   "kind": "click",
+   "note": "Ponto pousa",
+   "gain": 0.6,
+   "scene": "s02-range"
+  },
+  {
+   "t": 11,
+   "kind": "tick",
+   "note": "caneta técnica",
+   "gain": 0.4,
+   "scene": "s02-range"
+  },
+  {
+   "t": 11.5,
+   "kind": "tick",
+   "note": "caneta técnica",
+   "gain": 0.3,
+   "scene": "s02-range"
+  },
+  {
+   "t": 13.75,
+   "kind": "whoosh",
+   "note": "morph",
+   "gain": 0.5,
+   "scene": "s02-range"
+  },
+  {
+   "t": 14,
+   "kind": "impact",
+   "note": "slam T1",
+   "gain": 0.7,
+   "scene": "s03-duas-caixas"
+  },
+  {
+   "t": 15,
+   "kind": "click",
+   "note": "caixa 1",
+   "gain": 0.5,
+   "scene": "s03-duas-caixas"
+  },
+  {
+   "t": 15,
+   "kind": "whoosh",
+   "note": "caixa 1 (FLIP do header)",
+   "gain": 0.35,
+   "scene": "s03-duas-caixas"
+  },
+  {
+   "t": 15.5,
+   "kind": "click",
+   "note": "caixa 2",
+   "gain": 0.5,
+   "scene": "s03-duas-caixas"
+  },
+  {
+   "t": 17,
+   "kind": "glitch",
+   "note": "pisca",
+   "gain": 0.15,
+   "scene": "s03-duas-caixas"
+  },
+  {
+   "t": 17.5,
+   "kind": "glitch",
+   "note": "pisca",
+   "gain": 0.15,
+   "scene": "s03-duas-caixas"
+  },
+  {
+   "t": 18.5,
+   "kind": "click",
+   "note": "caixa 1 fecha",
+   "gain": 0.7,
+   "scene": "s03-duas-caixas"
+  },
+  {
+   "t": 18.5,
+   "kind": "sub-drop",
+   "note": "caixa 1 fecha",
+   "gain": 0.35,
+   "scene": "s03-duas-caixas"
+  },
+  {
+   "t": 19,
+   "kind": "click",
+   "note": "caixa 2 fecha",
+   "gain": 0.7,
+   "scene": "s03-duas-caixas"
+  },
+  {
+   "t": 19.5,
+   "kind": "glitch",
+   "note": "fatiamento",
+   "gain": 0.7,
+   "scene": "s03-duas-caixas"
+  },
+  {
+   "t": 20,
+   "kind": "impact",
+   "note": "'As duas somem na hora H.'",
    "gain": 1,
-   "scene": "zz-test"
+   "scene": "s03-duas-caixas"
+  },
+  {
+   "t": 23,
+   "kind": "sub-drop",
+   "note": "energia cai",
+   "gain": 0.5,
+   "scene": "s03-duas-caixas"
+  },
+  {
+   "t": 23.5,
+   "kind": "glitch",
+   "note": "'somem' some",
+   "gain": 0.3,
+   "scene": "s03-duas-caixas"
+  },
+  {
+   "t": 24,
+   "kind": "impact",
+   "note": "slam",
+   "gain": 0.8,
+   "scene": "s04-virada"
+  },
+  {
+   "t": 25,
+   "kind": "whoosh",
+   "note": "risco 1",
+   "gain": 0.5,
+   "scene": "s04-virada"
+  },
+  {
+   "t": 25,
+   "kind": "click",
+   "note": "risco 1",
+   "gain": 0.9,
+   "scene": "s04-virada"
+  },
+  {
+   "t": 25.5,
+   "kind": "impact",
+   "note": "slam 2",
+   "gain": 0.8,
+   "scene": "s04-virada"
+  },
+  {
+   "t": 26.5,
+   "kind": "whoosh",
+   "note": "risco 2",
+   "gain": 0.5,
+   "scene": "s04-virada"
+  },
+  {
+   "t": 26.5,
+   "kind": "click",
+   "note": "risco 2",
+   "gain": 0.9,
+   "scene": "s04-virada"
+  },
+  {
+   "t": 28.5,
+   "kind": "glitch",
+   "note": "palavras caem",
+   "gain": 0.5,
+   "scene": "s04-virada"
+  },
+  {
+   "t": 28.75,
+   "kind": "click",
+   "note": "'Não' cai",
+   "gain": 0.4,
+   "scene": "s04-virada"
+  },
+  {
+   "t": 29,
+   "kind": "stop",
+   "note": "silêncio",
+   "gain": 1,
+   "scene": "s04-virada"
+  },
+  {
+   "t": 29.5,
+   "kind": "tick",
+   "note": "' o'",
+   "gain": 0.8,
+   "scene": "s04-virada"
+  },
+  {
+   "t": 30,
+   "kind": "impact",
+   "note": "DROP",
+   "gain": 1,
+   "scene": "s04-virada"
+  },
+  {
+   "t": 30,
+   "kind": "sub-drop",
+   "note": "DROP",
+   "gain": 1,
+   "scene": "s04-virada"
+  },
+  {
+   "t": 31,
+   "kind": "click",
+   "note": "ponto encaixa no logo",
+   "gain": 0.9,
+   "scene": "s04-virada"
+  },
+  {
+   "t": 31,
+   "kind": "chime",
+   "note": "encaixe",
+   "gain": 0.6,
+   "scene": "s04-virada"
+  },
+  {
+   "t": 32,
+   "kind": "whoosh",
+   "note": "arcos giram",
+   "gain": 0.4,
+   "scene": "s04-virada"
+  },
+  {
+   "t": 33.75,
+   "kind": "whoosh",
+   "note": "mergulho",
+   "gain": 1,
+   "scene": "s04-virada"
+  },
+  {
+   "t": 34,
+   "kind": "reverse",
+   "note": "pico no corte",
+   "gain": 0.7,
+   "scene": "s04-virada"
+  },
+  {
+   "t": 34,
+   "kind": "impact",
+   "note": "chegada",
+   "gain": 0.6,
+   "scene": "s05-por-dentro"
+  },
+  {
+   "t": 34.9,
+   "kind": "tick",
+   "note": "diagnóstico",
+   "gain": 0.4,
+   "scene": "s05-por-dentro"
+  },
+  {
+   "t": 35.3,
+   "kind": "tick",
+   "note": "diagnóstico",
+   "gain": 0.4,
+   "scene": "s05-por-dentro"
+  },
+  {
+   "t": 35.7,
+   "kind": "tick",
+   "note": "diagnóstico",
+   "gain": 0.4,
+   "scene": "s05-por-dentro"
+  },
+  {
+   "t": 36,
+   "kind": "chime",
+   "note": "divide em 4 mecca",
+   "gain": 0.5,
+   "scene": "s05-por-dentro"
+  },
+  {
+   "t": 36.5,
+   "kind": "click",
+   "note": "engrenagem montada",
+   "gain": 0.7,
+   "scene": "s05-por-dentro"
+  },
+  {
+   "t": 37,
+   "kind": "click",
+   "note": "engrenagem montada",
+   "gain": 0.7,
+   "scene": "s05-por-dentro"
+  },
+  {
+   "t": 37.5,
+   "kind": "click",
+   "note": "engrenagem montada",
+   "gain": 0.7,
+   "scene": "s05-por-dentro"
+  },
+  {
+   "t": 38,
+   "kind": "impact",
+   "note": "motor liga",
+   "gain": 0.8,
+   "scene": "s05-por-dentro"
+  },
+  {
+   "t": 38,
+   "kind": "sub-drop",
+   "note": "motor liga",
+   "gain": 0.4,
+   "scene": "s05-por-dentro"
+  },
+  {
+   "t": 39,
+   "kind": "click",
+   "note": "chip",
+   "gain": 0.4,
+   "scene": "s05-por-dentro"
+  },
+  {
+   "t": 41.75,
+   "kind": "whoosh",
+   "note": "máquina recua, órbita vira plano de voo",
+   "gain": 0.5,
+   "scene": "s05-por-dentro"
+  },
+  {
+   "t": 42,
+   "kind": "impact",
+   "note": "abre o plano de voo",
+   "gain": 0.6,
+   "scene": "s06-plano-de-voo"
+  },
+  {
+   "t": 44.75,
+   "kind": "whoosh",
+   "note": "órbita deita",
+   "gain": 0.4,
+   "scene": "s06-plano-de-voo"
+  },
+  {
+   "t": 45,
+   "kind": "click",
+   "note": "tempo 01",
+   "gain": 0.8,
+   "scene": "s06-plano-de-voo"
+  },
+  {
+   "t": 45,
+   "kind": "impact",
+   "note": "tempo 01",
+   "gain": 0.4,
+   "scene": "s06-plano-de-voo"
+  },
+  {
+   "t": 46.5,
+   "kind": "click",
+   "note": "tempo 02",
+   "gain": 0.8,
+   "scene": "s06-plano-de-voo"
+  },
+  {
+   "t": 48,
+   "kind": "click",
+   "note": "tempo 03",
+   "gain": 0.8,
+   "scene": "s06-plano-de-voo"
+  },
+  {
+   "t": 48.5,
+   "kind": "chime",
+   "note": "mini engrenagem",
+   "gain": 0.3,
+   "scene": "s06-plano-de-voo"
+  },
+  {
+   "t": 49.5,
+   "kind": "click",
+   "note": "tempo 04",
+   "gain": 0.8,
+   "scene": "s06-plano-de-voo"
+  },
+  {
+   "t": 49.5,
+   "kind": "impact",
+   "note": "tempo 04",
+   "gain": 0.5,
+   "scene": "s06-plano-de-voo"
+  },
+  {
+   "t": 50.5,
+   "kind": "chime",
+   "note": "gira sozinha",
+   "gain": 0.6,
+   "scene": "s06-plano-de-voo"
+  },
+  {
+   "t": 51.5,
+   "kind": "tick",
+   "note": "pulsos",
+   "gain": 0.35,
+   "scene": "s06-plano-de-voo"
+  },
+  {
+   "t": 52,
+   "kind": "tick",
+   "note": "pulsos",
+   "gain": 0.35,
+   "scene": "s06-plano-de-voo"
+  },
+  {
+   "t": 53.75,
+   "kind": "whoosh",
+   "note": "linha → círculo",
+   "gain": 0.6,
+   "scene": "s06-plano-de-voo"
+  },
+  {
+   "t": 54,
+   "kind": "whoosh",
+   "note": "círculo viaja",
+   "gain": 0.4,
+   "scene": "s07-sete-engrenagens"
+  },
+  {
+   "t": 55,
+   "kind": "impact",
+   "note": "dentes nascem",
+   "gain": 0.8,
+   "scene": "s07-sete-engrenagens"
+  },
+  {
+   "t": 55.25,
+   "kind": "chime",
+   "note": "cubo",
+   "gain": 0.3,
+   "scene": "s07-sete-engrenagens"
+  },
+  {
+   "t": 56,
+   "kind": "click",
+   "note": "Vendas",
+   "gain": 1,
+   "scene": "s07-sete-engrenagens"
+  },
+  {
+   "t": 56,
+   "kind": "impact",
+   "note": "Vendas",
+   "gain": 0.35,
+   "scene": "s07-sete-engrenagens"
+  },
+  {
+   "t": 58,
+   "kind": "click",
+   "note": "Marketing",
+   "gain": 1,
+   "scene": "s07-sete-engrenagens"
+  },
+  {
+   "t": 60,
+   "kind": "click",
+   "note": "Comercial",
+   "gain": 1,
+   "scene": "s07-sete-engrenagens"
+  },
+  {
+   "t": 62,
+   "kind": "click",
+   "note": "Fiscal",
+   "gain": 1,
+   "scene": "s07-sete-engrenagens"
+  },
+  {
+   "t": 64,
+   "kind": "click",
+   "note": "Logística",
+   "gain": 1,
+   "scene": "s07-sete-engrenagens"
+  },
+  {
+   "t": 66,
+   "kind": "click",
+   "note": "Sistemas",
+   "gain": 1,
+   "scene": "s07-sete-engrenagens"
+  },
+  {
+   "t": 68,
+   "kind": "click",
+   "note": "Tecnologia",
+   "gain": 1,
+   "scene": "s07-sete-engrenagens"
+  },
+  {
+   "t": 68,
+   "kind": "impact",
+   "note": "Tecnologia",
+   "gain": 0.6,
+   "scene": "s07-sete-engrenagens"
+  },
+  {
+   "t": 70.5,
+   "kind": "whoosh",
+   "note": "planetas",
+   "gain": 0.6,
+   "scene": "s07-sete-engrenagens"
+  },
+  {
+   "t": 71,
+   "kind": "whoosh",
+   "note": "carcaça",
+   "gain": 0.5,
+   "scene": "s07-sete-engrenagens"
+  },
+  {
+   "t": 72,
+   "kind": "impact",
+   "note": "tudo engrena",
+   "gain": 1,
+   "scene": "s07-sete-engrenagens"
+  },
+  {
+   "t": 72,
+   "kind": "chime",
+   "note": "tudo engrena",
+   "gain": 0.7,
+   "scene": "s07-sete-engrenagens"
+  },
+  {
+   "t": 75.75,
+   "kind": "whoosh",
+   "note": "máquina recua",
+   "gain": 0.5,
+   "scene": "s07-sete-engrenagens"
+  },
+  {
+   "t": 76.5,
+   "kind": "whoosh",
+   "note": "título",
+   "gain": 0.3,
+   "scene": "s08-rotinas"
+  },
+  {
+   "t": 77.5,
+   "kind": "tick",
+   "note": "diárias",
+   "gain": 0.45,
+   "scene": "s08-rotinas"
+  },
+  {
+   "t": 78,
+   "kind": "tick",
+   "note": "semanais",
+   "gain": 0.45,
+   "scene": "s08-rotinas"
+  },
+  {
+   "t": 78.5,
+   "kind": "tick",
+   "note": "mensais",
+   "gain": 0.45,
+   "scene": "s08-rotinas"
+  },
+  {
+   "t": 79,
+   "kind": "chime",
+   "note": "verificações + 4 mecca",
+   "gain": 0.5,
+   "scene": "s08-rotinas"
+  },
+  {
+   "t": 79.5,
+   "kind": "sub-drop",
+   "note": "noite",
+   "gain": 0.4,
+   "scene": "s08-rotinas"
+  },
+  {
+   "t": 80,
+   "kind": "tick",
+   "note": "saltos",
+   "gain": 0.35,
+   "scene": "s08-rotinas"
+  },
+  {
+   "t": 81,
+   "kind": "tick",
+   "note": "saltos",
+   "gain": 0.35,
+   "scene": "s08-rotinas"
+  },
+  {
+   "t": 81.75,
+   "kind": "whoosh",
+   "note": "recolhe em D1/D2",
+   "gain": 0.4,
+   "scene": "s08-rotinas"
+  },
+  {
+   "t": 82.5,
+   "kind": "impact",
+   "note": "'assume'",
+   "gain": 0.7,
+   "scene": "s09-diferenciais"
+  },
+  {
+   "t": 83,
+   "kind": "click",
+   "note": "Ponto assume o motor",
+   "gain": 0.9,
+   "scene": "s09-diferenciais"
+  },
+  {
+   "t": 83.5,
+   "kind": "whoosh",
+   "note": "risco",
+   "gain": 0.3,
+   "scene": "s09-diferenciais"
+  },
+  {
+   "t": 84,
+   "kind": "impact",
+   "note": "'fica'",
+   "gain": 0.7,
+   "scene": "s09-diferenciais"
+  },
+  {
+   "t": 85,
+   "kind": "glitch",
+   "note": "caixa some",
+   "gain": 0.35,
+   "scene": "s09-diferenciais"
+  },
+  {
+   "t": 85,
+   "kind": "whoosh",
+   "note": "risco",
+   "gain": 0.3,
+   "scene": "s09-diferenciais"
+  },
+  {
+   "t": 85.5,
+   "kind": "impact",
+   "note": "'pele no jogo'",
+   "gain": 0.8,
+   "scene": "s09-diferenciais"
+  },
+  {
+   "t": 86,
+   "kind": "chime",
+   "note": "sócio de resultado",
+   "gain": 0.5,
+   "scene": "s09-diferenciais"
+  },
+  {
+   "t": 88.5,
+   "kind": "impact",
+   "note": "'Cresceu'",
+   "gain": 0.6,
+   "scene": "s09-diferenciais"
+  },
+  {
+   "t": 89,
+   "kind": "tick",
+   "note": "cresce",
+   "gain": 0.3,
+   "scene": "s09-diferenciais"
+  },
+  {
+   "t": 89.5,
+   "kind": "tick",
+   "note": "cresce",
+   "gain": 0.3,
+   "scene": "s09-diferenciais"
+  },
+  {
+   "t": 90,
+   "kind": "tick",
+   "note": "cresce",
+   "gain": 0.3,
+   "scene": "s09-diferenciais"
+  },
+  {
+   "t": 90.5,
+   "kind": "tick",
+   "note": "cresce",
+   "gain": 0.3,
+   "scene": "s09-diferenciais"
+  },
+  {
+   "t": 92,
+   "kind": "riser",
+   "note": "pico no corte",
+   "gain": 1,
+   "scene": "s09-diferenciais"
+  },
+  {
+   "t": 92,
+   "kind": "impact",
+   "note": "DROP final",
+   "gain": 1,
+   "scene": "s10-assinatura"
+  },
+  {
+   "t": 92,
+   "kind": "sub-drop",
+   "note": "DROP final",
+   "gain": 0.8,
+   "scene": "s10-assinatura"
+  },
+  {
+   "t": 92.5,
+   "kind": "impact",
+   "note": "segunda linha",
+   "gain": 0.7,
+   "scene": "s10-assinatura"
+  },
+  {
+   "t": 94,
+   "kind": "whoosh",
+   "note": "Ponto sai orbitando",
+   "gain": 0.3,
+   "scene": "s10-assinatura"
+  },
+  {
+   "t": 95,
+   "kind": "whoosh",
+   "note": "órbita acelera",
+   "gain": 0.3,
+   "scene": "s10-assinatura"
+  },
+  {
+   "t": 96.5,
+   "kind": "reverse",
+   "note": "pico na convergência",
+   "gain": 0.8,
+   "scene": "s10-assinatura"
+  },
+  {
+   "t": 96.5,
+   "kind": "impact",
+   "note": "lockup",
+   "gain": 0.9,
+   "scene": "s10-assinatura"
+  },
+  {
+   "t": 97,
+   "kind": "tick",
+   "note": "ENGRENAR",
+   "gain": 0.4,
+   "scene": "s10-assinatura"
+  },
+  {
+   "t": 97,
+   "kind": "click",
+   "note": "CTA",
+   "gain": 0.6,
+   "scene": "s10-assinatura"
+  },
+  {
+   "t": 97.5,
+   "kind": "tick",
+   "note": "MONTAR",
+   "gain": 0.4,
+   "scene": "s10-assinatura"
+  },
+  {
+   "t": 98,
+   "kind": "tick",
+   "note": "CALIBRAR",
+   "gain": 0.4,
+   "scene": "s10-assinatura"
+  },
+  {
+   "t": 98.5,
+   "kind": "tick",
+   "note": "OPERAR",
+   "gain": 0.4,
+   "scene": "s10-assinatura"
+  },
+  {
+   "t": 99,
+   "kind": "click",
+   "note": "ponto encaixa",
+   "gain": 1,
+   "scene": "s10-assinatura"
+  },
+  {
+   "t": 99,
+   "kind": "chime",
+   "note": "GIRAR",
+   "gain": 1,
+   "scene": "s10-assinatura"
   }
  ]
 }

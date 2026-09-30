@@ -1,3 +1,4 @@
+(() => {
 /*
  * S09 — A gente assume, fica e tem pele no jogo.  (global 82–92 s, D = 10 s, tail 0)
  *
@@ -886,3 +887,4 @@ ${SEL} .s9-lab > span { display:inline-block; }
     });
   },
 });
+})();

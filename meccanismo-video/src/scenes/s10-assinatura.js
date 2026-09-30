@@ -1,3 +1,4 @@
+(() => {
 /*
  * S10 — ASSINATURA · "Quando a máquina engrena, ela não para mais."  (global 92–100 s, D 8, tail 0)
  *
@@ -5,9 +6,9 @@
  *        central) ENCAIXA do raio 420 para 330 em volta de (960,560) e gira; 3 órbitas grandes se desenham com
  *        riders. O Ponto sai de (960,500) e vira o '.' de 'mais.'.
  * 1–4    NÃO PARA: engrenagens 30→300°/s, riders ×1→×4, warp. A partir de 2,0 o Ponto orbita a frase
- *        (elipse (960,560) 820×130, −4°; metade de trás passa ATRÁS do texto).
+ *        (elipse (960,560) 820×150, −4°; metade de trás passa ATRÁS do texto).
  * 4–4,5  CONVERGÊNCIA: a tagline sai para o centro, máquina e órbitas colapsam em (960,560); a órbita do Ponto
- *        encolhe até virar o círculo r 130 em volta do ícone do lockup (592,420).
+ *        encolhe até a órbita ~r 130 (116×132, com folga para o 'M') em volta do ícone do lockup (592,420).
  * 4,5    lockup · 5,0 verbos + CTA · 5,5 URL · 6,5–7,0 espiral · 7,0 CLIQUE FINAL (Ponto encaixa em (670,458),
  *        núcleo #7C3AED, logo completo).
  *
@@ -51,6 +52,7 @@ ${SEL} .s10-shine { position:absolute; top:-30px; left:0; width:120px; height:15
   background:linear-gradient(90deg, rgba(255,255,255,0), rgba(255,255,255,.25) 50%, rgba(255,255,255,0)); }
 ${SEL} .s10-flash { position:absolute; left:0; top:0; width:1920px; height:1080px; background:#C4B5FD;
   mix-blend-mode:screen; opacity:0; pointer-events:none; }
+${SEL} .t-display em { background-image:var(--grad); }
 `,
     }, root);
 
@@ -100,6 +102,14 @@ ${SEL} .s10-flash { position:absolute; left:0; top:0; width:1920px; height:1080p
     cmtChars.forEach((c, i) => tl.set(c, { autoAlpha: 1 }, cmtT(i)));
     const CMT_END = cmtT(cmtChars.length - 1);
     const caret = h.el('div', { cls: 's10-caret' }, textL);
+    const CARET_HOLD = CMT_END + 0.25, CARET_OFF = 6.5;
+    function caretAlpha(t) {
+      if (t < 0.5 || t >= CARET_OFF) return 0;
+      if (t < CARET_HOLD) return 1;
+      const u = t - Math.floor(t);
+      const blink = u < 0.5 ? h.smooth(0, 0.06, u) * (1 - h.smooth(0.42, 0.5, u)) : 0;
+      return Math.max(blink, 1 - h.smooth(CARET_HOLD, CARET_HOLD + 0.08, t));
+    }
 
     // ================================================================== TAGLINE
     const CE = { x: 960, y: 560 };                        // centro da máquina / das órbitas / da convergência
@@ -125,10 +135,20 @@ ${SEL} .s10-flash { position:absolute; left:0; top:0; width:1920px; height:1080p
     const ex1 = exitOff(S1.chars), ex2 = exitOff(S2.chars);
     const t1r = h.rect(T1), t2r = h.rect(T2);
 
-    // entradas: palavras escalam 1,25→1 com fade (0,5 s, power4.out, stagger .06); 'mais.' cresce A PARTIR do Ponto
+    // entradas: palavras escalam 1,25→1 com fade (0,5 s, power4.out); 'mais.' cresce A PARTIR do Ponto.
+    // Para as palavras não se sobreporem enquanto ainda estão grandes, cada uma escala a partir de uma origem
+    // horizontal própria (fração da largura da palavra; <0 ou >1 = fora dela), calculada para manter ≥ ~15 px
+    // de vão entre vizinhas visíveis sem sair da área segura: na linha 1 as origens se agrupam no meio da frase
+    // (as palavras 'pousam' em direção ao centro); na linha 2 o mesmo, com stagger .08, e 'mais.' começa em 1,12
+    // com +4 px de x (origem no '.', cresce a partir do Ponto sem encostar o 's' nele).
+    const originAt = (w, f) => { const r = h.rect(w); gsap.set(w, { transformOrigin: `${f2(f * r.w)}px ${f2(r.h / 2)}px` }); };
+    [1.25, 2, 0.25, -0.25].forEach((f, i) => originAt(S1.words[i], f));
+    [2.5, 1.25, 0.75].forEach((f, i) => originAt(S2.words[i], f));
     gsap.set(wMais, { transformOrigin: `${f2(P0.x - wmr.x)}px ${f2(P0.y - wmr.y)}px` });
     tl.fromTo(S1.words, { scale: 1.25, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.5, ease: 'power4.out', stagger: 0.06 }, 0);
-    tl.fromTo(S2.words, { scale: 1.25, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.5, ease: 'power4.out', stagger: 0.06 }, 0.5);
+    const W2 = S2.words.slice(0, -1);
+    tl.fromTo(W2, { scale: 1.25, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.5, ease: 'power4.out', stagger: 0.08 }, 0.5);
+    tl.fromTo(wMais, { scale: 1.12, opacity: 0, x: 4 }, { scale: 1, opacity: 1, x: 0, duration: 0.5, ease: 'power4.out' }, 0.5 + W2.length * 0.08);
     // o '.' é transparente até 2,0 (é o Ponto); depois o glifo fica e o Ponto sai orbitando
     gsap.set(dotChar, { opacity: 0 });
     tl.to(dotChar, { opacity: 1, duration: 0.12, ease: 'power1.out' }, 2.0);
@@ -219,7 +239,9 @@ ${SEL} .s10-flash { position:absolute; left:0; top:0; width:1920px; height:1080p
     logo.svg.style.display = 'block';
 
     gsap.set([icon.arcOuter, icon.arcInner], { visibility: 'hidden' });
-    tl.set(icon.arcOuter, { visibility: 'inherit' }, 4.5);
+    // o arco nasce em 4,5 com drawSVG 0%: com linecap redondo isso seria um ponto violeta ao lado do encaixe
+    // (parece o ponto do ícone chegando cedo). Ele só fica visível no quadro seguinte, já com traço.
+    tl.set(icon.arcOuter, { visibility: 'inherit' }, 4.5 + 1 / 60);
     tl.fromTo(icon.arcOuter, { drawSVG: '0%' }, { drawSVG: '100%', duration: 0.5, ease: 'mecca.out' }, 4.5);
     tl.set(icon.arcInner, { visibility: 'inherit' }, 4.55);
     tl.fromTo(icon.arcInner, { drawSVG: '0%' }, { drawSVG: '100%', duration: 0.5, ease: 'mecca.out' }, 4.55);
@@ -302,10 +324,11 @@ ${SEL} .s10-flash { position:absolute; left:0; top:0; width:1920px; height:1080p
     const wave = { r: 0, a: 0 };
     tl.fromTo(wave, { r: 0, a: 0.8 }, { r: 1300, a: 0, duration: 0.9, ease: 'power2.out', immediateRender: false }, 0);
     const burst = { a: 0 };
-    tl.fromTo(burst, { a: 0 }, { a: 0.55, duration: 0.1, ease: 'power2.out', immediateRender: false }, 4.32);
-    tl.to(burst, { a: 0, duration: 0.45, ease: 'power2.out' }, 4.42);
+    // pico do clarão da convergência EXATAMENTE em 4,5 (cues 'reverse' + 'impact'), anel nasce no mesmo quadro
+    tl.fromTo(burst, { a: 0 }, { a: 0.55, duration: 0.1, ease: 'power2.in', immediateRender: false }, 4.4);
+    tl.to(burst, { a: 0, duration: 0.45, ease: 'power2.out' }, 4.5);
     const cring = { r: 30, a: 0 };
-    tl.fromTo(cring, { r: 30, a: 0.5 }, { r: 640, a: 0, duration: 0.7, ease: 'power2.out', immediateRender: false }, 4.42);
+    tl.fromTo(cring, { r: 30, a: 0.5 }, { r: 640, a: 0, duration: 0.7, ease: 'power2.out', immediateRender: false }, 4.5);
     const fring = { r: 0, a: 0 };
     tl.fromTo(fring, { r: 0, a: 0.8 }, { r: 90, a: 0, duration: 0.5, ease: 'power2.out', immediateRender: false }, 7.0);
     // flash do DROP: o 1º quadro fica limpo (match cut com a S09) e o pico .5 cai no quadro seguinte
@@ -326,8 +349,13 @@ ${SEL} .s10-flash { position:absolute; left:0; top:0; width:1920px; height:1080p
     // ================================================================== O PONTO (função pura de lt)
     const A0 = { x: 960, y: 500 };
     const CTRL = { x: 1400, y: 420 };                     // arco do tiro até o '.' (passa entre as duas linhas)
-    const ERX = 820, ERY = 130, EROT = -4 * DEG;           // órbita da frase
-    const ORB_R = 130;                                     // órbita circular em volta do ícone
+    // órbita da frase: storyboard 820×130 com ry aberto para 150, para a metade da frente passar ABAIXO dos pés
+    // da linha 2 (baseline 681) em vez de correr sobre ela (lia como pontuação solta: 'p.ara', 'n̩ão')
+    const ERX = 820, ERY = 150, EROT = -4 * DEG;
+    // órbita em volta do ícone: r 130 levemente vertical (116×132). A borda direita fica em x 708 (núcleo até 718),
+    // deixando folga para o 'M' do wordmark (tinta a partir de x 728); o ponto não 'encosta' no logo nas batidas.
+    const ORB_RX = 116, ORB_RY = 132;
+    const M_LEFT = 728;                                    // borda esquerda da tinta do 'M' (medida no palco)
     const qb = (a, c, b, k) => { const u = 1 - k; return { x: u * u * a.x + 2 * u * k * c.x + k * k * b.x, y: u * u * a.y + 2 * u * k * c.y + k * k * b.y }; };
     const DOT = (t) => { const s = s2At(t); return { x: O2.x + s * (P0.x - O2.x), y: O2.y + s * (P0.y - O2.y) }; };
     // ponto de partida da órbita (o '.' em 2,0) em coordenadas locais da elipse
@@ -367,20 +395,22 @@ ${SEL} .s10-flash { position:absolute; left:0; top:0; width:1920px; height:1080p
       if (t < 2.0) { const q = DOT(t); return { x: q.x, y: q.y, back: false, ph: 0 }; }
       const ph = phi(t);
       if (t < 4.0) {
+        // sai do '.' numa elipse maior que encolhe até a da frase; a altura encolhe mais devagar (2,0–2,6):
+        // o Ponto mergulha ABAIXO dos pés de 'mais' / 'para' em vez de correr rente à baseline
         const f = lerp(F0, 1, eP2io(seg(t, 2.0, 2.4)));
-        const q = h.ellipsePt(CE.x, CE.y, ERX * f, ERY * f, EROT, ph);
+        const fy = lerp(F0, 1, Math.pow(seg(t, 2.0, 2.6), 2));
+        const q = h.ellipsePt(CE.x, CE.y, ERX * f, ERY * fy, EROT, ph);
         return { x: q.x, y: q.y, back: Math.sin(ph) < 0, ph };
       }
       if (t < 4.5) {
         const k = eMIO(seg(t, 4.0, 4.5));
-        const q = h.ellipsePt(lerp(CE.x, IC.x, k), lerp(CE.y, IC.y, k), lerp(ERX, ORB_R, k), lerp(ERY, ORB_R, k), lerp(EROT, 0, k), ph);
+        const q = h.ellipsePt(lerp(CE.x, IC.x, k), lerp(CE.y, IC.y, k), lerp(ERX, ORB_RX, k), lerp(ERY, ORB_RY, k), lerp(EROT, 0, k), ph);
         return { x: q.x, y: q.y, back: t < 4.25 && Math.sin(ph) < 0, ph };
       }
-      if (t < 6.5) return { x: IC.x + ORB_R * Math.cos(ph), y: IC.y + ORB_R * Math.sin(ph), back: false, ph };
+      if (t < 6.5) return { x: IC.x + ORB_RX * Math.cos(ph), y: IC.y + ORB_RY * Math.sin(ph), back: false, ph };
       if (t < 7.0) {
         const k = eP3i(seg(t, 6.5, 7.0));
-        const R = ORB_R * (1 - k);
-        return { x: lerp(IC.x, SOCK.x, k) + R * Math.cos(ph), y: lerp(IC.y, SOCK.y, k) + R * Math.sin(ph), back: false, ph };
+        return { x: lerp(IC.x, SOCK.x, k) + ORB_RX * (1 - k) * Math.cos(ph), y: lerp(IC.y, SOCK.y, k) + ORB_RY * (1 - k) * Math.sin(ph), back: false, ph };
       }
       const s = sockAt(t);
       return { x: s.x, y: s.y, back: false, ph };
@@ -395,9 +425,9 @@ ${SEL} .s10-flash { position:absolute; left:0; top:0; width:1920px; height:1080p
       else if (t < 6.5) r = 10;
       else if (t < 7.0) r = lerp(10, 190 * 10 / 228, eP3i(seg(t, 6.5, 7.0)));
       else r = 190 * 10 / 228;
-      // perspectiva na órbita da frase: maior na frente, menor atrás
+      // perspectiva na órbita da frase: cresce na frente; atrás nunca fica abaixo de r 11 (não pode parecer rider)
       const dAmt = h.smooth(2.0, 2.3, t) * (1 - h.smooth(4.0, 4.4, t));
-      if (dAmt > 0 && p) r *= 1 + 0.14 * Math.sin(p.ph) * dAmt;
+      if (dAmt > 0 && p) r *= 1 + 0.14 * Math.max(0, Math.sin(p.ph)) * dAmt;
       return r;
     }
     function glowAt(t) {
@@ -446,7 +476,7 @@ ${SEL} .s10-flash { position:absolute; left:0; top:0; width:1920px; height:1080p
         let i1 = i0;
         while (i1 < N && pts[i1 + 1].back === bk) i1++;
         const j1 = Math.min(N, i1 + 1);
-        const c = bk ? cb : cf, k = bk ? 0.55 : 1;
+        const c = bk ? cb : cf, k = bk ? 0.75 : 1;
         const pa = pts[i0], pb = pts[j1];
         if (Math.hypot(pa.x - pb.x, pa.y - pb.y) > 0.5) {
           const g = c.createLinearGradient(pa.x, pa.y, pb.x, pb.y);
@@ -482,10 +512,23 @@ ${SEL} .s10-flash { position:absolute; left:0; top:0; width:1920px; height:1080p
       const p = pos(t);
       const r = radAt(t, p);
       const c = p.back ? cb : cf;
-      const k = p.back ? 0.62 : 1;
+      const k = p.back ? 0.85 : 1;
       drawTrail(t, r);
       const g = glowAt(t);
-      h.glowDot(c, p.x, p.y, r, P.lavender, clamp(0.6 * g * k, 0, 1));
+      // metade de trás: halo largo (a luz 'vaza' em volta das letras quando o Ponto passa atrás delas) e, no vão
+      // entre as linhas, onde ele aparece inteiro, o glow reforça — é o herói, não um rider
+      if (p.back) {
+        const gapK = h.smooth(446, 470, p.y) * (1 - h.smooth(560, 584, p.y));
+        const R = r * 7;
+        const gr = cb.createRadialGradient(p.x, p.y, 0, p.x, p.y, R);
+        gr.addColorStop(0, hexA(P.lavender, 0.14 + 0.18 * gapK));
+        gr.addColorStop(0.35, hexA(P.lavender, 0.05 + 0.07 * gapK));
+        gr.addColorStop(1, hexA(P.lavender, 0));
+        cb.fillStyle = gr; cb.beginPath(); cb.arc(p.x, p.y, R, 0, TAU); cb.fill();
+      }
+      // perto do 'M' do wordmark o halo recua (o ponto passa rente ao logo sem 'manchar' a letra)
+      const nearM = t >= 4.6 ? 1 - h.smooth(6, 40, M_LEFT - (p.x + r)) : 0;
+      h.glowDot(c, p.x, p.y, r, P.lavender, clamp(0.6 * g * k * (1 - 0.5 * nearM), 0, 1));
       if (g > 1.02) {                                     // carga: halo extra largo
         const R = r * 5 * g;
         const gr = c.createRadialGradient(p.x, p.y, 0, p.x, p.y, R);
@@ -656,14 +699,15 @@ ${SEL} .s10-flash { position:absolute; left:0; top:0; width:1920px; height:1080p
         cf.beginPath(); cf.arc(pp.x, pp.y, fring.r, 0, TAU); cf.stroke();
       }
 
-      // --- caret do comentário (pisca no tempo da música)
-      if (lt >= 0.5) {
+      // --- caret do comentário: fixo durante a digitação; depois pisca a 1 Hz (aceso na 1ª metade de cada
+      //     segundo, fades curtos) e apaga de vez após o último piscar antes do clique (6,5) — o hold fica calmo
+      const ca = caretAlpha(lt);
+      if (ca > 0.002) {
         let n = 0;
         while (n < cmtChars.length && cmtT(n) <= lt + 1e-6) n++;
         const x = n ? cmtRight[n - 1] + 4 : 192;
-        const on = lt < CMT_END + 0.25 || (lt / 0.5) % 1 < 0.5;
         caret.style.transform = `translate(${f2(x)}px, ${f2(cmtBase - 21)}px)`;
-        caret.style.opacity = on ? '0.9' : '0';
+        caret.style.opacity = (0.9 * ca).toFixed(3);
       } else caret.style.opacity = '0';
     });
 
@@ -683,7 +727,6 @@ ${SEL} .s10-flash { position:absolute; left:0; top:0; width:1920px; height:1080p
     cue(7, 'click', 'ponto encaixa', 1.0);
     cue(7, 'chime', 'GIRAR', 1.0);
 
-    root.__dbg = { pos, radAt };  // DEBUG-TEMP
     // medidas úteis para revisão
     root.dataset.s10 = JSON.stringify({
       P0: { x: +P0.x.toFixed(1), y: +P0.y.toFixed(1) }, DOT_R: +DOT_R.toFixed(1), base2: +base2.toFixed(1),
@@ -694,3 +737,4 @@ ${SEL} .s10-flash { position:absolute; left:0; top:0; width:1920px; height:1080p
     });
   },
 });
+})();

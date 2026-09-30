@@ -1,3 +1,4 @@
+(() => {
 /*
  * S06 — O plano de voo: quatro tempos (global 42–54 s, D = 12 s, tail 0)
  *
@@ -653,3 +654,4 @@ MECCA.scene({
     });
   },
 });
+})();

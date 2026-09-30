@@ -1,3 +1,4 @@
+(() => {
 /*
  * S07 — Uma máquina. Sete engrenagens. Um só mecanismo.  (global 54–76 s, D = 22 s, tail 0)
  *
@@ -529,3 +530,4 @@ ${SEL} .s7-close em { background-repeat:no-repeat; }
     });
   },
 });
+})();

@@ -1,3 +1,4 @@
+(() => {
 /*
  * S01 — "Toda empresa é uma máquina."  (0–6 s, tail 0)
  * Gancho frio: o mundo escuro acende, o Ponto (os mecca) nasce no centro, a frase entra
@@ -445,3 +446,4 @@ MECCA.scene({
     cue(5.75, 'whoosh', 'colapso', 0.7);
   },
 });
+})();

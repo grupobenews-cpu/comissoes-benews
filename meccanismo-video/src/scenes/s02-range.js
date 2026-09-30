@@ -1,3 +1,4 @@
+(() => {
 /*
  * S02 — "Algumas giram; a maioria range."  (6–14 s, tail 0)
  * O problema como fenômeno físico: os dois discos herdados da S01 viram engrenagens,
@@ -644,3 +645,4 @@ MECCA.scene({
     cue(7.75, 'whoosh', 'morph', 0.5);
   },
 });
+})();

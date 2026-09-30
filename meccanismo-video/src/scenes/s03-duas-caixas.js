@@ -1,3 +1,4 @@
+(() => {
 /*
  * S03 — "O mercado te dá duas caixas."
  * As duas caixas do mercado (agência / consultoria) solidificam, mostram o que entregam
@@ -519,3 +520,4 @@ MECCA.scene({
     cue(9.5, 'glitch', "'somem' some", 0.3);
   },
 });
+})();

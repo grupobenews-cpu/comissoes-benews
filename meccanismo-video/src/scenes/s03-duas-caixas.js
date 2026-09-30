@@ -92,12 +92,12 @@ MECCA.scene({
     const HR = h.rect(HD.outer);
     const HC = { x: HR.cx, y: HR.cy };               // origem do push do header
     const PUSH_H = 0.02;
-    // FLIP em grupo: uma única semelhança (escala + translação, origem 0 0) leva 'duas caixas.' EXATAMENTE sobre o
-    // 'duas caixas.' do header (44/260). 'O mercado te dá' viaja no mesmo grupo e dissolve; o do header surge ao lado.
-    const FLIP = { t0: 0.75, t1: 1.1, s: 44 / 260 };
-    FLIP.x = hB.x - FLIP.s * B.left;
-    FLIP.y = HD.base - FLIP.s * B.base;
-    const MP = { x: FLIP.s * P0.x + FLIP.x, y: FLIP.s * P0.y + FLIP.y };   // onde o '.' de 'caixas.' pousa
+    // FLIP em grupo: uma única semelhança (escala em torno do início da baseline de 'duas caixas.' + translação) leva
+    // 'duas caixas.' EXATAMENTE sobre o 'duas caixas.' do header (44/260). 'O mercado te dá' viaja no mesmo grupo e
+    // dissolve; o do header surge ao lado. x/escala adiantam-se ao y (arco): o grupo chega por BAIXO do seu lugar,
+    // sem raspar no 'dá' do header que está surgindo.
+    const FLIP = { t0: 0.75, t1: 1.1, tx1: 1.05, ty0: 0.83, s: 44 / 260 };
+    const O0 = { x: B.left, y: B.base }, O1 = { x: hB.x, y: HD.base };
 
     // ------------------------------------------------------------------ T2: "As duas somem / na hora H."
     // (sem nós de texto soltos ao lado de elementos com tween: o espaço fica DENTRO do span, como &nbsp;)
@@ -262,17 +262,19 @@ MECCA.scene({
     tl.fromTo([B.inner, A.inner], { yPercent: Y_IN }, { yPercent: 0, duration: 0.18, ease: 'expo.out', stagger: 0.03 }, 0);
     gsap.set(GS, { transformOrigin: `${P0.x}px ${P0.y}px` });
     tl.fromTo(GS, { scale: 1.08 }, { scale: 1, duration: 0.25, ease: 'expo.out' }, 0);
-    h.shake(tl, root, 0, { amp: 4, n: 5, dur: 0.2, seed: 301 });
+    // (em 0,001 e não em 0: o motor busca t + 0,1 ms; um tremor já iniciado deslocaria o root em centésimos de px e o
+    // quadro 0 deixaria de ser idêntico ao último da S02. No quadro seguinte o 1º golpe do tremor já está completo.)
+    h.shake(tl, root, 0.001, { amp: 4, n: 5, dur: 0.2, seed: 301 });
     // os tracejados dos cards recuam (α .3 → .12) enquanto T1 ocupa a tela; voltam em 1,0
     tl.to([C1.st, C2.st], { sa: 0.12, duration: 0.2, ease: 'power2.out' }, 0);
     tl.to(C2.st, { sa: 0.3, duration: 0.3, ease: 'power2.out' }, 1.0);   // (o C1 sobe direto para .5 no openBox)
 
     // 0,75–1,1 — FLIP em GRUPO para o header (mecca.inOut): uma só transformação para as duas linhas.
     // 'duas caixas.' pousa exatamente sobre o do header; 'O mercado te dá' dissolve no caminho e o do header surge.
-    gsap.set(GF, { transformOrigin: '0px 0px' });
-    const FD = FLIP.t1 - FLIP.t0;
-    tl.to(GF, { x: FLIP.x, y: FLIP.y, scale: FLIP.s, duration: FD, ease: 'mecca.inOut' }, FLIP.t0);
-    tl.to(A.outer, { autoAlpha: 0, duration: 0.2, ease: 'sine.in' }, FLIP.t0);
+    gsap.set(GF, { transformOrigin: `${O0.x}px ${O0.y}px` });
+    tl.to(GF, { x: O1.x - O0.x, scale: FLIP.s, duration: FLIP.tx1 - FLIP.t0, ease: 'mecca.inOut' }, FLIP.t0);
+    tl.to(GF, { y: O1.y - O0.y, duration: FLIP.t1 - FLIP.ty0, ease: 'mecca.inOut' }, FLIP.ty0);
+    tl.to(A.outer, { autoAlpha: 0, duration: 0.18, ease: 'sine.in' }, FLIP.t0);
     tl.fromTo(hAel, { autoAlpha: 0 }, { autoAlpha: 1, duration: FLIP.t1 - 0.93, ease: 'power1.out' }, 0.93);
     // troca seca (sem crossfade, sem queda de brilho): no quadro de 1,1 o grupo já está na pose final
     tl.set(hBel, { autoAlpha: 0 }, 0);
@@ -386,11 +388,13 @@ MECCA.scene({
     function pontoPos(t) {
       if (t < FLIP.t0) return { x: P0.x, y: P0.y, r: 16 };
       if (t < FLIP.t1) {
-        // acompanha exatamente o '.' de 'caixas.' durante o FLIP em grupo (semelhança linear no mesmo ease)
-        const u = (t - FLIP.t0) / FD, k = E_FLIP(u);
-        const x = lerp(P0.x, MP.x, k), y = lerp(P0.y, MP.y, k);
+        // acompanha exatamente o '.' de 'caixas.' durante o FLIP em grupo (mesma transformação do GF)
+        const u = (t - FLIP.t0) / (FLIP.t1 - FLIP.t0);
+        const kx = E_FLIP(clamp((t - FLIP.t0) / (FLIP.tx1 - FLIP.t0))), ky = E_FLIP(clamp((t - FLIP.ty0) / (FLIP.t1 - FLIP.ty0)));
+        const s = lerp(1, FLIP.s, kx);
+        const x = lerp(O0.x, O1.x, kx) + s * (P0.x - O0.x), y = lerp(O0.y, O1.y, ky) + s * (P0.y - O0.y);
         const w = h.smooth(0.8, 1, u);              // funde nos últimos quadros com o '.' medido do header
-        return { x: lerp(x, PH.x, w), y: lerp(y, PH.y, w), r: lerp(16, 4, k) };
+        return { x: lerp(x, PH.x, w), y: lerp(y, PH.y, w), r: lerp(16, 4, kx) };
       }
       if (t < 5.5) { const s = 1 + PUSH_H * clamp((t - FLIP.t1) / (5.5 - FLIP.t1)); return { x: HC.x + (PH.x - HC.x) * s, y: HC.y + (PH.y - HC.y) * s, r: 4 * s }; }
       if (t < 6.0) { const k = E_FLY((t - 5.5) / 0.5); return { x: cb(HE.x, K1.x, K2.x, P2.x, k), y: cb(HE.y, K1.y, K2.y, P2.y, k), r: lerp(4 * (1 + PUSH_H), 14, k) }; }

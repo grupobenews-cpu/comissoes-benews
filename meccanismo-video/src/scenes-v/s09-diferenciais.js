@@ -6,15 +6,18 @@
  * (storyboard/vertical/VERTICAL_SPEC.md §2 · S09). Texto empilhado em x 90 (y 300–1000); área de demonstração
  * no palco, centro (540,1270), máquina-base em m .5 (= horizontal × 10/9 ≈ 1,11).
  *
- * 0,0        match cut com a S08: máquina (sol + 7 planetas + carcaça) em (540,1270) m .5, girando;
+ * 0,0        match cut com a S08: máquina (sol + 7 planetas + carcaça) em (540,1270) m .5, girando (carcaça pela
+ *            função compartilhada carcAngle(gt): 0° em 82,0, oscila ±18° com período de 4 s);
  *            D1 (245×78) e D2 (355×111) em hairline lavanda α .3, rot −14°; Ponto em D2 a 0°
  *            (884,5, 1184,1), r 10, no desenho padrão global; sem texto; fundo padrão.
  * 0,5–1,0    ASSUME: o Ponto mergulha no V da pupila (540, 1254,4), controle (820,1000), power3.in.
  * 1,0        ENCAIXE: pupila pisca violeta→lilás→violeta, onda; sol 36 → 90 → 72°/s.
  * 2,0–3,5    FICA: o Ponto orbita D2 (1 volta/s) deixando um anel-rastro; 2,5 a caixa-fantasma (130×88,
- *            r 11, tracejada slate) entra em D1 a 180° (≈302,1329); 3,0 é arremessada para a esquerda/baixo.
+ *            r 11, tracejada slate, com o line art do card 'post' da S03) entra em D1 a 180° (≈302,1329);
+ *            3,0 é arremessada para a esquerda/baixo.
  * 3,5–4,0    PELE NO JOGO: planetas recolhem, a pupila vira a esfera A (MorphSVG); 4,0 binário a 72°/s:
- *            A em órbita 44×16 (r 44), B = Ponto em órbita 222×78 (r 12), fio em gradiente, rótulos mono 26.
+ *            A em órbita 44×16 (r 44), B = Ponto em órbita 222×78 (r 12), fio em gradiente, rótulos mono 26
+ *            sempre radialmente para fora do fio (sem troca de lado, α constante).
  * 6,5–9,5    CRESCE JUNTO: baricentro (540,1270)→(540,1190); órbitas A 44×16→62×22, B 222×78→278×97;
  *            r A 44→58, r B 12→17; ondas elípticas rx 278→466 em 7,0/7,5/8,0/8,5.
  * 9,5–10,0   o binário implode num ponto único (r 20, glow ×2) que vai para (540,690);
@@ -33,7 +36,7 @@ MECCA.scene({
     const pe = (n) => gsap.parseEase(n);
     const EOUT = pe('mecca.out'), EIN = pe('mecca.in'), EIO = pe('mecca.inOut'), EBACK = pe('mecca.back');
     const P3I = pe('power3.in'), P2I = pe('power2.in'), P2O = pe('power2.out'), P2IO = pe('power2.inOut');
-    const P1IO = pe('power1.inOut'), P3IO = pe('power3.inOut');
+    const P1IO = pe('power1.inOut'), P3IO = pe('power3.inOut'), P1I = pe('power1.in');
 
     // ------------------------------------------------------------------ layout vertical (spec §2 · S09 e §3)
     const MX = 540, MY = 1270, MS = 0.5;               // máquina-base: centro do palco, m .5
@@ -49,7 +52,7 @@ MECCA.scene({
     const RA0 = 44, RA1 = 58;                          // raio de A
     const RB0 = 12, RB1 = 17, RF = 20;                 // raio de B; raio do ponto fundido
     const BOX_W = 130, BOX_H = 88, BOX_R = 11;         // caixa-fantasma
-    const LAB_A = 12, LAB_B = 20;                      // folga corpo → rótulo (56 px abaixo de A; 32 px acima de B no início)
+    const GAP_A = 26 * KV, GAP_B = 22 * KV;            // folga corpo → borda interna do rótulo (horizontal × KV)
 
     const rgb = (hex) => { const n = parseInt(hex.slice(1), 16); return [(n >> 16) & 255, (n >> 8) & 255, n & 255]; };
     const lerpRGB = (A, B, k) => [lerp(A[0], B[0], k), lerp(A[1], B[1], k), lerp(A[2], B[2], k)];
@@ -84,6 +87,9 @@ MECCA.scene({
     // brilho do Ponto: continuação exata do br(t) da S08 (lá: 1 − .12·(.5 − .5·cos(tπ)), t local da S08 = 6 + t aqui)
     const BR = (t) => 1 - 0.12 * (0.5 - 0.5 * Math.cos((6 + t) * Math.PI));
     const GLOW = (t) => 0.82 + 0.18 * Math.sin((T8 + t + 22) * Math.PI * 0.5);  // glow do cubo
+    // carcaça (arcos do ícone): regra COMPARTILHADA S07/S08/S09 (h e v), função do tempo GLOBAL gt —
+    // 0° até 72 s; depois oscila ±18° com período de 4 s (0° exatos nos cortes de 76,0 e 82,0), sem nunca virar o logo
+    const carcAngle = (gt) => (gt < 72 ? 0 : 18 * Math.sin(TAU * (gt - 72) / 4) * smooth(72, 72.6, gt));
 
     // sol: 36°/s → 90°/s (1,0–1,3, power2.out) → 72°/s (1,3–2,0)
     const W1 = (s) => 36 + 54 * P2O(clamp((s - 1) / 0.3));
@@ -100,7 +106,7 @@ MECCA.scene({
     h.el('style', {
       html: `
 ${SEL} .s9-blk { position:absolute; left:0; top:0; width:${W}px; height:${H}px; }
-${SEL} .s9-m { position:absolute; left:0; top:0; overflow:hidden; padding:.3em 1.25em .36em .14em; white-space:nowrap; }
+${SEL} .s9-m { position:absolute; left:0; top:0; overflow:hidden; padding:.3em 1.25em .64em .14em; margin-bottom:-.28em; white-space:nowrap; }
 ${SEL} .s9-i { position:relative; white-space:nowrap; line-height:1; }
 ${SEL} .s9-i em { background:linear-gradient(90deg, #C026D3, #7C3AED); -webkit-background-clip:text; background-clip:text; color:transparent; }
 ${SEL} .s9-v, ${SEL} .s9-k, ${SEL} .s9-sr { display:inline-block; }
@@ -108,8 +114,8 @@ ${SEL} .s9-pj { position:relative; }
 ${SEL} .s9-gl { position:absolute; left:0; top:0; color:transparent; white-space:nowrap; }
 ${SEL} .s9-ul { position:absolute; left:0; height:3px; border-radius:3px; background:linear-gradient(90deg, #C026D3, #7C3AED);
   transform-origin:0 50%; box-shadow:0 0 12px rgba(192,38,211,.55); }
-${SEL} .s9-lab { position:absolute; left:0; top:0; font-family:var(--f-mono); font-weight:500; font-size:26px; letter-spacing:.22em;
-  padding-left:.22em; text-transform:uppercase; white-space:nowrap; line-height:1; }
+${SEL} .s9-lab { position:absolute; left:0; top:0; font-family:var(--f-mono); font-weight:500; font-size:26px; letter-spacing:.12em;
+  padding-left:.12em; text-transform:uppercase; white-space:nowrap; line-height:1; }
 ${SEL} .s9-lab > span { display:inline-block; }
 `,
     }, root);
@@ -260,6 +266,9 @@ ${SEL} .s9-lab > span { display:inline-block; }
     const ul = h.el('div', { cls: 's9-ul' }, L3c.inner);
     ul.style.top = (baseOff(L3c.inner) + 10).toFixed(1) + 'px';
     ul.style.width = h.rect(sr).w.toFixed(1) + 'px';
+    // borda de baixo do sublinhado já com o push máximo de B3 (1,02, origem (90, 865)): os rótulos do binário
+    // ficam sempre ≥ 24 px abaixo dela
+    const UL_BOT = 865 + (h.rect(ul).bottom - 865) * 1.02;
 
     // eyebrow
     const eb = h.eyebrow('A GENTE ASSUME, OPERA E FICA', { x: TX, y: 270, anchor: 'cl', size: 26, parent: root });
@@ -269,10 +278,12 @@ ${SEL} .s9-lab > span { display:inline-block; }
     // rótulos do binário (posicionados a cada quadro)
     const labA = h.el('div', { cls: 's9-lab', html: '<span>SUA EMPRESA</span>' }, root);
     const labB = h.el('div', { cls: 's9-lab', html: '<span>OS MECCA</span>' }, root);
-    labA.style.color = P.lilac; labB.style.color = P.pink;
-    labB.style.textShadow = '0 0 14px rgba(226,73,176,.45)';
+    labA.style.color = P.lilac; labB.style.color = P.pink;                  // OS MECCA em #E249B0 a 100%
+    // halo escuro (cor da base) sob as letras: as hairlines das órbitas e as ondas não atravessam a leitura
+    labA.style.textShadow = '0 0 4px rgba(22,10,39,.9), 0 0 10px rgba(22,10,39,.6)';
+    labB.style.textShadow = '0 0 4px rgba(22,10,39,.9), 0 0 12px rgba(226,73,176,.4)';
     const labAi = labA.firstChild, labBi = labB.firstChild;
-    const LAB_H = h.rect(labA).h || 26;             // altura da caixa do rótulo (line-height 1 → 26 px)
+    const LAB_A = h.rect(labA), LAB_B = h.rect(labB);            // caixas dos rótulos (antes de qualquer transform)
 
     // ================================================================== TIMELINE (DOM + fundo)
     const BG0 = { glowA: 1, glowB: 1, glowC: 1, grid: 0, particles: 1, driftX: 0, driftY: 0, speed: 1, warp: 0, vignette: 0.55, dim: 0, hue: 0, grain: 1 };
@@ -300,7 +311,6 @@ ${SEL} .s9-lab > span { display:inline-block; }
     const NCH = ebSp.chars.length;
     tl.to(ebDash, { scaleX: 1, duration: 0.3, ease: 'mecca.out' }, 0.5);
     tl.to(ebSp.chars, { autoAlpha: 1, duration: 0.01, ease: 'none', stagger: 0.025 }, 0.62);
-    tl.to(eb, { x: 4, duration: 9, ease: 'none' }, 0.5);   // micro-deriva (≤ 4 px)
     tl.to(ebSp.chars, { autoAlpha: 0, duration: 0.01, ease: 'none', stagger: { each: 0.011, from: 'end' } }, 9.5);
     tl.to(ebDash, { scaleX: 0, duration: 0.12, ease: 'mecca.in' }, 9.5 + NCH * 0.011);
 
@@ -313,17 +323,20 @@ ${SEL} .s9-lab > span { display:inline-block; }
     // bloco 1 — ASSUME
     reveal(L1a, 0.5, 0.5); hit(v1, 0.5);    // a linha sobe na batida (máscara 0,5 s) e o verbo bate em cima dela
     reveal(L1b, 1.0);
-    tl.to([ag1, L1b.inner], { opacity: 0.45, duration: 0.4, ease: 'power2.out' }, 2.0);
+    // o bloco cai para α .6 ('assume,' em .7); a linha secundária riscada tem piso de .65 (contraste do diferencial)
+    tl.to(ag1, { opacity: 0.6, duration: 0.4, ease: 'power2.out' }, 2.0);
+    tl.to(L1b.inner, { opacity: 0.65, duration: 0.4, ease: 'power2.out' }, 2.0);
     tl.to(v1, { opacity: 0.7, duration: 0.4, ease: 'power2.out' }, 2.0);
     tl.to(B1, { scale: 1.02, duration: 5.5, ease: 'none' }, 0.5);
     // bloco 2 — FICA
     reveal(L2a, 2.0, 0.5); hit(v2, 2.0);
     reveal(L2b, 2.5);
-    tl.to([ag2, L2b.inner], { opacity: 0.45, duration: 0.4, ease: 'power2.out' }, 3.5);
+    tl.to(ag2, { opacity: 0.6, duration: 0.4, ease: 'power2.out' }, 3.5);          // 'fica,' continua em α 1
+    tl.to(L2b.inner, { opacity: 0.65, duration: 0.4, ease: 'power2.out' }, 3.5);
     tl.to(B2, { scale: 1.02, duration: 4.0, ease: 'none' }, 2.0);
-    // saída dos blocos 1 e 2 (6,0–6,3)
-    tl.to(B1, { x: -60, opacity: 0, duration: 0.3, ease: 'mecca.in' }, 6.0);
-    tl.to(B2, { x: -60, opacity: 0, duration: 0.3, ease: 'mecca.in' }, 6.0);
+    // saída dos blocos 1 e 2 (6,0–6,3): mecca.in só no x; a opacidade em power1.in (sem "pop" no último quadro)
+    tl.to([B1, B2], { x: -60, duration: 0.3, ease: 'mecca.in' }, 6.0);
+    tl.to([B1, B2], { opacity: 0, duration: 0.3, ease: 'power1.in' }, 6.0);
     // bloco 3 — PELE NO JOGO
     reveal(L3a, 3.5, 0.5); reveal(L3b, 3.5, 0.5); hit(v3, 3.5);   // 'pele no jogo —' também por máscara
     reveal(L3c, 4.0);
@@ -336,12 +349,14 @@ ${SEL} .s9-lab > span { display:inline-block; }
     tl.to(B4, { scale: 1.02, duration: 3.0, ease: 'none' }, 6.5);
     // saída (9,5–9,8): cada bloco sobe 20 px com fade (sem mexer nas máscaras → as linhas nunca se encostam);
     // o sublinhado de 'sócio de resultado' some primeiro (9,5–9,65)
-    tl.to(ul, { opacity: 0, duration: 0.15, ease: 'mecca.in' }, 9.5);
-    tl.to(B4, { y: -20, opacity: 0, duration: 0.28, ease: 'mecca.in' }, 9.5);
-    tl.to(B3, { y: -20, opacity: 0, duration: 0.28, ease: 'mecca.in' }, 9.52);
+    tl.to(ul, { opacity: 0, duration: 0.15, ease: 'power1.in' }, 9.5);
+    tl.to(B4, { y: -20, duration: 0.28, ease: 'mecca.in' }, 9.5);
+    tl.to(B4, { opacity: 0, duration: 0.28, ease: 'power1.in' }, 9.5);
+    tl.to(B3, { y: -20, duration: 0.28, ease: 'mecca.in' }, 9.52);
+    tl.to(B3, { opacity: 0, duration: 0.28, ease: 'power1.in' }, 9.52);
     // rótulos
     tl.to([labAi, labBi], { opacity: 1, y: 0, duration: 0.45, ease: 'mecca.out', stagger: 0.06 }, 4.0);
-    tl.to([labAi, labBi], { opacity: 0, duration: 0.2, ease: 'mecca.in' }, 9.5);
+    tl.to([labAi, labBi], { opacity: 0, duration: 0.2, ease: 'power1.in' }, 9.5);
     // pupila → esfera A
     tl.to(hub.pupil, { morphSVG: CIRCLE_D, duration: 0.5, ease: 'mecca.inOut' }, 3.5);
 
@@ -396,7 +411,9 @@ ${SEL} .s9-lab > span { display:inline-block; }
     }
     function bary(t) {
       const y1 = lerp(BY0, BY1, growO(t));
-      const m = P3IO(clamp((t - 9.6) / (LAST - 9.6)));
+      // a subida para o ponto de fusão começa em 9,65 (não 9,6): o binário só entra na zona de texto quando
+      // 'sócio de resultado.' (B3) já está abaixo de α .1 (≈9,77); o ponto final (540, 690) não muda
+      const m = P3IO(clamp((t - 9.65) / (LAST - 9.65)));
       return { x: lerp(MX, FUSE.x, m), y: lerp(y1, FUSE.y, m) };
     }
     function orbB(t) {
@@ -638,19 +655,61 @@ ${SEL} .s9-lab > span { display:inline-block; }
       ribbon(pts, Wd, COL, AL, () => L, cB);
       if (core > 0) ribbon(pts, W2, COL2, AL2, () => L, cB);
     }
+    // caixa-fantasma = o card 'post' da S03 em miniatura (igual à horizontal): contorno tracejado slate quase sem
+    // fill e, dentro, o mesmo line art (moldura da imagem, montanha, sol e duas linhas de legenda) em slate α .6.
+    // Coordenadas da S03 horizontal (card 240..500 × 372..560, centro (370,466)) → caixa 130×88
+    // (fatores da horizontal .44/.425 para 120×80, reescalados para 130/120 e 88/80)
+    const SXP = 0.44 * BOX_W / 120, SYP = 0.425 * BOX_H / 80;
+    const PX = (x) => (x - 370) * SXP, PY = (y) => (y - 466) * SYP;
+    const POST_IMG = { x: PX(256), y: PY(388), w: 228 * SXP, h: 112 * SYP };
+    const POST_MTN = [[257, 486], [316, 434], [350, 466], [394, 422], [483, 492]].map(([x, y]) => [PX(x), PY(y)]);
+    const POST_SUN = { x: PX(446), y: PY(414), r: 5 * KV };
+    const POST_TXT = [[PX(256), PX(436), PY(524)], [PX(256), PX(376), PY(544)]];
     function drawBox(c, x, y, a, col, t) {
       c.save();
       c.translate(x, y); c.rotate(BOXROT);
       c.beginPath(); c.roundRect(-hw, -hh, BOX_W, BOX_H, BOX_R);
-      c.fillStyle = hexA(P.slate, 0.16 * a); c.fill();
-      c.setLineDash([7, 6]); c.lineDashOffset = -t * 26;
+      c.fillStyle = hexA(P.slate, 0.08 * a); c.fill();
+      c.setLineDash([6 * KV, 6 * KV]); c.lineDashOffset = -t * 24 * KV;
       c.strokeStyle = hexA(col, a); c.lineWidth = 1.6; c.stroke();
+      c.setLineDash([]);
+      c.lineJoin = 'round'; c.lineCap = 'round';
+      c.strokeStyle = hexA(col, 0.6 * a); c.lineWidth = 1.25 * KV;
+      c.beginPath(); c.roundRect(POST_IMG.x, POST_IMG.y, POST_IMG.w, POST_IMG.h, 4 * KV); c.stroke();
+      c.beginPath(); POST_MTN.forEach(([px, py], i) => (i ? c.lineTo(px, py) : c.moveTo(px, py))); c.stroke();
+      c.beginPath(); c.arc(POST_SUN.x, POST_SUN.y, POST_SUN.r, 0, TAU); c.stroke();
+      c.lineWidth = KV;
+      c.beginPath(); for (const [x0, x1, ly] of POST_TXT) { c.moveTo(x0, ly); c.lineTo(x1, ly); } c.stroke();
       c.restore();
     }
     const env = (x) => (x < 0 ? 0 : x < 0.06 ? P2O(x / 0.06) : Math.exp(-(x - 0.06) / 0.14));
 
+    // rótulo do binário: centro a (r + folga + suporte elíptico da caixa) do corpo, na direção (vx, vy) girada de
+    // "turn" rad para CIMA (anti-horário na tela)
+    function labAt(px, py, r, gap, vx, vy, Lb, turn) {
+      if (turn) { const c = Math.cos(turn), s = Math.sin(turn); const x = vx * c + vy * s; vy = -vx * s + vy * c; vx = x; }
+      const d = r + gap + Math.hypot(vx * Lb.w * 0.5, vy * Lb.h * 0.5);
+      return { x: px + vx * d, y: py + vy * d };
+    }
+    // rede de segurança da área segura vertical (spec §1.1): x 90–990; borda direita ≤ 960 no trilho de botões
+    // (y 1000–1700); base ≤ 1480; topo ≥ 24 px abaixo do sublinhado de 'sócio de resultado.'
+    function labSafe(p, Lb) {
+      const hw2 = Lb.w / 2, hh2 = Lb.h / 2;
+      const inRail = p.y + hh2 > 1000 && p.y - hh2 < 1700;
+      p.x = clamp(p.x, 90 + hw2, (inRail ? 960 : 990) - hw2);
+      p.y = clamp(p.y, UL_BOT + 24 + hh2, 1480 - hh2);
+      return p;
+    }
+    // OS MECCA no trilho de botões: com B na ponta direita da órbita crescida (≈8,7–9,5) o rótulo radial passaria
+    // ~40 px de x 960, e à direita não cabe (B + folga + 150 px > 960). Acima de B está o rastro em espiral (que
+    // vem de cima e contorna a ponta direita); abaixo, só a hairline da órbita. Então a direção gira suavemente até
+    // 58° para BAIXO (no sentido do movimento), de 7,6 a 8,75, e volta na implosão, sem nunca trocar de lado com o
+    // fio. O clamp de labSafe é só rede de segurança.
+    const LAB_TURN = -58 * DEG;
+    const labTurnB = (t) => LAB_TURN * smooth(7.6, 8.75, t) * (1 - smooth(9.45, 9.75, t));
+
     // ================================================================== onFrame
-    onFrame((lt) => {
+    onFrame((lt, gt) => {
       const t = lt;
 
       // ---------------- fundo: padrão → (9,5 → último quadro) warp .5, speed 2
@@ -676,9 +735,9 @@ ${SEL} .s9-lab > span { display:inline-block; }
         const rotB = p.ang + 180 + 180 / 16 - (28 / 16) * (th - p.ang);
         p.rot.setAttribute('transform', `rotate(${rotB.toFixed(3)})`);
       }
-      carc.g.setAttribute('transform', `rotate(${(-sp / 3).toFixed(3)} 114 114)`);
+      carc.g.setAttribute('transform', `rotate(${carcAngle(gt).toFixed(3)} 114 114)`);
       carcG.setAttribute('transform', `translate(1400 560) scale(${(1 + 0.12 * cC).toFixed(4)}) translate(-355 -355)`);
-      carcG.setAttribute('opacity', (1 - cC).toFixed(3));
+      carcG.setAttribute('opacity', (1 - P1I(clamp((t - 3.5) / 0.35))).toFixed(3));   // fade em power1.in (escala segue mecca.in)
       glow.setAttribute('opacity', GLOW(t).toFixed(3));
 
       // pupila: pisca no encaixe; vira a esfera A (#C4B5FD → #6D28D9)
@@ -895,19 +954,20 @@ ${SEL} .s9-lab > span { display:inline-block; }
         ctx.beginPath(); ctx.arc(pn.x, pn.y, (22 + 70 * P2O(u)) * KV, 0, TAU); ctx.stroke();
       }
 
-      // ---------------- rótulos: SUA EMPRESA (abaixo de A) / OS MECCA (acima de B)
-      // quando B passa por baixo de A, os dois trocam de lado (com fade) para nunca se sobreporem.
-      // Posição pela borda do rótulo mais próxima do corpo: topo de SUA EMPRESA a rA + 12 do centro de A (56 no início),
-      // base de OS MECCA a r + 20 do centro de B (32 no início).
+      // ---------------- rótulos: sempre RADIALMENTE PARA FORA do fio (nunca trocam de lado, opacidade constante)
+      // OS MECCA: B + û·(rB + 22·KV + sB); SUA EMPRESA: A − û·(rA + 26·KV + sA), û = normalize(B − A); sB/sA é o
+      // suporte elíptico da caixa do rótulo na direção (o centro anda o "raio" da caixa → a borda interna fica à
+      // folga exata do corpo e o movimento é suave). O fio vai de A a B: os rótulos ficam no prolongamento dele,
+      // do lado de fora dos corpos.
       if (t >= 3.9 && t < 9.8) {
-        const f = (1 - smooth(200, 290, Math.abs(B.x - A.x))) * smooth(11, 44, B.y - A.y);
-        const up = f > 0.5, sw = Math.abs(1 - 2 * f);
-        const half = LAB_H / 2;
-        const ay = up ? A.y - (rA + LAB_A + half) : A.y + (rA + LAB_A + half);
-        const by = up ? B.y + (B.r + LAB_B + half) : B.y - (B.r + LAB_B + half);
-        labA.style.transform = `translate(${A.x.toFixed(2)}px, ${ay.toFixed(2)}px) translate(-50%, -50%)`;
-        labB.style.transform = `translate(${B.x.toFixed(2)}px, ${by.toFixed(2)}px) translate(-50%, -50%)`;
-        labA.style.opacity = sw.toFixed(3); labB.style.opacity = sw.toFixed(3);
+        const dx = B.x - A.x, dy = B.y - A.y, L = Math.hypot(dx, dy) || 1;
+        const ux = dx / L, uy = dy / L;
+        const lb = labAt(B.x, B.y, B.r, GAP_B, ux, uy, LAB_B, labTurnB(t));
+        const la = labAt(A.x, A.y, rA, GAP_A, -ux, -uy, LAB_A, 0);
+        labSafe(lb, LAB_B); labSafe(la, LAB_A);
+        labA.style.transform = `translate(${la.x.toFixed(2)}px, ${la.y.toFixed(2)}px) translate(-50%, -50%)`;
+        labB.style.transform = `translate(${lb.x.toFixed(2)}px, ${lb.y.toFixed(2)}px) translate(-50%, -50%)`;
+        labA.style.opacity = '1'; labB.style.opacity = '1';
       } else { labA.style.opacity = '0'; labB.style.opacity = '0'; }
     });
   },

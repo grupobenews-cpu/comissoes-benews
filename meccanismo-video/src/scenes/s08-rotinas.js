@@ -3,8 +3,11 @@
  * S08 — O que gira por dentro.  (global 76–82 s, D = 6 s, tail 0)
  *
  * 0,0        match cut com a S07: máquina (sol + 7 planetas + carcaça) em (1300,580) ×.55, girando; Ponto no cubo.
- * 0,5–1,6    eyebrow digitado + "É o que os mecca rodam / enquanto você dorme." por máscara.
- * 1,5–3,0    os 4 anéis de rotina acendem (um por batida) junto com a legenda: as partículas saem do Ponto.
+ * 0,5–1,6    eyebrow "AS ROTINAS · O QUE GIRA POR DENTRO" digitado + "É o que os mecca rodam / enquanto você dorme."
+ *            por máscara.
+ * 1,5–3,0    os 4 anéis de rotina acendem (um por batida) junto com a legenda ROTINAS (mono 26 px logo abaixo da
+ *            manchete, baselines 470/520/570/620/670): cada item puxa um leader line hairline até a ponta esquerda
+ *            do seu anel (onde o traço do anel começa a se desenhar); as partículas saem do Ponto.
  * 3,0        o Ponto se divide nos 4 mecca; 3,0–4,0 modo noite (fundo escurece, anéis brilham, ×1,25).
  * 3,5–5,0    a cada batida os mecca saltam para o anel vizinho.  5,0–5,75 a noite se desfaz.
  * 5,5–6,0    os 4 anéis se recolhem em D1/D2 em volta de (1440,560); a máquina vai a ×.45; os mecca
@@ -12,9 +15,11 @@
  *
  * ÚLTIMO QUADRO (t = D − 1/30), para quem casa a S09:
  *   máquina = mesma montagem da S07 (sol r 420×.31 com 28 dentes, 7 planetas r 78 a 198, pupila 110 px, carcaça 710 px)
- *   com transform translate(1440 560) scale(.45) translate(−1400 −560), α 1, girando (sol +36°/s, planetas −63°/s, carcaça −12°/s);
- *   ângulos nesse quadro: sol θ = 232,875° (= 1,446° além de um dente canônico), planeta ψ: θB = ψ + 191,25° − 1,75·(θ − ψ),
- *   carcaça −77,625°.  D1: centro (1440,560) rx 220 ry 70, D2: rx 320 ry 100, rot −14°, hairline 1,25 px lavanda α .3
+ *   com transform translate(1440 560) scale(.45) translate(−1400 −560), α 1, girando (sol +36°/s, planetas −63°/s);
+ *   ângulos nesse quadro: sol θ = 232,875° (= 1,446° além de um dente canônico), planeta ψ: θB = ψ + 191,25° − 1,75·(θ − ψ).
+ *   Carcaça: oscilação COMPARTILHADA S07/S08/S09, função do tempo GLOBAL — carcAngle(gt) = 18°·sin(2π(gt − 72)/4)·
+ *   smooth(72, 72,6, gt) (0 antes de 72): 0° exatos nos cortes 76,0 e 82,0 (+0,942° neste quadro), velocidade contínua.
+ *   D1: centro (1440,560) rx 220 ry 70, D2: rx 320 ry 100, rot −14°, hairline 1,25 px lavanda α .3
  *   (metade de trás no canvas de trás com α .15).  Ponto em (1750,483), r 10.  Fundo padrão.  Sem texto.
  */
 MECCA.scene({
@@ -42,6 +47,9 @@ MECCA.scene({
     };
     const Phi = (t) => t + 0.25 * (sInt(t, 3, 4) - sInt(t, 5, 5.75));
     const nightK = (t) => smooth(3, 4, t) - smooth(5, 5.75, t);
+    // carcaça (arcos do ícone): regra COMPARTILHADA S07/S08/S09, função do tempo GLOBAL gt (2º argumento do onFrame)
+    // 0 antes de 72 s; depois 18°·sin(2π(gt−72)/4)·smooth(72, 72.6, gt) → 0° exatos nos cortes 76,0 e 82,0
+    const carcAngle = (gt) => (gt < 72 ? 0 : 18 * Math.sin((2 * Math.PI * (gt - 72)) / 4) * h.smooth(72, 72.6, gt));
     // saída 5,5 → último quadro
     const exitE = (t) => EIO(clamp((t - 5.5) / (LAST - 5.5)));
 
@@ -49,11 +57,12 @@ MECCA.scene({
     h.el('style', {
       html: `
 ${SEL} .s8-title em { background: linear-gradient(90deg, #C026D3, #7C3AED); -webkit-background-clip: text; background-clip: text; color: transparent; }
-${SEL} .s8-title .line-mask { padding: .22em 0 .26em; margin: -.22em 0 -.26em; }
-${SEL} .s8-leg { position:absolute; left:192px; top:0; font-family:var(--f-mono); font-weight:500; font-size:20px;
+${SEL} .s8-title .line-mask { padding: .16em 0 .28em; margin: -.16em 0 -.28em; }
+${SEL} .s8-leg { position:absolute; left:192px; top:0; font-family:var(--f-mono); font-weight:500; font-size:26px;
   letter-spacing:.2em; color:#C4B5FD; white-space:nowrap; text-transform:uppercase; line-height:1.2; }
-${SEL} .s8-bul { display:inline-block; width:10px; height:10px; border-radius:50%; margin-right:16px; vertical-align:2px; }
-${SEL} .s8-dia { display:inline-block; width:9px; height:9px; margin:0 17px 0 1px; vertical-align:3px; transform:rotate(45deg); }
+${SEL} .s8-leg-h { color:#A78BFA; }
+${SEL} .s8-bul { display:inline-block; width:12px; height:12px; border-radius:50%; margin-right:18px; vertical-align:3.5px; }
+${SEL} .s8-dia { display:inline-block; width:10px; height:10px; margin:0 19px 0 1px; vertical-align:4.5px; transform:rotate(45deg); }
 `,
     }, root);
 
@@ -138,7 +147,7 @@ ${SEL} .s8-dia { display:inline-block; width:9px; height:9px; margin:0 17px 0 1p
     const ctx = h.canvas(root).ctx;
 
     // ================================================================== TEXTO
-    const eb = h.eyebrow('O QUE GIRA POR DENTRO', { x: 192, y: 120, anchor: 'cl', parent: root });
+    const eb = h.eyebrow('AS ROTINAS · O QUE GIRA POR DENTRO', { x: 192, y: 120, anchor: 'cl', parent: root });
     const ebDash = eb.querySelector('.dash');
     const ebSp = h.split(eb.querySelector('.lbl'), { type: 'chars' });
 
@@ -151,18 +160,25 @@ ${SEL} .s8-dia { display:inline-block; width:9px; height:9px; margin:0 17px 0 1p
     // (o SplitText clona o <span> vazio; o "." visível é o que tem texto)
     const tDot = [...title.querySelectorAll('.s8-dot')].find((e) => e.textContent === '.');
 
+    // legenda ROTINAS: mono 26 px logo abaixo da manchete (título #A78BFA na baseline 470, itens 520/570/620/670)
     const LEG = [
-      { label: 'DIÁRIAS', color: '#C4B5FD', y: 850, t: 1.5, dia: false },
-      { label: 'SEMANAIS', color: '#A78BFA', y: 888, t: 2.0, dia: false },
-      { label: 'MENSAIS', color: '#7C3AED', y: 926, t: 2.5, dia: false },
-      { label: 'VERIFICAÇÕES &amp; CONFERÊNCIAS', color: '#C026D3', y: 964, t: 3.0, dia: true },
+      { label: 'DIÁRIAS', color: '#C4B5FD', y: 520, t: 1.5, dia: false },
+      { label: 'SEMANAIS', color: '#A78BFA', y: 570, t: 2.0, dia: false },
+      { label: 'MENSAIS', color: '#7C3AED', y: 620, t: 2.5, dia: false },
+      { label: 'VERIFICAÇÕES &amp; CONFERÊNCIAS', color: '#C026D3', y: 670, t: 3.0, dia: true },
     ];
+    const LEG_O = { x: 192, y: 570 };        // origem do push da legenda (margem esquerda fixa)
     const legWrap = h.el('div', { style: { position: 'absolute', left: '0px', top: '0px', width: '1920px', height: '1080px' } }, root);
+    const legHead = h.el('div', { cls: 's8-leg s8-leg-h', html: 'ROTINAS' }, legWrap);
+    atBaseline(legHead, 470);
     LEG.forEach((L) => {
       L.el = h.el('div', { cls: 's8-leg', html: `<span class="${L.dia ? 's8-dia' : 's8-bul'}"></span>${L.label}` }, legWrap);
       atBaseline(L.el, L.y);
       L.bul = L.el.firstChild;
       L.bul.style.background = L.color;
+      // início do leader line: fim da tinta do rótulo (sem o tracking final) + folga, na altura média das maiúsculas
+      L.x1 = h.rect(L.el).right - 0.2 * 26 + 16;
+      L.cy = L.y - 9.5;
     });
 
     // ================================================================== TIMELINE (DOM + fundo)
@@ -173,19 +189,23 @@ ${SEL} .s8-dia { display:inline-block; width:9px; height:9px; margin:0 17px 0 1p
     const init = (targets, vars) => { gsap.set(targets, vars); tl.set(targets, Object.assign({}, vars), 0); };
     init(ebSp.chars, { autoAlpha: 0 });
     init(ebDash, { scaleX: 0, transformOrigin: '0% 50%' });
-    init(eb, { x: 0 });
+    // push lento com origem na margem esquerda (x 192 fixo) — nada de drift horizontal no eyebrow/legenda
+    init(eb, { scale: 1, transformOrigin: '0% 50%' });
     init(tSp.lines, { yPercent: 150 });
     init(title, { scale: 1, transformOrigin: '0% 100%' });
-    LEG.forEach((L) => { init(L.el, { x: -20, opacity: 0 }); init(L.bul, { scale: 1, transformOrigin: '50% 50%' }); });
-    init(legWrap, { x: 0 });
+    [legHead, ...LEG.map((L) => L.el)].forEach((e) => init(e, { x: -20, opacity: 0 }));
+    LEG.forEach((L) => init(L.bul, { scale: 1, transformOrigin: '50% 50%' }));
+    init(legWrap, { scale: 1, transformOrigin: `${LEG_O.x}px ${LEG_O.y}px` });
 
     // eyebrow — digitação (0,5) e apagamento de trás para frente (5,5)
+    const NCH = ebSp.chars.length;
     tl.to(ebDash, { scaleX: 1, duration: 0.3, ease: 'mecca.out' }, 0.5);
     tl.to(ebSp.chars, { autoAlpha: 1, duration: 0.01, ease: 'none', stagger: 0.025 }, 0.62);
-    tl.to(eb, { x: 8, duration: 5, ease: 'none' }, 0.5);
-    // apagamento de trás para frente a 0,02 s/char (regra comum de troca de eyebrow); o traço recolhe logo depois
-    tl.to(ebSp.chars, { autoAlpha: 0, duration: 0.01, ease: 'none', stagger: { each: 0.02, from: 'end' } }, 5.5);
-    tl.to(ebDash, { scaleX: 0, duration: 0.1, ease: 'mecca.in' }, 5.84);
+    tl.to(eb, { scale: 1.015, duration: 5, ease: 'none' }, 0.5);
+    // apagamento de trás para frente: o rótulo ficou longo (AS ROTINAS · …), então 0,012 s/char para caber em
+    // 5,5 → ≈5,83 (mesma cadência da S09); o traço recolhe logo depois e some antes do último quadro
+    tl.to(ebSp.chars, { autoAlpha: 0, duration: 0.01, ease: 'none', stagger: { each: 0.012, from: 'end' } }, 5.5);
+    tl.to(ebDash, { scaleX: 0, duration: 0.1, ease: 'mecca.in' }, Math.min(5.84, 5.5 + NCH * 0.012));
 
     // título — máscara por linha (linha 2 em 1,0), push lento, saída 5,5–5,8
     tl.to(tSp.lines[0], { yPercent: 0, duration: 0.6, ease: 'mecca.out' }, 0.5);
@@ -193,13 +213,19 @@ ${SEL} .s8-dia { display:inline-block; width:9px; height:9px; margin:0 17px 0 1p
     tl.to(title, { scale: 1.025, duration: 5, ease: 'none' }, 0.5);
     tl.to(tSp.lines, { yPercent: -150, duration: 0.27, ease: 'mecca.in', stagger: 0.03 }, 5.5);
 
-    // legenda — cada linha desliza 20 px com fade junto com o seu anel
-    LEG.forEach((L, i) => {
+    // legenda — o título ROTINAS entra um instante antes de DIÁRIAS; cada item desliza 20 px com fade junto com
+    // o seu anel. Saída: transformação em mecca.in, opacidade em power1.in (sem "pop" no fim do fade).
+    const LEG_EL = [legHead, ...LEG.map((L) => L.el)];
+    tl.to(legHead, { x: 0, opacity: 1, duration: 0.4, ease: 'mecca.out' }, 1.45);
+    LEG.forEach((L) => {
       tl.to(L.el, { x: 0, opacity: 1, duration: 0.4, ease: 'mecca.out' }, L.t);
       tl.fromTo(L.bul, { scale: 2.2 }, { scale: 1, duration: 0.55, ease: 'mecca.back', immediateRender: false }, L.t);
-      tl.to(L.el, { x: -16, opacity: 0, duration: 0.21, ease: 'mecca.in' }, 5.5 + i * 0.03);
     });
-    tl.to(legWrap, { x: 10, duration: 4, ease: 'none' }, 1.5);
+    LEG_EL.forEach((e, i) => {
+      tl.to(e, { x: -16, duration: 0.21, ease: 'mecca.in' }, 5.5 + i * 0.03);
+      tl.to(e, { opacity: 0, duration: 0.21, ease: 'power1.in' }, 5.5 + i * 0.03);
+    });
+    tl.to(legWrap, { scale: 1.015, duration: 4, ease: 'none' }, 1.5);
 
     // ------------------------------------------------------------------ cues
     cue(0.5, 'whoosh', 'título', 0.3);
@@ -270,6 +296,61 @@ ${SEL} .s8-dia { display:inline-block; width:9px; height:9px; margin:0 17px 0 1p
         c.beginPath(); c.ellipse(0, 0, G.rx, G.ry, 0, f, g); c.stroke();
         c.restore();
       }
+    }
+
+    // ================================================================== LEADER LINES (legenda → anel)
+    // cada item da legenda puxa uma hairline lavanda α .25 até a ponta esquerda do seu anel (φ = π, onde o traço do
+    // anel começa a se desenhar): trecho horizontal na altura do item + diagonal a 45° até a ponta. As quatro diagonais
+    // ficam paralelas (nunca se cruzam) e os trechos horizontais passam por cima do rótulo longo de VERIFICAÇÕES.
+    // Desenha em 0,45 s (mecca.out) no tempo do item e "acende" (α .25 → .6 → .25); na saída retrai para o rótulo.
+    const EIN = gsap.parseEase('mecca.in');
+    const P1I = gsap.parseEase('power1.in');
+    function leaderPts(k, t) {
+      const L = LEG[k];
+      const sc = gsap.getProperty(legWrap, 'scaleX');
+      const lx = gsap.getProperty(L.el, 'x');
+      const S = { x: LEG_O.x + (L.x1 + lx - LEG_O.x) * sc, y: LEG_O.y + (L.cy - LEG_O.y) * sc };
+      const A = ellPt(ringGeo(k, Math.min(t, 5.5)), Math.PI);   // na saída o traço só retrai (não segue o anel)
+      const B = { x: Math.max(S.x, A.x - Math.abs(A.y - S.y)), y: S.y };
+      return [S, B, A];
+    }
+    // traça a fração f do comprimento da polilinha (a partir do 1º ponto) e devolve a ponta
+    function polyPart(c, pts, f) {
+      let tot = 0;
+      for (let i = 1; i < pts.length; i++) tot += Math.hypot(pts[i].x - pts[i - 1].x, pts[i].y - pts[i - 1].y);
+      let rem = tot * clamp(f);
+      let tip = pts[0];
+      c.beginPath(); c.moveTo(pts[0].x, pts[0].y);
+      for (let i = 1; i < pts.length && rem > 0; i++) {
+        const a = pts[i - 1], b = pts[i];
+        const d = Math.hypot(b.x - a.x, b.y - a.y);
+        const u = d > 0 ? Math.min(1, rem / d) : 1;
+        tip = { x: lerp(a.x, b.x, u), y: lerp(a.y, b.y, u) };
+        c.lineTo(tip.x, tip.y);
+        rem -= d;
+      }
+      c.stroke();
+      return tip;
+    }
+    function drawLeaders(t) {
+      LEG.forEach((L, k) => {
+        if (t < L.t) return;
+        const pin = EOUT(clamp((t - L.t) / 0.45));
+        const ux = clamp((t - 5.5 - (k + 1) * 0.03) / 0.21);     // sai junto com o seu item (o título ROTINAS é o 0)
+        const keep = 1 - EIN(ux);                                 // geometria: mecca.in
+        const fade = 1 - P1I(ux);                                 // opacidade: power1.in
+        const lit = Math.exp(-Math.max(0, t - L.t - 0.3) * 3.5) * smooth(L.t, L.t + 0.12, t);
+        const a = (0.25 + 0.35 * lit) * fade;
+        if (a <= 0.003) return;
+        const pts = leaderPts(k, t);
+        ctx.save();
+        ctx.strokeStyle = hexA(P.lavender, a); ctx.lineWidth = 1.25; ctx.lineJoin = 'round'; ctx.lineCap = 'round';
+        const tip = polyPart(ctx, pts, pin * keep);
+        ctx.restore();
+        if (pin < 1) h.glowDot(ctx, tip.x, tip.y, 2, P.lavender, 0.8 * (1 - pin) * fade);   // cabeça do traço
+        const pa = smooth(0.85, 1, pin * keep) * fade;                                     // pino na ponta do anel
+        if (pa > 0.003) h.glowDot(ctx, pts[2].x, pts[2].y, 2.6, L.color, (0.55 + 0.45 * lit) * pa);
+      });
     }
 
     // ================================================================== OS 4 MECCA
@@ -382,7 +463,7 @@ ${SEL} .s8-dia { display:inline-block; width:9px; height:9px; margin:0 17px 0 1p
     const PINK = rgb(P.pink);
 
     // ================================================================== onFrame
-    onFrame((lt) => {
+    onFrame((lt, gt) => {
       const t = lt;
       const nk = nightK(t);
       const ex = exitE(t);
@@ -391,8 +472,8 @@ ${SEL} .s8-dia { display:inline-block; width:9px; height:9px; margin:0 17px 0 1p
       // ---------------- fundo (função pura do tempo): padrão → noite → padrão
       Object.assign(bg, BG0, { glowA: 1 - 0.5 * nk, glowB: 1 - 0.5 * nk, vignette: 0.55 + 0.2 * nk, dim: 0.35 * nk });
 
-      // ---------------- máquina (continua a rotação da S07: sol +36°/s, planetas −63°/s, carcaça −12°/s)
-      // a S07 termina (t7 = 22 − 1/30) com o sol num ângulo canônico (0 mod 1 dente), planetas idem e carcaça em 0°;
+      // ---------------- máquina (continua a rotação da S07: sol +36°/s, planetas −63°/s; a carcaça oscila)
+      // a S07 termina (t7 = 22 − 1/30) com o sol num ângulo canônico (0 mod 1 dente) e planetas idem;
       // aqui a rotação continua a partir dali (+1 quadro no t = 0)
       const spin = 36 * (PH + 1 / 30);
       const th = spin;
@@ -404,7 +485,7 @@ ${SEL} .s8-dia { display:inline-block; width:9px; height:9px; margin:0 17px 0 1p
         const rotB = p.ang + 180 + 180 / 16 - (28 / 16) * (th - p.ang);
         p.rot.setAttribute('transform', `rotate(${rotB.toFixed(3)})`);
       }
-      carc.g.setAttribute('transform', `rotate(${(-spin / 3).toFixed(3)} 114 114)`);   // −12°/s
+      carc.g.setAttribute('transform', `rotate(${carcAngle(gt).toFixed(3)} 114 114)`);   // oscilação ±18° compartilhada
       glow.setAttribute('opacity', (0.82 + 0.18 * Math.sin((t + 22) * Math.PI * 0.5)).toFixed(3));
 
       // ---------------- texto: o "." de "dorme." respira (.6 ↔ 1, período 2 s)
@@ -414,6 +495,9 @@ ${SEL} .s8-dia { display:inline-block; width:9px; height:9px; margin:0 17px 0 1p
       back.clearRect(0, 0, 1920, 1080);
       ctx.clearRect(0, 0, 1920, 1080);
       const bright = 1 + 0.3 * nk;                 // noite: partículas 30% mais claras
+
+      // leader lines da legenda (por baixo dos anéis e das partículas)
+      drawLeaders(t);
 
       // hairlines dos anéis (desenham a partir da ponta esquerda, 0,6 s, mecca.out)
       RINGS.forEach((R, k) => {

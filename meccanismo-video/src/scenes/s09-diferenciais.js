@@ -2,7 +2,8 @@
 /*
  * S09 — A gente assume, fica e tem pele no jogo.  (global 82–92 s, D = 10 s, tail 0)
  *
- * 0,0        match cut com a S08: máquina (sol + 7 planetas + carcaça) em (1440,560) ×.45, girando;
+ * 0,0        match cut com a S08: máquina (sol + 7 planetas + carcaça) em (1440,560) ×.45, girando
+ *            (carcaça: oscilação ±18° COMPARTILHADA com S07/S08, função do tempo global — 0° no corte de 82,0);
  *            D1 (220×70) e D2 (320×100) em hairline lavanda α .3, rot −14°; Ponto em D2 a 0°
  *            (≈1750,483), r 10, no desenho padrão global (glowDot α .6·br, br contínuo com a S08);
  *            sem texto; fundo padrão.
@@ -906,23 +907,17 @@ ${SEL} .s9-lab > span { display:inline-block; }
       if (t >= 3.9 && t < 9.8) {
         const dx = B.x - A.x, dy = B.y - A.y, L = Math.hypot(dx, dy) || 1;
         const ux = dx / L, uy = dy / L;
-        const labAt = (px, py, r, gap, vx, vy, L) => {
-          const d = r + gap + Math.hypot(vx * L.w * 0.5, vy * L.h * 0.5);
+        const labAt = (px, py, r, gap, vx, vy, box) => {
+          const d = r + gap + Math.hypot(vx * box.w * 0.5, vy * box.h * 0.5);
           return { x: px + vx * d, y: py + vy * d };
         };
-        let lb = labAt(B.x, B.y, B.r, 22, ux, uy, LAB_B);
-        // área segura à direita (x ≤ 1824): com B na ponta direita da órbita (≈8,8–9,5) o rótulo radial passaria da
-        // margem. Em vez de espremê-lo contra B, a direção desliza suavemente para CIMA (peso contínuo pelo excesso)
-        // — continua do lado oposto ao fio; o min() final é só rede de segurança.
-        const exc = lb.x + LAB_B.w * 0.5 - 1824;
-        const kUp = smooth(-24, 30, exc);
-        window.__s9dbg = { Bx: B.x, By: B.y, ux, uy, exc };  // DEBUG-TMP
-        if (kUp > 0) {
-          let vx = lerp(ux, 0, kUp), vy = lerp(uy, -1, kUp);
-          const vl = Math.hypot(vx, vy) || 1; vx /= vl; vy /= vl;
-          lb = labAt(B.x, B.y, B.r, 22, vx, vy, LAB_B);
-          lb.x = Math.min(lb.x, 1824 - LAB_B.w * 0.5);
-        }
+        // área segura à direita (x ≤ 1824): com B na ponta direita da órbita crescida (≈8,8–9,45) o rótulo radial
+        // passaria ~20 px da margem. Em vez de espremê-lo contra B, a direção gira suavemente até 35° para CIMA nessa
+        // janela (continua do lado oposto ao fio); o min() é só rede de segurança.
+        const mUp = 0.62 * smooth(8.55, 8.95, t) * (1 - smooth(9.3, 9.56, t));
+        const cu = Math.cos(mUp), su = Math.sin(mUp);
+        const lb = labAt(B.x, B.y, B.r, 22, ux * cu + uy * su, -ux * su + uy * cu, LAB_B);
+        lb.x = Math.min(lb.x, 1824 - LAB_B.w * 0.5);
         const la = labAt(A.x, A.y, rA, 26, -ux, -uy, LAB_A);
         const bx = lb.x, by = lb.y, ax = la.x, ay = la.y;
         labA.style.transform = `translate(${ax.toFixed(2)}px, ${ay.toFixed(2)}px) translate(-50%, -50%)`;

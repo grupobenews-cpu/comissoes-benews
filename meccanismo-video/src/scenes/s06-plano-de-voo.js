@@ -7,8 +7,10 @@
  * sozinho e a linha se enrola num círculo (que a S07 transforma em engrenagem).
  *
  * Tudo o que é canvas (órbita, linha, nós, Ponto, riders) é função analítica de lt;
- * o texto é DOM animado na timeline local. Um "push" de câmera lento (1 → 1,025 → 1)
- * é aplicado igualmente ao DOM (CSS scale) e aos canvases (setTransform).
+ * o texto é DOM animado na timeline local. Um "push" de câmera lento (1 → 1,006 em 0–8,0,
+ * → 1,026 em 8,0–11,4, → 1 no fim) com origem na margem esquerda (192,540) é aplicado
+ * igualmente ao grupo da linha do tempo (DOM, CSS scale) e aos canvases (setTransform);
+ * o eyebrow fica fora do push (preso em (192,120)).
  */
 MECCA.scene({
   id: 's06-plano-de-voo',
@@ -37,7 +39,7 @@ MECCA.scene({
       'Tudo engrenado e medido, o crescimento vira previsível.',
     ];
     const MASK_TOP = 420, MASK_BOT = 572, MASK_H = MASK_BOT - MASK_TOP;   // máscara dos números (base em y 572)
-    const CAM_O = { x: 960, y: 560 };                                      // origem do push de câmera
+    const CAM_O = { x: 192, y: 540 };                                      // origem do push: margem esquerda fixa
 
     // ------------------------------------------------------------------ CSS local
     h.el('style', {
@@ -75,7 +77,9 @@ MECCA.scene({
     }
 
     // ------------------------------------------------------------------ header
-    const ebWrap = layer(wrap);
+    // eyebrow FORA do wrapper do push (fica preso na margem, em (192,120)); abaixo do canvas do Ponto
+    const ebWrap = h.el('div', { cls: 's06-layer' }, root);
+    root.insertBefore(ebWrap, front.canvas);
     const eb = h.eyebrow('O PLANO DE VOO', { x: 192, y: 120, anchor: 'cl', size: 22, parent: ebWrap });
     const ebDash = eb.querySelector('.dash');
     const ebLbl = eb.querySelector('.lbl');
@@ -164,7 +168,7 @@ MECCA.scene({
       tl.fromTo(c.name, { clipPath: clipA }, { clipPath: clipB, duration: 0.35, ease: 'power2.inOut' }, c.T);
       tl.fromTo(scan, { x: 0 }, { x: 1.12 * w, duration: 0.35, ease: 'power2.inOut', immediateRender: false }, c.T);
       tl.fromTo(scan, { opacity: 0 }, { opacity: 1, duration: 0.06, ease: 'none', immediateRender: false }, c.T);
-      tl.to(scan, { opacity: 0, duration: 0.2, ease: 'mecca.in' }, c.T + 0.35);
+      tl.to(scan, { opacity: 0, duration: 0.2, ease: 'power1.in' }, c.T + 0.35);   // fade: nunca mecca.in em opacidade
     }
 
     // 02 — Engenharia: chars caem + marcas de corte em L
@@ -221,7 +225,7 @@ MECCA.scene({
     tl.fromTo(subEm, { filter: glowOn }, { filter: glowOff, duration: 0.9, ease: 'sine.inOut', immediateRender: false }, 8.75);
 
     // nomes anteriores vão para α .7
-    for (let i = 0; i < 3; i++) tl.to(cols[i].name, { opacity: 0.7, duration: 0.3, ease: 'mecca.inOut' }, TT[i + 1]);
+    for (let i = 0; i < 3; i++) tl.to(cols[i].name, { opacity: 0.7, duration: 0.3, ease: 'sine.inOut' }, TT[i + 1]);
 
     // ------------------------------------------------------------------ saída (11,40–11,72)
     // A linha começa a enrolar em 11,4 (power3.inOut: p ≈ .04 em 11,55, .12 em 11,6).

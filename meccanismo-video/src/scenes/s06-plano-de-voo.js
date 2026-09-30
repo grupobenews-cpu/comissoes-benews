@@ -255,13 +255,27 @@ MECCA.scene({
     });
 
     // ------------------------------------------------------------------ push de câmera
+    // Origem na margem esquerda (192,540): a coluna x 192 não sai do lugar. Perfil (uma curva só, sem
+    // quinas de velocidade): 0–8,0 quase imperceptível (1 → 1,006, linear); 8,0–11,4 o push do groove
+    // (1,006 → 1,026 = +0,02), acelerando suavemente a partir da mesma velocidade; 11,4–fim volta a 1
+    // (mecca.inOut) escondido no enrolar da linha, para o último quadro casar com a S07.
+    const PUSH_T0 = 8.0, PUSH_T1 = 11.4, PUSH_A = 0.006, PUSH_B = 0.02, PUSH_PEAK = 1 + PUSH_A + PUSH_B;
+    const pushK = (PUSH_A / PUSH_T0) * (PUSH_T1 - PUSH_T0) / PUSH_B;          // inclinação inicial normalizada do 2º trecho
+    function pushScale(t) {
+      if (t <= PUSH_T0) return 1 + PUSH_A * t / PUSH_T0;
+      const x = clamp((t - PUSH_T0) / (PUSH_T1 - PUSH_T0));
+      return 1 + PUSH_A + PUSH_B * (pushK * x + (1 - pushK) * x * x);
+    }
     gsap.set(wrap, { transformOrigin: `${CAM_O.x}px ${CAM_O.y}px` });
-    tl.fromTo(wrap, { scale: 1 }, { scale: 1.025, duration: 11.3, ease: 'none' }, 0);
-    tl.fromTo(wrap, { scale: 1.025 }, { scale: 1, duration: END - 11.3, ease: 'mecca.inOut', immediateRender: false }, 11.3);
+    tl.fromTo(wrap, { scale: 1 }, { scale: PUSH_PEAK, duration: PUSH_T1, ease: (q) => (pushScale(q * PUSH_T1) - 1) / (PUSH_PEAK - 1) }, 0);
+    tl.fromTo(wrap, { scale: PUSH_PEAK }, { scale: 1, duration: END - PUSH_T1, ease: 'mecca.inOut', immediateRender: false }, PUSH_T1);
 
     // ------------------------------------------------------------------ fundo
     const BG_IN = { glowA: 1, glowB: 1, glowC: 1, grid: 0, particles: 1, driftX: 0, driftY: 0, speed: 1, warp: 0, vignette: 0.55, dim: 0, hue: 0, grain: 1 };
     tl.set(bg, Object.assign({}, BG_IN), 0);
+    // pulso da malha no impacto de abertura (0 → .6 → .15), depois a entrada combinada 0,5–1,5 até .35
+    tl.to(bg, { grid: 0.6, duration: 0.1, ease: 'power2.out' }, 0);
+    tl.to(bg, { grid: 0.15, duration: 0.4, ease: 'sine.out' }, 0.1);
     tl.to(bg, { grid: 0.35, duration: 1.0, ease: 'sine.inOut' }, 0.5);
     tl.to(bg, { grid: 0.2, duration: END - 11.5, ease: 'mecca.inOut' }, 11.5);
 

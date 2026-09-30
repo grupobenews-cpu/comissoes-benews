@@ -303,23 +303,30 @@ ${SEL} .t-display em { background-image:var(--grad); }
     let M_LEFT = LG.x + 5 * LS;
     try { M_LEFT = LG.x + logo.mecca.getBBox().x * LG.w / 803; } catch (e) { /* mantém a estimativa */ }
 
+    // O lockup CHEGA no golpe (reverse + impact em 4,5), como na horizontal revisada:
+    // arcos 4,40–4,55, pupila 4,45–4,55, wordmark 4,45–4,70.
     gsap.set([icon.arcOuter, icon.arcInner], { visibility: 'hidden' });
-    // o arco nasce em 4,5 com drawSVG 0%: com linecap redondo isso seria um ponto violeta ao lado do encaixe
+    // o arco nasce com drawSVG 0%: com linecap redondo isso seria um ponto violeta ao lado do encaixe
     // (parece o ponto do ícone chegando cedo). Ele só fica visível no quadro seguinte, já com traço.
-    tl.set(icon.arcOuter, { visibility: 'inherit' }, 4.5 + 1 / 60);
-    tl.fromTo(icon.arcOuter, { drawSVG: '0%' }, { drawSVG: '100%', duration: 0.5, ease: 'mecca.out' }, 4.5);
-    tl.set(icon.arcInner, { visibility: 'inherit' }, 4.55);
-    tl.fromTo(icon.arcInner, { drawSVG: '0%' }, { drawSVG: '100%', duration: 0.5, ease: 'mecca.out' }, 4.55);
+    const ARC_T = 4.40, ARC_D = 0.15;
+    tl.set([icon.arcOuter, icon.arcInner], { visibility: 'inherit' }, ARC_T + 1 / 60);
+    tl.fromTo(icon.arcOuter, { drawSVG: '0%' }, { drawSVG: '100%', duration: ARC_D, ease: 'mecca.out' }, ARC_T);
+    tl.fromTo(icon.arcInner, { drawSVG: '0%' }, { drawSVG: '100%', duration: ARC_D, ease: 'mecca.out' }, ARC_T);
     gsap.set(icon.pupil, { svgOrigin: '114 114', scale: 0 });
-    tl.to(icon.pupil, { scale: 1, duration: 0.5, ease: 'mecca.back' }, 4.55);
+    tl.to(icon.pupil, { scale: 1, duration: 0.10, ease: 'mecca.back' }, 4.45);
     // o ponto do ícone fica oculto até o clique final (7,0)
     gsap.set(icon.dot, { visibility: 'hidden', attr: { fill: P.ink } });
     tl.set(icon.dot, { visibility: 'inherit' }, 7.0);
     tl.to(icon.dot, { attr: { fill: P.violet }, duration: 0.18, ease: 'power1.out' }, 7.0);
-    // wordmark: clip-path inset(0 100% 0 0) → inset(0), 0,6 s, mecca.out, a partir de 4,6
-    gsap.set(lgWrap, { clipPath: 'inset(0% 100% 0% 0%)' });
-    tl.to(lgWrap, { clipPath: 'inset(0% 0% 0% 0%)', duration: 0.6, ease: 'mecca.out' }, 4.6);
-    const wipeAt = (t) => eMOut(seg(t, 4.6, 5.2));
+    // wordmark: clip-path inset(0 100% 0 0) → inset(0) em 4,45–4,70 (expo.out) + assenta de 1,06 → 1
+    // (origem no centro do lockup: a borda esquerda nunca invade o ícone)
+    const WM_T = 4.45, WM_D = 0.25, WM_S0 = 1.06;
+    const eExpo = E('expo.out');
+    gsap.set(lgWrap, { clipPath: 'inset(0% 100% 0% 0%)', transformOrigin: `${f2(LC.x - LG.x)}px ${f2(LC.y - LG.y)}px` });
+    tl.to(lgWrap, { clipPath: 'inset(0% 0% 0% 0%)', duration: WM_D, ease: 'expo.out' }, WM_T);
+    tl.fromTo(lgWrap, { scale: WM_S0 }, { scale: 1, duration: WM_D, ease: 'expo.out' }, WM_T);
+    const wipeAt = (t) => eExpo(seg(t, WM_T, WM_T + WM_D));
+    const wmScaleAt = (t) => lerp(WM_S0, 1, eExpo(seg(t, WM_T, WM_T + WM_D)));
     // pulso do lockup no clique (1→1,02→1)
     gsap.set(lockPulse, { transformOrigin: `${LC.x}px ${LC.y}px` });
     tl.to(lockPulse, { scale: 1.02, duration: 0.12, ease: 'power2.out' }, 7.0);
@@ -328,7 +335,7 @@ ${SEL} .t-display em { background-image:var(--grad); }
     const sockAt = (t) => { const k = kPulse(t); return { x: LC.x + k * (SOCK.x - LC.x), y: LC.y + k * (SOCK.y - LC.y) }; };
     // glow radial violeta atrás do lockup
     const lg = { a: 0 };
-    tl.to(lg, { a: 0.35, duration: 0.6, ease: 'power2.out' }, 4.45);
+    tl.to(lg, { a: 0.35, duration: 0.6, ease: 'power2.out' }, 4.40);
 
     // ================================================================== VERBOS (ADAPTAÇÃO: 2 linhas)
     // linha 1 "ENGRENAR · MONTAR · CALIBRAR ·" (centrada pelas palavras; o 3º '·' fica pendurado depois de

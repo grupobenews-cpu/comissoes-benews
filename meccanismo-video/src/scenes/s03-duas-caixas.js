@@ -54,12 +54,13 @@ MECCA.scene({
       const mk = inner.querySelector('.blm');
       const b = h.rect(mk).y - h.rect(outer).y;
       mk.remove();
-      const L = { outer, inner, b, size, left: x, top: base - b, base };
-      outer.style.top = L.top + 'px';
+      // posições inteiras (left/top): a rasterização do texto em left/top fracionário varia com o histórico de buscas
+      const L = { outer, inner, b, size, left: 0, top: 0, base };
+      setLeft(L, x); setBase(L, base);
       return L;
     }
-    const setLeft = (L, x) => { L.left = x; L.outer.style.left = x + 'px'; };
-    const setBase = (L, base) => { L.base = base; L.top = base - L.b; L.outer.style.top = L.top + 'px'; };
+    function setLeft(L, x) { L.left = Math.round(x); L.outer.style.left = L.left + 'px'; }
+    function setBase(L, base) { L.top = Math.round(base - L.b); L.base = L.top + L.b; L.outer.style.top = L.top + 'px'; }
     const dotCenter = (L) => { const d = L.inner.querySelector('.dot'); const ink = dotInk(L.size); return { x: h.rect(d).x + ink.cx, y: L.base + ink.cy }; };
 
     // ------------------------------------------------------------------ T1: "O mercado te dá / duas caixas."
@@ -81,12 +82,13 @@ MECCA.scene({
     const PH = dotCenter(HD);                         // Ponto no header (r 4)
     const HR = h.rect(HD.outer);
     const HC = { x: HR.cx, y: HR.cy };               // origem do push do header
-    const PUSH_H = 0.015;
+    const PUSH_H = 0.02;
 
     // ------------------------------------------------------------------ T2: "As duas somem / na hora H."
+    // (sem nós de texto soltos ao lado de elementos com tween: o espaço fica DENTRO do span, como &nbsp;)
     const P2 = { x: 990, y: 690 };
     const w2 = h.el('div', { style: { position: 'absolute', inset: '0' } }, txt);
-    const L1 = line('<span class="ib r">As duas</span> <span class="ib sm mut">somem</span>', { x: 192, base: 500, size: 180, parent: w2 });
+    const L1 = line('<span class="ib r">As duas&nbsp;</span><span class="ib sm mut">somem</span>', { x: 192, base: 500, size: 180, parent: w2 });
     const L2 = line('<span class="ib r">na hora H</span><span class="dot">.</span>', { x: 192, base: 700, size: 180, parent: w2 });
     {
       const d = dotCenter(L2);
@@ -174,32 +176,53 @@ MECCA.scene({
     const SLIDE = makeIllu(buildSlide, { x: 1016, y: 368, w: 328, h: 188 }, 57);
 
     // ------------------------------------------------------------------ textos dos cards
-    // cada card tem seu próprio contêiner de texto: quando a caixa fecha, o conteúdo é esmagado junto
-    const CW1 = h.el('div', { style: { position: 'absolute', inset: '0' } }, txt);
-    const CW2 = h.el('div', { style: { position: 'absolute', inset: '0' } }, txt);
-    gsap.set(CW1, { transformOrigin: '569px 550px' });
-    gsap.set(CW2, { transformOrigin: '1349px 550px' });
+    // CW  = contêiner recortado (clip-path) pelo retângulo que colapsa — o texto NÃO é escalado junto com a caixa.
+    // PW  = wrapper interno com o push lento (1→1,02): micro-movimento sem brigar com o recorte.
+    // 'some.' fica numa camada à parte, sem recorte: evapora para fora da caixa que se fecha.
+    const full = { position: 'absolute', inset: '0' };
+    function textBox(cxm) {
+      const CW = h.el('div', { style: full }, txt);
+      const PW = h.el('div', { style: full }, CW);
+      const SW = h.el('div', { style: full }, txt);
+      const PS = h.el('div', { style: full }, SW);
+      gsap.set([PW, PS], { transformOrigin: `${cxm}px 550px` });
+      return { CW, PW, PS, cxm };
+    }
+    const X1 = textBox(569), X2 = textBox(1349);
     function label(text, x, parent) {
       const e = h.text(text, { x, y: 300, size: 22, cls: 't-mono', ls: '0.2em', lh: 1, nowrap: true, color: P.lavender, parent });
       const r = h.rect(e);
       const sp = h.split(e, { type: 'chars' });
+      // posição do cursor depois de k chars digitados: logo após a caixa do char k−1 (que já inclui o tracking) + folga
+      const stops = [0, ...sp.chars.map(ch => h.rect(ch).right - r.x + 4)];
       const caret = h.el('div', { cls: 'caret', style: { left: x + 'px', top: '298px' } }, parent);
-      return { e, chars: sp.chars, caret, w: r.w };
+      return { e, chars: sp.chars, caret, w: r.w, stops };
     }
-    const LB1 = label('CAIXA 1 — AGÊNCIA', 240, CW1);
-    const LB2 = label('CAIXA 2 — CONSULTORIA', 1020, CW2);
-    const T11 = line('Executa a peça', { x: 240, base: 690, size: 84, parent: CW1 });
-    const T12 = line('<span class="ib e">e</span> <span class="ib sm">some.</span>', { x: 240, base: 790, size: 84, color: P.muted, parent: CW1 });
-    const T21 = line('Entrega o slide', { x: 1020, base: 690, size: 84, parent: CW2 });
-    const T22 = line('<span class="ib e">e</span> <span class="ib sm">some.</span>', { x: 1020, base: 790, size: 84, color: P.muted, parent: CW2 });
-    const some1 = h.split(T12.inner.querySelector('.sm'), { type: 'chars' }).chars;
-    const some2 = h.split(T22.inner.querySelector('.sm'), { type: 'chars' }).chars;
+    // 'e some.' = duas linhas mascaradas lado a lado: 'e ' (recortada com a caixa) + 'some.' (camada livre)
+    function eSome(x, X) {
+      const a = line('<span class="ib e">e&nbsp;</span>', { x, base: 790, size: 84, color: P.muted, parent: X.PW });
+      const wE = h.rect(a.inner.querySelector('.e')).w;
+      const b = line('<span class="ib sm">some.</span>', { x: x + wE, base: 790, size: 84, color: P.muted, parent: X.PS });
+      return { a, b, chars: h.split(b.inner.querySelector('.sm'), { type: 'chars' }).chars };
+    }
+    const LB1 = label('CAIXA 1 — AGÊNCIA', 240, X1.PW);
+    const LB2 = label('CAIXA 2 — CONSULTORIA', 1020, X2.PW);
+    const T11 = line('Executa a peça', { x: 240, base: 690, size: 84, parent: X1.PW });
+    const T12 = eSome(240, X1);
+    const T21 = line('Entrega o slide', { x: 1020, base: 690, size: 84, parent: X2.PW });
+    const T22 = eSome(1020, X2);
     const somem = h.split(L1.inner.querySelector('.sm'), { type: 'chars' }).chars;
     // eyebrow NÃO é dividido em chars (fica idêntico ao da S02 no corte); a saída "apaga de trás para frente" com clip-path em steps
     const ebLbl = eb.querySelector('.lbl');
     const ebW = h.rect(ebLbl).w;
     const ebN = ebLbl.textContent.length;
     const ebDash = eb.querySelector('.dash');
+
+    // DETERMINISMO: o GSAP lê a matriz de transform de um elemento HTML no 1º render de um tween de transform.
+    // Se esse 1º render acontecer com o root em display:none (1ª busca dentro da cena, busca fora de ordem, render
+    // com --from), ele tira o nó do lugar para medir e o devolve com insertBefore(nextElementSibling), o que pode
+    // trocar a ordem com nós de texto. Aqui, com o root ainda em layout, todos os transforms ficam em cache.
+    [root, ...root.querySelectorAll('*')].forEach(el => { if (el instanceof HTMLElement && el.tagName !== 'STYLE') gsap.getProperty(el, 'x'); });
 
     // ================================================================== COREOGRAFIA
     // 0,0 — slam de T1 (máscara, 0,5 s, mecca.out, stagger .12)
@@ -208,7 +231,11 @@ MECCA.scene({
     // 1,0–1,5 — FLIP para o header (mecca.inOut) + crossfade
     gsap.set([A.outer, B.outer], { transformOrigin: '0px 0px' });
     const sA = 44 / 96, sB = 44 / 260;
-    tl.to(A.outer, { x: hA.x - A.left, y: 196 - A.top - sA * A.b, scale: sA, duration: 0.5, ease: 'mecca.inOut' }, 1.0);
+    // 'O mercado te dá' decola já no 1º quadro (expo.out em x/y): sai da zona da ilustração/label do card 1
+    // antes de o traço começar, para o card 1 poder entrar inteiro em 1,0 (na batida)
+    tl.to(A.outer, { x: hA.x - A.left, duration: 0.5, ease: 'expo.out' }, 1.0);
+    tl.to(A.outer, { y: 196 - A.top - sA * A.b, duration: 0.5, ease: 'expo.out' }, 1.0);
+    tl.to(A.outer, { scale: sA, duration: 0.5, ease: 'power3.out' }, 1.0);
     // 'duas caixas.' encolhe e desliza para a direita antes de subir: assim não atravessa 'O mercado te dá'
     const FB = { dx: hB.x - B.left, dy: 196 - B.top - sB * B.b, ex: 'expo.out', ey: 'power2.inOut', es: 'power3.out' };
     tl.to(B.outer, { x: FB.dx, duration: 0.5, ease: FB.ex }, 1.0);
@@ -222,57 +249,60 @@ MECCA.scene({
     tl.to(HD.inner, { yPercent: -110, duration: 0.3, ease: 'mecca.in' }, 5.5);
 
     // caixas: solidificam (1,0 / 1,5)
-    function openBox(C, LB, t1, t2, ILL, at, textAt) {
+    function openBox(C, X, LB, t1, t2, ILL, at, closeAt) {
       tl.to(C.st, { fill: 0.9, duration: 0.3, ease: 'power2.out' }, at);
       tl.to(C.st, { gap: 0, duration: 0.45, ease: 'mecca.out' }, at);
       tl.to(C.st, { sa: 0.5, duration: 0.3, ease: 'power2.out' }, at);
       tl.to(C.st, { beam: 1, duration: 0.6, ease: 'power1.inOut' }, at + 0.5);
-      // label digitado (0,3 s) com caret
+      // label digitado (0,3 s): o char k aparece em at + k·0,3/n; o cursor (x no onFrame) fica logo depois do último visível
       const n = LB.chars.length;
-      tl.fromTo(LB.chars, { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.001, stagger: 0.3 / n }, textAt);
-      tl.fromTo(LB.caret, { autoAlpha: 0, x: 0 }, { autoAlpha: 1, duration: 0.001 }, textAt);
-      tl.to(LB.caret, { x: LB.w, duration: 0.3, ease: `steps(${n})` }, textAt);
-      tl.set(LB.caret, { autoAlpha: 0 }, textAt + 0.5);
-      tl.set(LB.caret, { autoAlpha: 1 }, textAt + 0.75);
-      tl.set(LB.caret, { autoAlpha: 0 }, textAt + 1.0);
+      tl.fromTo(LB.chars, { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.001, stagger: 0.3 / n }, at);
+      tl.fromTo(LB.caret, { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.001 }, at);
+      tl.set(LB.caret, { autoAlpha: 0 }, at + 0.5);
+      tl.set(LB.caret, { autoAlpha: 1 }, at + 0.75);
+      tl.set(LB.caret, { autoAlpha: 0 }, at + 1.0);
       // ilustração: DrawSVG 0→100% (0,5 s)
       tl.fromTo(ILL.els, { drawSVG: '0%', autoAlpha: 0 }, { drawSVG: '100%', autoAlpha: 1, duration: 0.5, ease: 'mecca.out', stagger: 0.035 }, at);
-      // títulos por máscara (stagger .12)
-      tl.fromTo([t1.inner, t2.inner], { yPercent: 110 }, { yPercent: 0, duration: 0.5, ease: 'mecca.out', stagger: 0.12 }, textAt);
+      // títulos por máscara (stagger .12) — 'e ' e 'some.' são duas linhas que entram juntas
+      tl.fromTo(t1.inner, { yPercent: 110 }, { yPercent: 0, duration: 0.5, ease: 'mecca.out' }, at);
+      tl.fromTo([t2.a.inner, t2.b.inner], { yPercent: 110 }, { yPercent: 0, duration: 0.5, ease: 'mecca.out' }, at + 0.12);
+      // push lento do conteúdo textual (1→1,02 até o fechamento, continuando no mesmo ritmo durante a saída)
+      const k = (closeAt + 0.45 - at) / (closeAt - at);
+      tl.fromTo([X.PW, X.PS], { scale: 1 }, { scale: 1 + 0.02 * k, duration: closeAt + 0.45 - at, ease: 'none' }, at);
     }
-    // caixa 1: o texto entra 0,25 s depois (espera o FLIP do título passar por cima do card)
-    openBox(C1, LB1, T11, T12, POST, 1.0, 1.25);
-    openBox(C2, LB2, T21, T22, SLIDE, 1.5, 1.5);
+    openBox(C1, X1, LB1, T11, T12, POST, 1.0, 4.5);
+    openBox(C2, X2, LB2, T21, T22, SLIDE, 1.5, 5.0);
 
     // 'e some.' pisca em steps (1→.3→1→.3→1, 0,3 s)
-    function blink(el, at) {
-      tl.set(el, { opacity: 0.3 }, at);
-      tl.set(el, { opacity: 1 }, at + 0.075);
-      tl.set(el, { opacity: 0.3 }, at + 0.15);
-      tl.set(el, { opacity: 1 }, at + 0.225);
+    function blink(els, at) {
+      tl.set(els, { opacity: 0.3 }, at);
+      tl.set(els, { opacity: 1 }, at + 0.075);
+      tl.set(els, { opacity: 0.3 }, at + 0.15);
+      tl.set(els, { opacity: 1 }, at + 0.225);
     }
-    blink(T12.inner, 3.0);
-    blink(T22.inner, 3.5);
+    blink([T12.a.inner, T12.b.inner], 3.0);
+    blink([T22.a.inner, T22.b.inner], 3.5);
 
-    // fechamento das caixas (4,5 / 5,0)
-    function closeBox(C, CW, LB, t1, t2, some, ILL, at) {
+    // fechamento das caixas (4,5 / 5,0) — só o retângulo escala; o texto é RECORTADO por ele (clip-path no onFrame)
+    function closeBox(C, X, LB, t1, t2, ILL, at) {
       tl.to(C.st, { beam: 0, duration: 0.25, ease: 'power1.in' }, at - 0.25);
-      tl.to([C.g, CW], { scaleY: 0.01, duration: 0.3, ease: 'mecca.in' }, at);
+      tl.to(C.g, { scaleY: 0.01, duration: 0.3, ease: 'mecca.in' }, at);
       tl.to(C.st, { sa: 0.95, duration: 0.3, ease: 'mecca.in' }, at);
-      tl.to([C.g, CW], { scaleX: 0, duration: 0.15, ease: 'mecca.in' }, at + 0.3);
-      // 'some.' evapora
-      gsap.set(some, { filter: 'blur(0px)' });
-      tl.to(some, { y: -24, filter: 'blur(6px)', autoAlpha: 0, duration: 0.3, ease: 'power2.out', stagger: 0.03 }, at);
+      tl.to(C.g, { scaleX: 0, duration: 0.15, ease: 'mecca.in' }, at + 0.3);
+      // 'some.' evapora para fora da caixa (a máscara da linha é liberada para o blur/subida não serem cortados)
+      gsap.set(t2.chars, { filter: 'blur(0px)' });
+      tl.set(t2.b.outer, { overflow: 'visible' }, at);
+      tl.to(t2.chars, { y: -24, filter: 'blur(6px)', autoAlpha: 0, duration: 0.3, ease: 'power2.out', stagger: 0.03 }, at);
       // o resto sai por máscara
       tl.to(t1.inner, { yPercent: -110, duration: 0.3, ease: 'mecca.in' }, at);
-      tl.to(t2.inner.querySelector('.e'), { yPercent: -110, duration: 0.3, ease: 'mecca.in' }, at + 0.04);
+      tl.to(t2.a.inner, { yPercent: -110, duration: 0.3, ease: 'mecca.in' }, at + 0.04);
       // label se apaga de trás para frente
       tl.to(LB.chars.slice().reverse(), { autoAlpha: 0, duration: 0.001, stagger: 0.012 }, at);
       // a ilustração fica sozinha e sobe 16 px
       tl.to(ILL.outer, { y: -16, duration: 0.6, ease: 'mecca.inOut' }, at);
     }
-    closeBox(C1, CW1, LB1, T11, T12, some1, POST, 4.5);
-    closeBox(C2, CW2, LB2, T21, T22, some2, SLIDE, 5.0);
+    closeBox(C1, X1, LB1, T11, T12, POST, 4.5);
+    closeBox(C2, X2, LB2, T21, T22, SLIDE, 5.0);
 
     // 5,5–5,8 — fatiamento em 5 tiras
     function slice(ILL, at, seed) {
@@ -333,6 +363,53 @@ MECCA.scene({
       const ch = (sh) => Math.round(lerp((A0 >> sh) & 255, (B0 >> sh) & 255, k));
       return '#' + [16, 8, 0].map(sh => ch(sh).toString(16).padStart(2, '0')).join('');
     }
+    // início do trecho de movimento que contém t (as amostras do rastro nunca voltam antes dele)
+    const segStart = (t) => (t < 1.0 ? 0 : t < 5.5 ? 1.0 : 5.5);
+    // fita afunilada (polígono contínuo) ao longo das amostras: sem discos soltos, sem "contas"
+    function ribbon(c, pts, ws, fill) {
+      const m = pts.length, Lp = [], Rp = [];
+      for (let i = 0; i < m; i++) {
+        const a = pts[Math.max(0, i - 1)], b = pts[Math.min(m - 1, i + 1)];
+        let dx = b.x - a.x, dy = b.y - a.y;
+        const d = Math.hypot(dx, dy);
+        if (d < 1e-6) { dx = 1; dy = 0; } else { dx /= d; dy /= d; }
+        Lp.push([pts[i].x - dy * ws[i], pts[i].y + dx * ws[i]]);
+        Rp.push([pts[i].x + dy * ws[i], pts[i].y - dx * ws[i]]);
+      }
+      c.beginPath();
+      c.moveTo(Lp[0][0], Lp[0][1]);
+      for (let i = 1; i < m; i++) c.lineTo(Lp[i][0], Lp[i][1]);
+      for (let i = m - 1; i >= 0; i--) c.lineTo(Rp[i][0], Rp[i][1]);
+      c.closePath();
+      c.fillStyle = fill; c.fill();
+    }
+    function drawTrail(c, t, p, amount) {
+      const WIN = 8 / 60, N = 48;
+      const t0 = Math.max(t - WIN, segStart(t));
+      if (t - t0 < 1 / 240) return;
+      // enquanto o Ponto é glifo de 'caixas.' (FLIP), o rastro é só um fio discreto (raio ≤ 3 px)
+      const glyph = t < 1.5;
+      const pts = [], ws = [];
+      for (let j = 0; j <= N; j++) {
+        const tt = t0 + ((t - t0) * j) / N;
+        const q = j === N ? p : pontoPos(tt);
+        const u = 1 - (t - tt) / WIN;                // 0 = ponta da cauda (8/60 s atrás), 1 = núcleo
+        pts.push(q);
+        ws.push(Math.min(q.r * 0.8, glyph ? 3 : 99) * Math.pow(clamp(u), 0.85));
+      }
+      const tail = pts[0], uT = clamp(1 - (t - t0) / WIN);
+      if (Math.hypot(p.x - tail.x, p.y - tail.y) < 2) return;
+      const k = amount * (glyph ? 0.55 : 1);
+      const mk = (a0, a1, c0, c1) => {
+        const g = c.createLinearGradient(tail.x, tail.y, p.x, p.y);
+        g.addColorStop(0, hexA(mixHex(c0, c1, uT), a0 * uT * k));
+        g.addColorStop(1, hexA(c1, a1 * k));
+        return g;
+      };
+      // halo largo e suave + núcleo magenta → violeta (a cor esfria para a cauda)
+      ribbon(c, pts, ws.map(w => w * 2.2), mk(0.14, 0.2, P.violet, P.lavender));
+      ribbon(c, pts, ws, mk(0.5, 0.75, P.violet, P.magenta));
+    }
     function drawPonto(c, t) {
       const p = pontoPos(t);
       // pulso único em 9,5 (e respiração leve enquanto está pousado)
@@ -343,19 +420,10 @@ MECCA.scene({
       const glow = 1 + breathe + 1.1 * pk;
       // rastro acima de 600 px/s
       const dt = 1 / 120;
-      const q = pontoPos(Math.max(0, t - dt));
-      const speed = Math.hypot(p.x - q.x, p.y - q.y) / dt;
+      const q = pontoPos(Math.max(segStart(t), t - dt));
+      const speed = Math.hypot(p.x - q.x, p.y - q.y) / Math.max(1e-6, t - Math.max(segStart(t), t - dt));
       const trail = h.smooth(600, 1000, speed);
-      if (trail > 0) {
-        // rastro das últimas 8 posições (8/60 s), amostrado denso para virar um cometa contínuo
-        const N = 64, WIN = 8 / 60;
-        for (let j = N; j >= 1; j--) {
-          const pp = pontoPos(Math.max(0, t - (j / N) * WIN));
-          const u = 1 - j / N;                       // 0 = ponta da cauda, →1 = junto ao núcleo
-          c.fillStyle = hexA(mixHex(P.violet, P.magenta, u), 0.13 * (0.15 + u) * trail);
-          c.beginPath(); c.arc(pp.x, pp.y, pp.r * (0.3 + 0.65 * u), 0, TAU); c.fill();
-        }
-      }
+      if (trail > 0) drawTrail(c, t, p, trail);
       h.glowDot(c, p.x, p.y, r, P.lavender, clamp(0.6 * glow, 0, 1));
       c.fillStyle = P.ink;
       c.beginPath(); c.arc(p.x, p.y, r, 0, TAU); c.fill();
@@ -388,9 +456,27 @@ MECCA.scene({
         });
       });
     }
+    // texto do card recortado pelo retângulo que colapsa (mesma escala/origem do C.g: y 550, x no centro do card)
+    function applyClip(C, X) {
+      const sy = gsap.getProperty(C.g, 'scaleY'), sx = gsap.getProperty(C.g, 'scaleX');
+      if (sy > 0.9999 && sx > 0.9999) { X.CW.style.clipPath = 'none'; return; }
+      const top = 550 - 300 * sy, bot = 1080 - (550 + 300 * sy);
+      const l = X.cxm - 377 * sx, r = 1920 - (X.cxm + 377 * sx);
+      X.CW.style.clipPath = `inset(${top.toFixed(2)}px ${r.toFixed(2)}px ${bot.toFixed(2)}px ${l.toFixed(2)}px)`;
+    }
+    // cursor da digitação: logo depois do último char VISÍVEL (lido do estado já renderizado pela timeline)
+    function applyCaret(LB) {
+      let k = 0;
+      for (const ch of LB.chars) if (ch.style.visibility !== 'hidden' && parseFloat(ch.style.opacity || '1') > 0.5) k++; else break;
+      LB.caret.style.transform = `translateX(${LB.stops[k].toFixed(2)}px)`;
+    }
     onFrame((lt) => {
       applyCard(C1, lt, 1.0);
       applyCard(C2, lt, 1.5);
+      applyClip(C1, X1);
+      applyClip(C2, X2);
+      applyCaret(LB1);
+      applyCaret(LB2);
       // ilustrações flutuam (±4 px, seno de 2 s) — em contrafase
       const fl = lt > 1.5 ? 4 * Math.sin(TAU * (lt - 1.5) / 2) : 0;
       POST.float.setAttribute('transform', `translate(0 ${f4(fl)})`);
@@ -410,6 +496,12 @@ MECCA.scene({
       cx.clearRect(0, 0, 1920, 1080);
       drawPonto(cx, lt);
     });
+
+    // DETERMINISMO (2): transforms sempre 2D nos alvos HTML desta cena. Com force3D 'auto' o GSAP usa translate3d
+    // no meio de um tween; o Chrome promove o elemento a camada composta e a rasterização do texto num quadro
+    // seguinte passa a depender de qual quadro foi buscado antes (diferenças sub-pixel na ordem das buscas).
+    const htmlTargets = new Set(tl.getChildren(true, true, false).flatMap(t => t.targets()).filter(el => el instanceof HTMLElement));
+    gsap.set([...htmlTargets], { force3D: false });
 
     // ================================================================== som
     cue(0, 'impact', 'slam T1', 0.7);

@@ -21,6 +21,7 @@ MECCA.scene({
     const EIN = gsap.parseEase('mecca.in');
     const EBACK = gsap.parseEase('mecca.back');
     const EP3 = gsap.parseEase('power3.inOut');
+    const ESIO = gsap.parseEase('sine.inOut');
     const seg = (t, a, b, e) => { const k = clamp((t - a) / (b - a)); return e ? e(k) : k; };
 
     // ------------------------------------------------------------------ constantes de layout
@@ -87,6 +88,7 @@ MECCA.scene({
       x: 192, y: 0, size: 60, weight: 500, color: P.lilac, nowrap: true, lh: 1.25, ls: '-0.02em', cls: 't-display s06-sub', parent: subWrap,
     });
     const subOff = placeBase(sub, 470);
+    const subR = h.rect(sub).right;   // fim do subtitulo grande (para o vao da orbita sob o texto)
 
     // ------------------------------------------------------------------ colunas
     const cols = COLX.map((x, i) => {
@@ -94,6 +96,8 @@ MECCA.scene({
       c.mask = h.el('div', { cls: 's06-mask', style: { left: (x - 16) + 'px', top: MASK_TOP + 'px', width: '260px', height: MASK_H + 'px' } }, wrap);
       c.num = h.text('0' + (i + 1), { x: 16, y: 0, size: 120, cls: 't-bricolage s06-num', nowrap: true, lh: 1, parent: c.mask });
       placeBase(c.num, 540 - MASK_TOP);
+      const nr = h.rect(c.num);
+      c.numS = (nr.cx - LX0) * 63 / LLEN;   // posição (em índice da polyline) do centro do número
 
       c.nameWrap = layer(wrap);
       c.name = h.text(NAMES[i], { x, y: 0, size: 56, nowrap: true, lh: 1.25, parent: c.nameWrap });
@@ -145,7 +149,9 @@ MECCA.scene({
       tl.fromTo(c.num, { y: MASK_H }, { y: 0, duration: 0.45, ease: 'expo.out' }, T);
       // descrição (linhas y 16→0 + fade)
       c.dSp = h.split(c.desc, { type: 'lines' });
-      tl.fromTo(c.dSp.lines, { y: 16, opacity: 0 }, { y: 0, opacity: 1, duration: 0.4, stagger: 0.06, ease: 'mecca.out' }, T + 0.5);
+      // a descrição 04 tem a janela mais curta (8,0–11,5): entrada mais rápida para ganhar tempo de leitura
+      const last = c.i === 3;
+      tl.fromTo(c.dSp.lines, { y: 16, opacity: 0 }, { y: 0, opacity: 1, duration: last ? 0.3 : 0.4, stagger: last ? 0.04 : 0.06, ease: 'mecca.out' }, T + 0.5);
     });
 
     // 01 — Diagnóstico: linha de varredura revela o nome
@@ -216,13 +222,31 @@ MECCA.scene({
     // nomes anteriores vão para α .7
     for (let i = 0; i < 3; i++) tl.to(cols[i].name, { opacity: 0.7, duration: 0.3, ease: 'mecca.inOut' }, TT[i + 1]);
 
-    // ------------------------------------------------------------------ saída 11,5
+    // ------------------------------------------------------------------ saída (11,40–11,72)
+    // A linha começa a enrolar em 11,4 (power3.inOut: p ≈ .04 em 11,55, .12 em 11,6).
+    // 1) Os números afundam na linha ENQUANTO ela ainda está reta: y → base da máscara + fade,
+    //    0,15 s, power2.in, stagger .02 a partir da col 4 (tudo fora em 11,61).
+    // 2) O resto do texto apaga rápido (0,2 s, stagger .02) na ordem em que a curva cruza as
+    //    colunas (03, 02, 01), depois 'Escala', header e eyebrow; a descrição 04 (fora do caminho
+    //    da curva e com a janela de leitura mais curta) sai por último.
     const X0 = 11.4;
-    cols.forEach((c, i) => tl.to(c.num, { y: MASK_H, duration: 0.3, ease: 'mecca.in', immediateRender: false }, X0 + 0.03 * (3 - i)));
-    const exitGroups = [...cols.slice().reverse().map(c => [c.nameWrap, c.descWrap]), [titleWrap, subWrap], [ebWrap]];
+    [3, 2, 1, 0].forEach((ci, k) => {
+      const c = cols[ci];
+      tl.to(c.num, { y: MASK_H, duration: 0.15, ease: 'power2.in', immediateRender: false }, X0 + 0.02 * k);
+      tl.to(c.num, { opacity: 0, duration: 0.15, ease: 'none' }, X0 + 0.02 * k);
+    });
+    const exitGroups = [
+      [cols[2].nameWrap, cols[2].descWrap],
+      [cols[1].nameWrap, cols[1].descWrap],
+      [cols[0].nameWrap, cols[0].descWrap],
+      [cols[3].nameWrap],
+      [titleWrap, subWrap],
+      [ebWrap],
+      [cols[3].descWrap],
+    ];
     exitGroups.forEach((g, i) => {
-      tl.to(g, { y: -12, duration: 0.3, ease: 'mecca.in' }, X0 + 0.03 * i);
-      tl.to(g, { opacity: 0, duration: 0.3, ease: 'none' }, X0 + 0.03 * i);
+      tl.to(g, { y: -12, duration: 0.2, ease: 'mecca.in' }, X0 + 0.02 * i);
+      tl.to(g, { opacity: 0, duration: 0.2, ease: 'power1.out' }, X0 + 0.02 * i);
     });
 
     // ------------------------------------------------------------------ push de câmera
@@ -333,6 +357,40 @@ MECCA.scene({
       c.restore();
     }
 
+    // Vão da metade de trás sob o subtítulo grande (1,0–2,8): o 'q' e o 'g' (baseline 470) descem
+    // até y ≈ 483 e a elipse passa em y 480. A órbita some por trás do texto: fator de α que vai a
+    // ~0 na faixa y ≤ 490 entre o início do texto e o seu fim (+ rampa de 60 px), e volta a 1
+    // abaixo de y 510 (a curva sai da faixa suavemente, sem aresta dura).
+    const gapAmt = t => seg(t, 0.85, 1.1) * (1 - seg(t, 2.5, 2.8));
+    function gapF(x, y, g) {
+      if (g <= 0) return 1;
+      const v = 1 - smooth(490, 510, y);
+      const hz = 1 - smooth(subR + 6, subR + 66, x);
+      return 1 - 0.92 * g * v * hz;
+    }
+    // metade de trás como polyline com α por trecho (mantém o tracejado contínuo via lineDashOffset)
+    function strokeBackHalf(c, e, baseA, g, dashOff) {
+      const N = 180, ry = Math.max(e.ry, 0.01);
+      let acc = 0, runA = -1;
+      let px = e.cx - e.rx, py = e.cy;
+      for (let j = 1; j <= N; j++) {
+        const th = Math.PI + (j / N) * Math.PI;
+        const qx = e.cx + e.rx * Math.cos(th), qy = e.cy + ry * Math.sin(th);
+        const aq = Math.round(baseA * gapF((px + qx) / 2, (py + qy) / 2, g) * 400) / 400;
+        if (aq !== runA) {
+          if (runA >= 0) c.stroke();
+          runA = aq;
+          c.strokeStyle = hexA(P.lavender, aq);
+          if (dashOff != null) c.lineDashOffset = dashOff + acc;   // tracejado continua entre trechos
+          c.beginPath(); c.moveTo(px, py);
+        }
+        c.lineTo(qx, qy);
+        acc += Math.hypot(qx - px, qy - py);
+        px = qx; py = qy;
+      }
+      if (runA >= 0) c.stroke();
+    }
+
     function drawTrack(c, t) {
       c.save();
       if (t < 3.0) {
@@ -340,9 +398,15 @@ MECCA.scene({
         const a = lerp(0.3, 0.35, k);
         const backF = lerp(1 - 0.5 * seg(t, 0.3, 1.0, EIO), 1, k);   // metade de trás (em cima) α ×.5
         c.lineWidth = 1.5;
-        if (k > 0.0005) { c.setLineDash([16 - 10 * k, 10 * k]); c.lineDashOffset = flow(t); }
-        c.strokeStyle = hexA(P.lavender, a * backF);
-        c.beginPath(); c.ellipse(e.cx, e.cy, e.rx, Math.max(e.ry, 0.01), 0, Math.PI, TAU); c.stroke();
+        const dashed = k > 0.0005;
+        if (dashed) { c.setLineDash([16 - 10 * k, 10 * k]); c.lineDashOffset = flow(t); }
+        const g = gapAmt(t);
+        if (g > 0) strokeBackHalf(c, e, a * backF, g, dashed ? flow(t) : null);
+        else {
+          c.strokeStyle = hexA(P.lavender, a * backF);
+          c.beginPath(); c.ellipse(e.cx, e.cy, e.rx, Math.max(e.ry, 0.01), 0, Math.PI, TAU); c.stroke();
+        }
+        if (dashed) c.lineDashOffset = flow(t);
         if (k < 0.999) {
           c.strokeStyle = hexA(P.lavender, a * (1 - k));
           c.beginPath(); c.ellipse(e.cx, e.cy, e.rx, Math.max(e.ry, 0.01), 0, Math.PI, 0, true); c.stroke();
@@ -442,7 +506,7 @@ MECCA.scene({
         const ang = th + off * sp;
         const x = e.cx + e.rx * Math.cos(ang), y = e.cy + e.ry * Math.sin(ang);
         const depth = 0.75 + 0.25 * Math.sin(ang);        // metade de trás com α ×.5
-        h.glowDot(c, x, y, r, col, a * depth);
+        h.glowDot(c, x, y, r, col, a * depth * gapF(x, y, gapAmt(t)));   // some por trás do subtítulo
       });
     }
 
@@ -485,22 +549,38 @@ MECCA.scene({
       c.restore();
     }
 
+    // Na saída (linha → círculo) a ponta chega a ~7000 px/s: 8 quadros de rastro virariam uma barra
+    // de ~1000 px. Ali o rastro é limitado a 180 px de arco e recolhe até o Ponto em 11,70–11,90.
+    const TRAIL_CAP = 180;
     function drawPonto(c, t) {
       const p = pontoPos(t);
       const q = pontoPos(t - 1 / 30);
       const speed = Math.hypot(p.x - q.x, p.y - q.y) * 30;
-      const ta = smooth(500, 800, speed);
-      if (ta > 0.001) {
-        // fita afinada pelas últimas 8 posições; α decrescente, cor #C026D3 → #7C3AED
+      const exiting = t >= 11.4;
+      const collapse = exiting ? 1 - seg(t, 11.7, 11.9, ESIO) : 1;
+      const lmax = exiting ? TRAIL_CAP * collapse : Infinity;
+      const ta = smooth(500, 800, speed) * collapse;
+      if (ta > 0.001 && lmax > 2) {
+        // fita afinada pelas últimas 8 posições (amostradas a cada 1/4 de quadro), cortada no
+        // comprimento de arco lmax; α decrescente, cor #C026D3 → #7C3AED
+        const SUB = 4;
         const pts = [p];
-        for (let k = 1; k <= 8; k++) pts.push(pontoPos(t - k / 30));
+        let acc = 0;
+        for (let k = 1; k <= 8 * SUB; k++) {
+          const a = pts[pts.length - 1], b = pontoPos(t - k / (30 * SUB));
+          const d = Math.hypot(b.x - a.x, b.y - a.y);
+          if (d < 1e-4) continue;
+          if (acc + d >= lmax) { const f = (lmax - acc) / d; pts.push({ x: lerp(a.x, b.x, f), y: lerp(a.y, b.y, f) }); acc = lmax; break; }
+          acc += d; pts.push(b);
+        }
         const L = [], R = [];
-        let nx = 0, ny = -1;
+        let nx = 0, ny = -1, run = 0;
         for (let k = 0; k < pts.length; k++) {
           const a = pts[Math.max(0, k - 1)], b = pts[Math.min(pts.length - 1, k + 1)];
           const dx = b.x - a.x, dy = b.y - a.y, len = Math.hypot(dx, dy);
           if (len > 1e-3) { nx = -dy / len; ny = dx / len; }
-          const w = lerp(14, 1.2, k / 8) / 2;
+          if (k > 0) run += Math.hypot(pts[k].x - pts[k - 1].x, pts[k].y - pts[k - 1].y);
+          const w = lerp(14, 1.2, acc > 0 ? run / acc : 1) / 2;
           L.push([pts[k].x + nx * w, pts[k].y + ny * w]); R.push([pts[k].x - nx * w, pts[k].y - ny * w]);
         }
         const tail = pts[pts.length - 1];
@@ -521,6 +601,17 @@ MECCA.scene({
       h.glowDot(c, p.x, p.y, 10, P.lavender, 0.6);
       c.fillStyle = P.ink;
       c.beginPath(); c.arc(p.x, p.y, 10, 0, TAU); c.fill();
+    }
+
+    // Na saída a base da máscara dos números acompanha a linha (que começa a enrolar em 11,4):
+    // os números afundam exatamente na linha, sem aresta invisível. Antes disso, base fixa em 572.
+    function updateNumMasks(t) {
+      const p = morphP(t);
+      const gap = lerp(LINE_Y - MASK_BOT, 1.5, seg(t, 11.4, 11.46));   // 8 px → borda de cima da linha
+      for (const c of cols) {
+        const base = linePt(c.numS, p).y - gap;
+        c.mask.style.height = Math.max(0, base - MASK_TOP).toFixed(2) + 'px';
+      }
     }
 
     function updateGearDots(t) {
@@ -558,6 +649,7 @@ MECCA.scene({
       drawImpact(fx, lt);
       drawPonto(fx, lt);
       updateGearDots(lt);
+      updateNumMasks(lt);
     });
   },
 });

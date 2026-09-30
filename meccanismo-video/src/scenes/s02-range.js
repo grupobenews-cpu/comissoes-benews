@@ -26,8 +26,9 @@ MECCA.scene({
     const T_JOLT = 4.0;                          // tranco forte
     const T_LAND = 4.5;                          // Ponto pousa como '.' de 'engenharia.'
     const T_BP0 = 4.5, T_BP1 = 5.0, T_LENS = 5.0; // planta técnica
-    const T_PUSHB0 = 6.0, T_PUSHB1 = 7.5;
-    const T_OUT = 7.5;                           // saída do texto
+    const T_PUSHB0 = 4.0, T_PUSHB1 = 7.5;        // push do bloco B desde a entrada (nada parado 4,4–6,0)
+    const T_TXO = 7.4;                           // saída do texto: termina ≈7,65, antes de o contorno chegar à área do texto (≈7,69)
+    const T_OUT = 7.45;                          // o Ponto sai do '.' junto com o morph
     const T_M0 = 7.45, T_M1 = 7.95;              // morph (termina antes do último quadro 7,967)
 
     // ------------------------------------------------------------------ fundo (corte de entrada: padrão)
@@ -75,8 +76,9 @@ MECCA.scene({
 
     // Bloco A
     const blockA = h.el('div', { cls: 's02-layer' }, textLayer);
-    const lA1 = h.text('Algumas <span class="s02-giram">giram;</span>', { x: 192, y: 0, size: 150, color: P.ink, nowrap: true, parent: blockA });
-    const lA2 = h.text('a maioria <span class="s02-range">range.</span>', { x: 192, y: 0, size: 150, color: P.ink, nowrap: true, parent: blockA });
+    // só a palavra leva a cor: ';' e '.' ficam em ink (o '.' rosa competia com o Ponto-como-ponto-final)
+    const lA1 = h.text('Algumas <span class="s02-giram">giram</span>;', { x: 192, y: 0, size: 150, color: P.ink, nowrap: true, parent: blockA });
+    const lA2 = h.text('a maioria <span class="s02-range">range</span>.', { x: 192, y: 0, size: 150, color: P.ink, nowrap: true, parent: blockA });
     const spA1 = h.split(lA1, { type: 'lines,words,chars', mask: 'lines' });
     const spA2 = h.split(lA2, { type: 'lines,words,chars', mask: 'lines' });
     placeBaseline(lA1, spA1, 430);
@@ -100,8 +102,8 @@ MECCA.scene({
       const x0 = Math.min(...rs.map(r => r.x)), x1 = Math.max(...rs.map(r => r.right));
       return { x: x0, right: x1, w: x1 - x0 };
     };
-    const giramChars = [...lA1.querySelectorAll('.s02-giram .char')].slice(0, 5);   // g i r a m
-    const rangeChars = [...lA2.querySelectorAll('.s02-range .char')].slice(0, 5);   // r a n g e
+    const giramChars = [...lA1.querySelectorAll('.s02-giram .char')];   // g i r a m
+    const rangeChars = [...lA2.querySelectorAll('.s02-range .char')];   // r a n g e
     const mc = document.createElement('canvas').getContext('2d');
     // órbita de 'giram': centro no bbox (tinta) da palavra, rx = largura/2 + 48, ry 78, −6°
     let ORB = { cx: 1045, cy: 391, rx: 239, ry: 78 };
@@ -152,8 +154,14 @@ MECCA.scene({
     const pushB = (lt) => 1 + 0.02 * seg(lt, T_PUSHB0, T_PUSHB1);
     tl.fromTo(blockA, { scale: 1, transformOrigin: `${PUSHA_O.x}px ${PUSHA_O.y}px` }, { scale: 1.02, duration: T_FALL, ease: 'none' }, 0);
 
-    tl.fromTo(spA1.words, { yPercent: 110 }, { yPercent: 0, duration: 0.5, ease: 'mecca.out', stagger: 0.08 }, 0);
-    tl.fromTo(spA2.words, { yPercent: 110 }, { yPercent: 0, duration: 0.25, ease: 'expo.out', stagger: 0.03 }, T_LOCK);
+    // pontuação solta (';' '.') vira "palavra" própria no split: entra junto com a palavra anterior
+    const wordGroups = (words) => { let g = -1; return words.map((w) => { if (!/^[;.,:!?]+$/.test(w.textContent.trim())) g++; return Math.max(0, g); }); };
+    const gA1 = wordGroups(spA1.words), gA2 = wordGroups(spA2.words);
+    tl.fromTo(spA1.words, { yPercent: 110 }, { yPercent: 0, duration: 0.5, ease: 'mecca.out', stagger: (i) => 0.08 * gA1[i] }, 0);
+    tl.fromTo(spA2.words, { yPercent: 110 }, { yPercent: 0, duration: 0.25, ease: 'expo.out', stagger: (i) => 0.03 * gA2[i] }, T_LOCK);
+    // opacidade curta no começo da máscara: o pingo do 'i' de 'giram' (acima da altura-x, sem ascendentes
+    // vizinhos) nunca aparece sozinho sob a linha. (Linha 2, expo.out, passa por essa janela em < ½ quadro.)
+    tl.fromTo(spA1.words, { opacity: 0 }, { opacity: 1, duration: 0.12, ease: 'power2.in', stagger: (i) => 0.08 * gA1[i] }, 0);
 
     // os chars de 'range' tremem ±6 px / ±4° a cada rangido (mesma duração dos keyframes das engrenagens)
     RATTLES.forEach((tr, k) => {
@@ -190,13 +198,17 @@ MECCA.scene({
     // ------------------------------------------------------------------ BLOCO B
     tl.fromTo(spB1.words, { yPercent: 110 }, { yPercent: 0, duration: 0.4, ease: 'mecca.out', stagger: 0.04 }, T_JOLT);
     tl.fromTo(spB2.words, { yPercent: 110 }, { yPercent: 0, duration: 0.4, ease: 'mecca.out' }, T_LAND);
-    tl.fromTo(spB3.chars, { yPercent: 110 }, { yPercent: 0, duration: 0.35, ease: 'expo.out', stagger: 0.02 }, T_LAND);
+    // 'engenharia.' nasce do '.' para a esquerda: o 'a' vizinho do Ponto sobe no pouso (4,5) e a onda corre até o 'e'
+    // (o '.' é transparente e fica fora da onda)
+    const engChars = spB3.chars.filter(c => c !== dotChar);
+    tl.fromTo(engChars, { yPercent: 110 }, { yPercent: 0, duration: 0.35, ease: 'expo.out', stagger: { each: 0.02, from: 'end' } }, T_LAND);
+    tl.fromTo(engChars, { opacity: 0 }, { opacity: 1, duration: 0.06, ease: 'power2.in', stagger: { each: 0.02, from: 'end' } }, T_LAND);
     tl.fromTo(blockB, { scale: 1, transformOrigin: `${PUSHB_O.x}px ${PUSHB_O.y}px` }, { scale: 1.02, duration: T_PUSHB1 - T_PUSHB0, ease: 'none' }, T_PUSHB0);
     tl.fromTo(emEl, { '--s02sh': `${-SHW - 40}px` }, { '--s02sh': `${emW + 40}px`, duration: 1.3, ease: 'sine.inOut', immediateRender: false }, 6.0);
-    // saída 7,5–7,8 (mecca.in)
-    tl.fromTo(spB1.words, { yPercent: 0 }, { yPercent: -110, duration: 0.22, ease: 'mecca.in', stagger: 0.015, immediateRender: false }, T_OUT);
-    tl.fromTo(spB2.words, { yPercent: 0 }, { yPercent: -110, duration: 0.22, ease: 'mecca.in', immediateRender: false }, T_OUT + 0.02);
-    tl.fromTo(spB3.chars, { yPercent: 0 }, { yPercent: -110, duration: 0.2, ease: 'mecca.in', stagger: 0.006, immediateRender: false }, T_OUT + 0.02);
+    // saída 7,40–7,65 (mecca.in): some antes de o contorno do morph alcançar a área do texto
+    tl.fromTo(spB1.words, { yPercent: 0 }, { yPercent: -110, duration: 0.2, ease: 'mecca.in', stagger: 0.012, immediateRender: false }, T_TXO);
+    tl.fromTo(spB2.words, { yPercent: 0 }, { yPercent: -110, duration: 0.2, ease: 'mecca.in', immediateRender: false }, T_TXO + 0.01);
+    tl.fromTo(spB3.chars, { yPercent: 0 }, { yPercent: -110, duration: 0.2, ease: 'mecca.in', stagger: 0.004, immediateRender: false }, T_TXO + 0.01);
 
     // ------------------------------------------------------------------ engrenagens (SVG)
     const GC = [{ x: 1600, y: 300, disc: P.magenta }, { x: 1600, y: 480, disc: P.lavender }];
@@ -216,7 +228,9 @@ MECCA.scene({
       const fillP = h.svg('path', { d: dFill, fill: P.bg2, 'fill-opacity': 0, 'fill-rule': 'evenodd' }, fillG);
       const disc = h.svg('circle', { cx: c.x, cy: c.y, r: 14, fill: c.disc }, discLayer);
       const strokeG = h.svg('g', {}, strokeLayer);
-      const strokeP = h.svg('path', { d: dStroke, fill: 'none', stroke: P.lavender, 'stroke-width': 2.5, 'stroke-linejoin': 'round', 'vector-effect': 'non-scaling-stroke', opacity: 0 }, strokeG);
+      // stroke-width / stroke-opacity / stroke-dasharray: calculados em onFrame a partir de lt (nada de tween de attr
+      // que, no rewind, voltava a valores "pré-tween" inexistentes e apagava o contorno). Valores iniciais explícitos.
+      const strokeP = h.svg('path', { d: dStroke, fill: 'none', stroke: P.lavender, 'stroke-width': 2.5, 'stroke-opacity': 1, 'stroke-dasharray': 'none', 'stroke-linejoin': 'round', 'vector-effect': 'non-scaling-stroke', opacity: 0 }, strokeG);
       const hole = h.svg('circle', { cx: 0, cy: 0, r: GEAR.r * GEAR.hole, fill: 'none', stroke: P.lavender, 'stroke-width': 2.5, 'vector-effect': 'non-scaling-stroke', opacity: 0 }, strokeG);
       return { c, fillG, fillP, disc, strokeG, strokeP, hole };
     });
@@ -273,12 +287,13 @@ MECCA.scene({
     const lensFill = h.svg('path', { d: lensD, fill: P.pink, 'fill-opacity': 0.25 }, lensG);
     h.svg('path', { d: lensD, fill: `url(#${hatchId})` }, lensG);
     h.svg('path', { d: lensD, fill: 'none', stroke: P.pink, 'stroke-width': 1, 'stroke-opacity': 0.8 }, lensG);
-    tl.fromTo(lensG, { opacity: 0, scale: 0.4, svgOrigin: '1600 390' }, { opacity: 1, scale: 1, svgOrigin: '1600 390', duration: 0.5, ease: 'mecca.out' }, T_LENS);
+    gsap.set(lensG, { svgOrigin: '1600 390' });   // origem fixada uma vez (re-parse no tween dava 1599,99997 conforme o histórico)
+    tl.fromTo(lensG, { opacity: 0, scale: 0.4 }, { opacity: 1, scale: 1, duration: 0.5, ease: 'mecca.out' }, T_LENS);
     [6.0, 6.5, 7.0].forEach((b) => {
       tl.fromTo(lensFill, { attr: { 'fill-opacity': 0.25 } }, { attr: { 'fill-opacity': 0.45 }, duration: 0.07, ease: 'power2.out', immediateRender: false }, b);
       tl.fromTo(lensFill, { attr: { 'fill-opacity': 0.45 } }, { attr: { 'fill-opacity': 0.25 }, duration: 0.38, ease: 'sine.inOut', immediateRender: false }, b + 0.07);
     });
-    tl.fromTo(lensG, { opacity: 1 }, { opacity: 0, duration: 0.3, ease: 'mecca.in', immediateRender: false }, T_M0);
+    tl.fromTo(lensG, { opacity: 1 }, { opacity: 0, duration: 0.2, ease: 'power1.inOut', immediateRender: false }, T_M0);
 
     // ------------------------------------------------------------------ planta técnica (hairlines lavanda)
     const BP = 'rgba(167,139,250,0.5)';
@@ -314,7 +329,7 @@ MECCA.scene({
     tl.fromTo(ticks, { drawSVG: '50% 50%' }, { drawSVG: '0% 100%', duration: 0.25, ease: 'mecca.out', stagger: { each: 0.04, from: 'center' } }, T_BP1 + 0.06);
     tl.fromTo(cross, { drawSVG: '50% 50%' }, { drawSVG: '0% 100%', duration: 0.35, ease: 'mecca.out', stagger: 0.03 }, T_BP1);
     tl.fromTo(crossRings, { drawSVG: '0%' }, { drawSVG: '100%', duration: 0.35, ease: 'mecca.out' }, T_BP1 + 0.1);
-    tl.fromTo(bpG, { opacity: 1 }, { opacity: 0, duration: 0.3, ease: 'mecca.in', immediateRender: false }, T_M0);
+    tl.fromTo(bpG, { opacity: 1 }, { opacity: 0, duration: 0.2, ease: 'power1.inOut', immediateRender: false }, T_M0);
 
     // ------------------------------------------------------------------ MORPH: engrenagens → as duas caixas
     // Morph por pontos correspondentes (controle total da topologia): os dentes recolhem para o
@@ -365,26 +380,35 @@ MECCA.scene({
       for (let k = 0; k < NM; k++) {
         const a = phi + TAU * k / NM;
         const rb = boxR(a, hw, hh, b.r);
-        th.push(a); box.push([bcx + Math.cos(a) * rb, bcy + Math.sin(a) * rb]);
+        th.push(a); box.push([Math.cos(a) * rb, Math.sin(a) * rb]);   // relativo ao centro da caixa
       }
-      return { th, box, state: 'gear' };
+      return { th, box, bcx, bcy, state: 'gear' };
     });
-    function morphD(M, lt, rdeg) {
-      const et = p3Out(seg(lt, T_M0, T_M0 + 0.2)), em = mInOut(seg(lt, T_M0, T_M1));
-      const R = rdeg * DEG;
+    // Progresso do morph separado em 3 eixos (validado numericamente: as duas formas intermediárias nunca se
+    // cruzam depois que os dentes recolhem, e só alcançam a área do texto ≈7,69, quando ele já saiu):
+    //  cx — deslocamento horizontal do centro (mecca.inOut): as formas primeiro se afastam lado a lado;
+    //  cy — deslocamento vertical, atrasado (cx²): G1 desliza para a esquerda antes de descer;
+    //  s  — forma/tamanho (círculo → caixa), só cresce quando a separação horizontal já comporta a largura.
+    const M_A = 0.23;
+    const sineIO = E('sine.inOut');
+    function morphE(lt) {
+      const u = seg(lt, T_M0, T_M1);
+      const cx = mInOut(u);
+      return { u, et: p3Out(seg(lt, T_M0, T_M0 + 0.2)), cx, cy: cx * cx, s: Math.pow(clamp((cx - M_A) / (1 - M_A)), 1.3) };
+    }
+    function morphD(M, e, rdeg) {
+      const R = rdeg * DEG, ox = M.bcx * e.cx, oy = M.bcy * e.cy;
       let d = '';
       for (let k = 0; k < NM; k++) {
         const a = M.th[k];
-        const rg = lerp(gearR(a - R), 90, et);
-        const x = lerp(Math.cos(a) * rg, M.box[k][0], em), y = lerp(Math.sin(a) * rg, M.box[k][1], em);
+        const rg = lerp(gearR(a - R), 90, e.et);
+        const x = ox + lerp(Math.cos(a) * rg, M.box[k][0], e.s), y = oy + lerp(Math.sin(a) * rg, M.box[k][1], e.s);
         d += (k ? 'L' : 'M') + x.toFixed(2) + ' ' + y.toFixed(2);
       }
       return d + 'Z';
     }
     gears.forEach((g, i) => {
-      tl.fromTo(g.strokeP, { attr: { 'stroke-width': 2.5, 'stroke-opacity': 1 } }, { attr: { 'stroke-width': 1.5, 'stroke-opacity': 0.3 }, duration: T_M1 - T_M0, ease: 'mecca.inOut', immediateRender: false }, T_M0);
-      tl.fromTo(g.strokeP, { attr: { 'stroke-dasharray': '8 0' } }, { attr: { 'stroke-dasharray': '8 10' }, duration: 0.3, ease: 'sine.inOut', immediateRender: false }, T_M1 - 0.3);
-      tl.fromTo(g.fillP, { attr: { 'fill-opacity': 0.85 } }, { attr: { 'fill-opacity': 0 }, duration: 0.3, ease: 'power1.in', immediateRender: false }, T_M0);
+      tl.fromTo(g.fillP, { attr: { 'fill-opacity': 0.85 } }, { attr: { 'fill-opacity': 0 }, duration: 0.2, ease: 'power1.inOut', immediateRender: false }, T_M0);
       tl.fromTo(g.hole, { opacity: 1, attr: { r: 22 } }, { opacity: 0, attr: { r: 8 }, duration: 0.22, ease: 'mecca.in', immediateRender: false }, T_M0);
       // troca pelo caminho canônico (mesma geometria) — último quadro limpo para a S03
       tl.set(g.strokeP, { opacity: 0 }, T_M1);
@@ -393,6 +417,17 @@ MECCA.scene({
 
     // ------------------------------------------------------------------ tranco
     h.shake(tl, root, T_JOLT, { amp: 3, n: 6, dur: 0.25, seed: 22 });
+
+    // ------------------------------------------------------------------ determinismo do DOM (histórico de seek)
+    // Tweens que ainda não renderizaram não tocam o estilo inline; depois de renderizados e revertidos deixam valores
+    // neutros (transform: translate(0,0), opacity: 1…) que mudam o antialiasing do raster. Gravar esses valores neutros
+    // já no build deixa o DOM idêntico em qualquer ordem de seek (verificado: seek(13,96)→seek(t) == seek(0)→seek(t)).
+    gsap.set(root, { x: 0, y: 0 });
+    gsap.set([...spA1.chars, ...spA2.chars], { x: 0, y: 0, rotation: 0, opacity: 1 });
+    gsap.set(dotChar, { yPercent: 0 });
+    gsap.set(ebA, { opacity: 1 });
+    gsap.set(bpG, { opacity: 1 });
+    gsap.set(finals, { opacity: 0 });
 
     // ------------------------------------------------------------------ faíscas (canvas da frente)
     const BURSTS = [
@@ -552,14 +587,26 @@ MECCA.scene({
       // engrenagens
       const [a1, a2] = gearAngles(lt);
       const sc = [GS.s0, GS.s1], an = [a1, a2];
+      const me = morphE(lt);
+      // traço do contorno (função pura de lt): 2,5 px α1 sólido → 1,5 px α.3 tracejado 8/10 (= caixas da S03)
+      const kw = mInOut(me.u), gap = 10 * sineIO(seg(lt, T_M1 - 0.3, T_M1));
+      const sw = lerp(2.5, 1.5, kw).toFixed(3), so = lerp(1, 0.3, kw).toFixed(3);
+      const dash = gap > 1e-4 ? `8 ${gap.toFixed(3)}` : 'none';
       gears.forEach((g, i) => {
-        const tr = `translate(${GC[i].x} ${GC[i].y}) scale(${sc[i]}) rotate(${an[i]})`;
-        g.fillG.setAttribute('transform', tr);
         const M = MORPH[i];
+        // durante o morph, preenchimento e furo acompanham o centro da forma (não ficam para trás)
+        const ox = lt >= T_M0 ? M.bcx * me.cx : 0, oy = lt >= T_M0 ? M.bcy * me.cy : 0;
+        const tr = `translate(${GC[i].x} ${GC[i].y}) scale(${sc[i]}) rotate(${an[i]})`;
+        g.fillG.setAttribute('transform', `translate(${GC[i].x + ox} ${GC[i].y + oy}) scale(${sc[i]}) rotate(${an[i]})`);
+        g.strokeP.setAttribute('stroke-width', sw);
+        g.strokeP.setAttribute('stroke-opacity', so);
+        g.strokeP.setAttribute('stroke-dasharray', dash);
+        g.hole.setAttribute('cx', ox.toFixed(2));
+        g.hole.setAttribute('cy', oy.toFixed(2));
         if (lt >= T_M0) {
           // no morph a rotação residual vai "assada" nos pontos (a caixa nunca gira)
           g.strokeG.setAttribute('transform', `translate(${GC[i].x} ${GC[i].y})`);
-          g.strokeP.setAttribute('d', morphD(M, lt, an[i]));
+          g.strokeP.setAttribute('d', morphD(M, me, an[i]));
           M.state = 'morph';
         } else {
           g.strokeG.setAttribute('transform', tr);

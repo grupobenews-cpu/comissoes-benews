@@ -3,18 +3,22 @@
  *
  * 0,0        match cut com a S08: máquina (sol + 7 planetas + carcaça) em (1440,560) ×.45, girando;
  *            D1 (220×70) e D2 (320×100) em hairline lavanda α .3, rot −14°; Ponto em D2 a 0°
- *            (≈1750,483), r 10; sem texto; fundo padrão.
+ *            (≈1750,483), r 10, no desenho padrão global (glowDot α .6·br, br contínuo com a S08);
+ *            sem texto; fundo padrão.
  * 0,5–1,0    ASSUME: o Ponto mergulha no V da pupila (1440,546), power3.in.
  * 1,0        ENCAIXE: pupila pisca violeta→lilás→violeta, onda r 60→180; sol 36 → 90 → 72°/s.
- * 2,0–3,5    FICA: o Ponto sai do cubo e orbita D2 (1 volta/s) deixando um anel-rastro que acumula α.
- *            2,5 a caixa-fantasma (120×80, tracejada slate) entra em D1 a 180°; 3,0 solta-se pela
- *            tangente e vira 24 partículas.
+ * 2,0–3,5    FICA: o Ponto sai do cubo e orbita D2 (1 volta/s) deixando um anel-rastro que acumula α
+ *            (.15 → .6, flash ao fechar a volta em 3,3). 2,5 a caixa-fantasma (120×80, tracejada slate)
+ *            desliza até a ponta esquerda de D1 (180°) e sobe pela metade de trás; 3,0 é arremessada
+ *            para FORA (esquerda/baixo) e vira 24 partículas que derivam para longe da máquina.
  * 3,5–4,0    PELE NO JOGO: planetas recolhem, sol e carcaça somem, a pupila vira a esfera A (MorphSVG);
- *            o Ponto desacelera para a órbita de B. 4,0 binário a 72°/s, fio em gradiente, rótulos.
+ *            o Ponto desacelera para a órbita de B; D1 some (3,8–4,3), D2 fica a α .15 até 6,5.
+ *            4,0 binário a 72°/s, fio em gradiente, rótulos.
  * 6,5–9,5    CRESCE JUNTO: baricentro sobe (560→480), órbitas crescem, corpos crescem a cada batida
- *            (junto com 'Cresceu,'), ondas elípticas em 7,0/7,5/8,0/8,5, rastros em espiral.
+ *            (junto com 'Cresceu,'), ondas elípticas em 7,0/7,5/8,0/8,5; rastros em espiral a partir de 8,3.
  * 9,5–10,0   pré-drop: o binário implode num ponto único (r 20, glow ×2) que vai para (960,500);
  *            bg.warp 0→.5 e speed 1→2 — match cut com a S10.
+ * Rastros: sempre fitas afuniladas contínuas (um polígono por camada, gradiente ao longo do caminho).
  */
 MECCA.scene({
   id: 's09-diferenciais',
@@ -34,7 +38,7 @@ MECCA.scene({
     const rgb = (hex) => { const n = parseInt(hex.slice(1), 16); return [(n >> 16) & 255, (n >> 8) & 255, n & 255]; };
     const lerpRGB = (A, B, k) => [lerp(A[0], B[0], k), lerp(A[1], B[1], k), lerp(A[2], B[2], k)];
     const rgba = (c, a) => `rgba(${Math.round(c[0])},${Math.round(c[1])},${Math.round(c[2])},${a})`;
-    const mix = (a, b, k) => rgba(lerpRGB(rgb(a), rgb(b), clamp(k)), 1);
+    const hexOf = (c) => '#' + c.map((v) => Math.round(clamp(v, 0, 255)).toString(16).padStart(2, '0')).join('');
     // 0 → 1 → 0 (ataque power2.out, soltura mecca.inOut)
     const bump = (t, t0, att, rel) => {
       const x = t - t0;
@@ -61,7 +65,8 @@ MECCA.scene({
     };
     const Phi8 = (t) => t + 0.25 * (sInt(t, 3, 4) - sInt(t, 5, 5.75));
     const SPIN0 = 36 * (Phi8(T8) + 1 / 30);                                   // sol a 232,875° no último quadro da S08
-    const BR = (t) => 0.88 + 0.12 * Math.sin((T8 + t + 22) * Math.PI);          // brilho do Ponto
+    // brilho do Ponto: continuação exata do br(t) da S08 (lá: 1 − .12·(.5 − .5·cos(tπ)), t local da S08 = 6 + t aqui)
+    const BR = (t) => 1 - 0.12 * (0.5 - 0.5 * Math.cos((6 + t) * Math.PI));
     const GLOW = (t) => 0.82 + 0.18 * Math.sin((T8 + t + 22) * Math.PI * 0.5);  // glow do cubo
 
     // sol: 36°/s → 90°/s (1,0–1,3, power2.out) → 72°/s (1,3–2,0)
@@ -220,6 +225,7 @@ ${SEL} .s9-lab > span { display:inline-block; }
     const { Lv: L1v, v: v1 } = detachVerb(L1a, B1);
     const { Lv: L2v, v: v2 } = detachVerb(L2a, B2);
     const v3 = L3b.inner.querySelector('.s9-v'), gl3 = L3b.inner.querySelector('.s9-gl');
+    L3b.outer.style.paddingRight = '2.4em';   // folga para o bater (scale 1,25) não ser cortado pela máscara
     const v4 = L4a.inner.querySelector('.s9-v');
 
     // riscos (espessura 6, gradiente) sobre 'aconselha' e 'entrega e some'
@@ -253,17 +259,17 @@ ${SEL} .s9-lab > span { display:inline-block; }
     tl.set(bg, Object.assign({}, BG0), 0);
 
     const init = (targets, vars) => { gsap.set(targets, vars); tl.set(targets, Object.assign({}, vars), 0); };
-    const LINES = [L1a, L1b, L2a, L2b, L3a, L3c, L4a, L4b];
+    const LINES = [L1a, L1b, L2a, L2b, L3a, L3b, L3c, L4a, L4b];
     LINES.forEach((L) => init(L.inner, { y: L.hide }));
-    init([L1v.inner, L2v.inner, L3b.inner], { y: 0 });
+    init([L1v.inner, L2v.inner], { y: 0 });
     init([v1, v2, v3], { scale: 1.25, opacity: 0, transformOrigin: '0% 80%' });
     init(v4, { scale: 1, transformOrigin: '0% 82%' });
     init([ag1, ag2, L1b.inner, L2b.inner], { opacity: 1 });
     init(B1, { x: 0, opacity: 1, scale: 1, transformOrigin: '192px 285px' });
     init(B2, { x: 0, opacity: 1, scale: 1, transformOrigin: '192px 485px' });
-    init(B3, { opacity: 1, scale: 1, transformOrigin: '192px 700px' });
-    init(B4, { scale: 1, transformOrigin: '192px 380px' });
-    init(ul, { scaleX: 0 });
+    init(B3, { opacity: 1, y: 0, scale: 1, transformOrigin: '192px 700px' });
+    init(B4, { opacity: 1, y: 0, scale: 1, transformOrigin: '192px 380px' });
+    init(ul, { scaleX: 0, opacity: 1 });
     init(ebSp.chars, { autoAlpha: 0 });
     init(ebDash, { scaleX: 0, transformOrigin: '0% 50%' });
     init(eb, { x: 0 });
@@ -273,7 +279,7 @@ ${SEL} .s9-lab > span { display:inline-block; }
     const NCH = ebSp.chars.length;
     tl.to(ebDash, { scaleX: 1, duration: 0.3, ease: 'mecca.out' }, 0.5);
     tl.to(ebSp.chars, { autoAlpha: 1, duration: 0.01, ease: 'none', stagger: 0.025 }, 0.62);
-    tl.to(eb, { x: 10, duration: 9, ease: 'none' }, 0.5);
+    tl.to(eb, { x: 4, duration: 9, ease: 'none' }, 0.5);   // micro-deriva (≤ 4 px)
     tl.to(ebSp.chars, { autoAlpha: 0, duration: 0.01, ease: 'none', stagger: { each: 0.011, from: 'end' } }, 9.5);
     tl.to(ebDash, { scaleX: 0, duration: 0.12, ease: 'mecca.in' }, 9.5 + NCH * 0.011);
 
@@ -284,13 +290,13 @@ ${SEL} .s9-lab > span { display:inline-block; }
     };
 
     // bloco 1 — ASSUME
-    reveal(L1a, 0.4, 0.35); hit(v1, 0.5);   // a linha sobe 0,1 s antes: o verbo bate no tempo com ela já no lugar
+    reveal(L1a, 0.5, 0.5); hit(v1, 0.5);    // a linha sobe na batida (máscara 0,5 s) e o verbo bate em cima dela
     reveal(L1b, 1.0);
     tl.to([ag1, L1b.inner], { opacity: 0.45, duration: 0.4, ease: 'power2.out' }, 2.0);
     tl.to(v1, { opacity: 0.7, duration: 0.4, ease: 'power2.out' }, 2.0);
     tl.to(B1, { scale: 1.02, duration: 5.5, ease: 'none' }, 0.5);
     // bloco 2 — FICA
-    reveal(L2a, 1.9, 0.35); hit(v2, 2.0);
+    reveal(L2a, 2.0, 0.5); hit(v2, 2.0);
     reveal(L2b, 2.5);
     tl.to([ag2, L2b.inner], { opacity: 0.45, duration: 0.4, ease: 'power2.out' }, 3.5);
     tl.to(B2, { scale: 1.02, duration: 4.0, ease: 'none' }, 2.0);
@@ -298,7 +304,7 @@ ${SEL} .s9-lab > span { display:inline-block; }
     tl.to(B1, { x: -60, opacity: 0, duration: 0.3, ease: 'mecca.in' }, 6.0);
     tl.to(B2, { x: -60, opacity: 0, duration: 0.3, ease: 'mecca.in' }, 6.0);
     // bloco 3 — PELE NO JOGO
-    reveal(L3a, 3.4, 0.35); hit(v3, 3.5);
+    reveal(L3a, 3.5, 0.5); reveal(L3b, 3.5, 0.5); hit(v3, 3.5);   // 'pele no jogo —' também por máscara
     reveal(L3c, 4.0);
     tl.to(ul, { scaleX: 1, duration: 0.5, ease: 'power2.inOut' }, 4.0);
     tl.to(B3, { scale: 1.02, duration: 6.0, ease: 'none' }, 3.5);
@@ -307,8 +313,11 @@ ${SEL} .s9-lab > span { display:inline-block; }
     reveal(L4a, 6.5); reveal(L4b, 6.6);
     [7.0, 7.5, 8.0, 8.5].forEach((b, i) => tl.to(v4, { scale: 1 + 0.03 * (i + 1), duration: 0.18, ease: 'mecca.back' }, b));
     tl.to(B4, { scale: 1.02, duration: 3.0, ease: 'none' }, 6.5);
-    // saída (9,5–9,8): as linhas sobem por dentro da máscara
-    [L3a, L3b, L3c, L4a, L4b].forEach((L, i) => tl.to(L.inner, { y: L.lift, duration: 0.27, ease: 'mecca.in' }, 9.5 + [0.06, 0.03, 0, 0.03, 0][i]));
+    // saída (9,5–9,8): cada bloco sobe 20 px com fade (sem mexer nas máscaras → as linhas nunca se encostam);
+    // o sublinhado de 'sócio de resultado' some primeiro (9,5–9,65)
+    tl.to(ul, { opacity: 0, duration: 0.15, ease: 'mecca.in' }, 9.5);
+    tl.to(B4, { y: -20, opacity: 0, duration: 0.28, ease: 'mecca.in' }, 9.5);
+    tl.to(B3, { y: -20, opacity: 0, duration: 0.28, ease: 'mecca.in' }, 9.52);
     // rótulos
     tl.to([labAi, labBi], { opacity: 1, y: 0, duration: 0.45, ease: 'mecca.out', stagger: 0.06 }, 4.0);
     tl.to([labAi, labBi], { opacity: 0, duration: 0.2, ease: 'mecca.in' }, 9.5);
@@ -346,14 +355,25 @@ ${SEL} .s9-lab > span { display:inline-block; }
     const wTrans = (s) => TAU * (1 - 0.8 * EIO(clamp((s - 3.5) / 0.5)));
     const I_T = simpson(wTrans, 3.5, 4.0, 64);
     const WB = 72 * DEG;
-    const wImp = (s) => WB * (1 + 29 * uImp(s));        // espirala para dentro cada vez mais rápido (≈1 volta)
+    // implosão: ω = WB·(1 + 29·u), u = (t − 9,5)/0,32 → espirala para dentro cada vez mais rápido (≈1 volta).
+    // Integral em forma fechada (e inversa exata), usada também para amostrar os rastros por ângulo.
+    const KQ = 29 / (2 * 0.32);                      // θ/WB = x + KQ·x² para x = t − 9,5 ≤ 0,32
+    const E_IMP = 0.32 + KQ * 0.32 * 0.32;           // = 4,96 (em unidades de WB)
+    const TH4 = TH0 + TAU * 1.2 + I_T;               // θ em 4,0
     function thetaB(t) {
       if (t <= 3.5) return TH0 + TAU * (t - 2.3);
-      let th = TH0 + TAU * 1.2;
-      if (t <= 4.0) return th + simpson(wTrans, 3.5, t, 24);
-      th += I_T;
-      if (t <= 9.5) return th + WB * (t - 4.0);
-      return th + WB * 5.5 + simpson(wImp, 9.5, t, 32);
+      if (t <= 4.0) return TH0 + TAU * 1.2 + simpson(wTrans, 3.5, t, 24);
+      if (t <= 9.5) return TH4 + WB * (t - 4.0);
+      const x = t - 9.5;
+      if (x <= 0.32) return TH4 + WB * (5.5 + x + KQ * x * x);
+      return TH4 + WB * (5.5 + E_IMP + 30 * (x - 0.32));
+    }
+    function timeOfTheta(th) {                       // inversa de thetaB para t ≥ 4,0
+      const d = (th - TH4) / WB;
+      if (d <= 5.5) return 4.0 + d;
+      const e = d - 5.5;
+      if (e <= E_IMP) return 9.5 + (-1 + Math.sqrt(1 + 4 * KQ * e)) / (2 * KQ);
+      return 9.82 + (e - E_IMP) / 30;
     }
     function bary(t) {
       const y1 = lerp(560, 480, growO(t));
@@ -410,12 +430,14 @@ ${SEL} .s9-lab > span { display:inline-block; }
       return { x: B.x, y: B.y, r: lerp(15, 20, smooth(0, 1, u)), wf: 1, gm: 1 + smooth(0.4, 1, u) };
     }
 
-    // caixa-fantasma: entra pela esquerda em D1 a 180° (2,5), viaja pela frente da elipse, solta-se em 3,0
-    const phiBox = (t) => Math.PI - 40 * DEG * (t - 2.5);
-    const boxRide = (t) => h.ellipsePt(1440, 560, 220, 70, ROT, phiBox(t));
+    // caixa-fantasma: desliza da esquerda até a ponta esquerda de D1 (180°) e sobe pela metade de trás/esquerda
+    // (φ crescente, sempre por FORA da carcaça); em 3,0 é arremessada para FORA (esquerda/baixo, longe da máquina)
+    // e vira 24 partículas que derivam 60–120 px para longe
+    const phiBox = (t) => Math.PI + 9 * DEG * EIO(clamp((t - 2.5) / 0.5));
+    const BOXDX = -12;                                   // folga da carcaça (a hairline de D1 passa pela caixa)
+    const boxRide = (t) => { const q = h.ellipsePt(1440, 560, 220, 70, ROT, phiBox(t)); return { x: q.x + BOXDX, y: q.y }; };
     const BOX3 = boxRide(3.0);
-    const BOXV = (() => { const a = boxRide(2.99); return { x: (BOX3.x - a.x) / 0.01, y: (BOX3.y - a.y) / 0.01 }; })();
-    const BOXU = (() => { const L = Math.hypot(BOXV.x, BOXV.y) || 1; return { x: BOXV.x / L, y: BOXV.y / L }; })();
+    const FL = (() => { const x = -0.86, y = 0.5, L = Math.hypot(x, y); return { x: x / L, y: y / L }; })();   // arremesso
     const BOXROT = ROT * 0.5;
     function boxPos(t) {
       if (t <= 3.0) {
@@ -424,8 +446,8 @@ ${SEL} .s9-lab > span { display:inline-block; }
         return { x: q.x - 170 * (1 - ent), y: q.y };
       }
       const dt = t - 3.0;
-      const k = 520 * dt + 900 * dt * dt;     // é arremessada pela tangente
-      return { x: BOX3.x + BOXU.x * k, y: BOX3.y + BOXU.y * k };
+      const k = 320 * dt + 1400 * dt * dt;
+      return { x: BOX3.x + FL.x * k, y: BOX3.y + FL.y * k };
     }
     const PR = h.rng(9091);
     const BOXP = [];
@@ -440,7 +462,7 @@ ${SEL} .s9-lab > span { display:inline-block; }
       const dx = ox / L, dy = oy / L;
       BOXP.push({
         ox, oy, dx: dx * Math.cos(ja) - dy * Math.sin(ja), dy: dx * Math.sin(ja) + dy * Math.cos(ja),
-        sp: 80 + PR() * 200, sz: 3 + PR() * 2.6, col: i % 4 === 0 ? P.lilac : i % 4 === 1 ? P.muted : P.slate, tan: 0.9 + PR() * 0.8,
+        drift: 60 + PR() * 60, spread: 12 + PR() * 30, sz: 4 + PR() * 3, col: i % 3 === 0 ? P.lilac : P.slate,
       });
     }
 
@@ -463,22 +485,15 @@ ${SEL} .s9-lab > span { display:inline-block; }
         s = e;
       }
     }
-    function drawPonto(c, x, y, r, br, a = 1, gm = 1) {
+    // Ponto no desenho padrão global (idêntico ao da S08): glowDot lavanda α .6·br + núcleo #FBF8FF.
+    // Halos e núcleo separados: no crossfade de estilo (implosão) só os halos se misturam; o núcleo é pintado uma vez.
+    function haloPonto(c, x, y, r, br, a, gm = 1) {
       if (a <= 0.003 || r <= 0.05) return;
-      const R = r * 3 * (1 + 0.3 * (gm - 1));
-      let g = c.createRadialGradient(x, y, 0, x, y, R * 1.9);
-      g.addColorStop(0, hexA(P.lavender, clamp(0.2 * br * a * gm)));
-      g.addColorStop(1, hexA(P.lavender, 0));
-      c.fillStyle = g; c.beginPath(); c.arc(x, y, R * 1.9, 0, TAU); c.fill();
-      g = c.createRadialGradient(x, y, r * 0.6, x, y, R);
-      g.addColorStop(0, hexA(P.lavender, clamp(0.6 * br * a * gm)));
-      g.addColorStop(0.45, hexA(P.lavender, clamp(0.22 * br * a * gm)));
-      g.addColorStop(1, hexA(P.lavender, 0));
-      c.fillStyle = g; c.beginPath(); c.arc(x, y, R, 0, TAU); c.fill();
-      c.fillStyle = hexA(P.ink, a); c.beginPath(); c.arc(x, y, r, 0, TAU); c.fill();
+      h.glowDot(c, x, y, r, P.lavender, clamp(0.6 * br * a * gm));
     }
-    // Ponto fundido no mesmo desenho que a S10 usa no seu 1º quadro (r 20, g 2)
-    function drawFused(c, x, y, r, g, a) {
+    // halo do Ponto fundido no mesmo desenho que a S10 usa no seu 1º quadro (r 20, g 2)
+    function haloFused(c, x, y, r, g, a) {
+      if (a <= 0.003 || r <= 0.05) return;
       h.glowDot(c, x, y, r, P.lavender, clamp(0.6 * g) * a);
       if (g > 1.02) {
         const R = r * 5 * g;
@@ -487,42 +502,127 @@ ${SEL} .s9-lab > span { display:inline-block; }
         gr.addColorStop(1, hexA(P.lavender, 0));
         c.fillStyle = gr; c.beginPath(); c.arc(x, y, R, 0, TAU); c.fill();
       }
-      c.fillStyle = hexA(P.ink, a); c.beginPath(); c.arc(x, y, r, 0, TAU); c.fill();
     }
-    const MAG = rgb(P.magenta), VIO = rgb(P.violet), PINK = rgb(P.pink), LIL = rgb(P.lilac);
-    function drawTrail(c, t, r, a) {          // rastro padrão: 8 posições, magenta → violeta
-      if (a <= 0.003) return;
-      c.save(); c.lineCap = 'round';
-      let A = ponto(t);
-      for (let j = 1; j <= 8; j++) {
-        const B = ponto(Math.max(0, t - j / 60));
-        const f = 1 - j / 9;
-        c.strokeStyle = rgba(lerpRGB(MAG, VIO, j / 8), 0.85 * f * a);
-        c.lineWidth = 2 * r * 0.85 * f;
-        c.beginPath(); c.moveTo(A.x, A.y); c.lineTo(B.x, B.y); c.stroke();
-        A = B;
-      }
-      c.restore();
+    function coreDot(c, x, y, r, a) {
+      if (a <= 0.003 || r <= 0.05) return;
+      c.fillStyle = hexA(P.ink, clamp(a)); c.beginPath(); c.arc(x, y, r, 0, TAU); c.fill();
     }
-    function longTrail(c, pos, t, span, n, c0, c1, w, a) {   // rastro longo (espiral)
-      if (a <= 0.003) return;
-      c.save(); c.lineCap = 'round';
-      let A = pos(t);
-      for (let j = 1; j <= n; j++) {
-        const B = pos(t - (span * j) / n);
-        const f = 1 - j / (n + 1);
-        c.strokeStyle = rgba(lerpRGB(c0, c1, j / n), 0.75 * f * a);
-        c.lineWidth = Math.max(0.6, w * f);
-        c.beginPath(); c.moveTo(A.x, A.y); c.lineTo(B.x, B.y); c.stroke();
-        A = B;
+    const MAG = rgb(P.magenta), VIO = rgb(P.violet), PINK = rgb(P.pink), LIL = rgb(P.lilac), LAV = rgb(P.lavender), INK = rgb(P.ink);
+
+    // FITA: rastro como UM polígono afunilado contínuo por camada (sem segmentos sobrepostos → sem "contas").
+    // pts[0] = cabeça. W/COL/AL: largura, cor [r,g,b] e α por amostra. layerOf(i) → {c, k} do trecho i→i+1 (ou null).
+    // center: gradiente cônico em volta do centro da órbita (cor/α seguem o ângulo — serve para espirais de até ~330°);
+    // sem center: gradiente linear cabeça→cauda, com uma parada por amostra projetada no eixo.
+    function ribbon(pts, W, COL, AL, layerOf, center) {
+      const N = pts.length - 1;
+      if (N < 1) return;
+      const Lx = new Array(N + 1), Ly = new Array(N + 1), Rx = new Array(N + 1), Ry = new Array(N + 1);
+      let nx = 0, ny = -1;
+      for (let i = 0; i <= N; i++) {
+        const a = pts[Math.max(0, i - 1)], b = pts[Math.min(N, i + 1)];
+        const dx = b.x - a.x, dy = b.y - a.y, dl = Math.hypot(dx, dy);
+        if (dl > 1e-3) { nx = -dy / dl; ny = dx / dl; }
+        const w = W[i] / 2;
+        Lx[i] = pts[i].x + nx * w; Ly[i] = pts[i].y + ny * w;
+        Rx[i] = pts[i].x - nx * w; Ry[i] = pts[i].y - ny * w;
       }
-      c.restore();
+      let ang = null;
+      if (center) {
+        ang = new Array(N + 1);
+        for (let i = 0; i <= N; i++) {
+          let a = Math.atan2(pts[i].y - center.y, pts[i].x - center.x);
+          if (i > 0) { while (a > ang[i - 1] + Math.PI) a -= TAU; while (a < ang[i - 1] - Math.PI) a += TAU; }
+          ang[i] = a;
+        }
+      }
+      let i0 = 0;
+      while (i0 < N) {
+        const ly = layerOf(i0);
+        let i1 = i0 + 1;
+        while (i1 < N && layerOf(i1) === ly) i1++;
+        if (ly && ly.k > 0.002) {
+          const c = ly.c;
+          let g = null;
+          if (center) {
+            // o movimento é horário (θ crescente) → a cauda tem o menor ângulo; o gradiente começa um pouco antes dela
+            // (margem transparente) e as paradas vão em ordem crescente de ângulo
+            const ord = [];
+            for (let i = 0; i <= N; i++) ord.push(i);
+            ord.sort((p, q) => ang[p] - ang[q]);
+            const a0 = ang[ord[0]] - 0.25;
+            g = c.createConicGradient(a0, center.x, center.y);
+            g.addColorStop(0, rgba(COL[ord[0]], 0));
+            for (const i of ord) g.addColorStop(clamp((ang[i] - a0) / TAU), rgba(COL[i], clamp(AL[i] * ly.k)));
+          } else {
+            const p0 = pts[i0], p1 = pts[i1];
+            const ax = p1.x - p0.x, ay = p1.y - p0.y, al = ax * ax + ay * ay;
+            if (al > 0.25) {
+              g = c.createLinearGradient(p0.x, p0.y, p1.x, p1.y);
+              let last = 0;
+              for (let i = i0; i <= i1; i++) {
+                const o = clamp(Math.max(last, ((pts[i].x - p0.x) * ax + (pts[i].y - p0.y) * ay) / al));
+                last = o;
+                g.addColorStop(o, rgba(COL[i], clamp(AL[i] * ly.k)));
+              }
+            }
+          }
+          if (g) {
+            c.fillStyle = g;
+            c.beginPath(); c.moveTo(Lx[i0], Ly[i0]);
+            for (let i = i0 + 1; i <= i1; i++) c.lineTo(Lx[i], Ly[i]);
+            for (let i = i1; i >= i0; i--) c.lineTo(Rx[i], Ry[i]);
+            c.closePath(); c.fill();
+          }
+        }
+        i0 = i1;
+      }
+    }
+    // rastro padrão do Ponto (> 600 px/s): janela das últimas 8 posições (8/60 s), magenta → violeta, afunilado
+    function drawTrail(c, t, r, a) {
+      if (a <= 0.003) return;
+      const N = 20, pts = [], W = [], COL = [], AL = [];
+      for (let i = 0; i <= N; i++) {
+        const f = i / N;
+        pts.push(ponto(Math.max(0, t - f * 8 / 60)));
+        W.push(2 * r * 0.85 * Math.pow(1 - f, 0.8));
+        COL.push(lerpRGB(MAG, VIO, Math.min(1, f * 1.3)));
+        AL.push(0.85 * a * Math.pow(1 - f, 1.2));
+      }
+      const L = { c, k: 1 };
+      ribbon(pts, W, COL, AL, () => L, null);
+    }
+    // rastro longo em espiral dos corpos do binário: amostrado por ÂNGULO (uniforme), no referencial do baricentro
+    // atual — cabeça = corpo, cauda = θ − Φ. orb(s) dá a órbita histórica; off = 0 (B) ou π (A).
+    // core > 0: segunda passada — núcleo fino e claro dentro da fita (mesmo caminho, sem sobreposição de segmentos)
+    function spiralTrail(c, t, orb, off, Phi, w0, c0, c1, a, core = 0) {
+      if (a <= 0.003 || Phi < 0.02) return;
+      const cB = bary(t), th = thetaB(t);
+      const N = Math.max(24, Math.min(96, Math.ceil(Phi / (3 * DEG))));
+      const pts = [], W = [], COL = [], AL = [], W2 = [], COL2 = [], AL2 = [];
+      for (let i = 0; i <= N; i++) {
+        const f = i / N;
+        const thi = th - Phi * f;
+        const s = i === 0 ? t : timeOfTheta(thi);
+        const o = orb(s);
+        pts.push(h.ellipsePt(cB.x, cB.y, o.rx, o.ry, ROT, thi + off));
+        W.push(Math.max(0.4, w0 * Math.pow(1 - f, 0.75)));
+        COL.push(lerpRGB(c0, c1, Math.min(1, f * 1.15)));
+        AL.push(a * Math.pow(1 - f, 1.1));
+        if (core > 0) {
+          W2.push(Math.max(0.3, w0 * 0.32 * Math.pow(1 - f, 0.6)));
+          COL2.push(lerpRGB(lerpRGB(c0, INK, 0.35), c0, Math.min(1, f * 1.6)));
+          AL2.push(core * Math.pow(1 - f, 1.7));
+        }
+      }
+      const L = { c, k: 1 };
+      ribbon(pts, W, COL, AL, () => L, cB);
+      if (core > 0) ribbon(pts, W2, COL2, AL2, () => L, cB);
     }
     function drawBox(c, x, y, a, col, t) {
       c.save();
       c.translate(x, y); c.rotate(BOXROT);
       c.beginPath(); c.roundRect(-60, -40, 120, 80, 10);
-      c.fillStyle = hexA(P.slate, 0.1 * a); c.fill();
+      c.fillStyle = hexA(P.slate, 0.16 * a); c.fill();
       c.setLineDash([6, 6]); c.lineDashOffset = -t * 24;
       c.strokeStyle = hexA(col, a); c.lineWidth = 1.5; c.stroke();
       c.restore();
@@ -582,30 +682,43 @@ ${SEL} .s9-lab > span { display:inline-block; }
       back.clearRect(0, 0, 1920, 1080);
       ctx.clearRect(0, 0, 1920, 1080);
 
-      // D1 / D2 (hairline α .3 → .15 em 3,5–4,0 → some em 6,5–7,5), piscam no encaixe
-      const dA = (lerp(0.3, 0.15, EIO(clamp((t - 3.5) / 0.5))) + 0.2 * bump(t, 1.0, 0.05, 0.6)) * (1 - smooth(6.5, 7.5, t));
-      arcDepth({ cx: 1440, cy: 560, rx: 220, ry: 70 }, 0, TAU, dA, 1.25, P.lavender);
-      arcDepth({ cx: 1440, cy: 560, rx: 320, ry: 100 }, 0, TAU, dA, 1.25, P.lavender);
+      // D1 / D2 (hairline α .3 → .15 em 3,5–4,0), piscam no encaixe. D1 some em 3,8–4,3 (a órbita de B passa
+      // pelo tamanho dela); D2 fica a α .15 até 6,5 e some em 6,5–7,5
+      const dBase = lerp(0.3, 0.15, EIO(clamp((t - 3.5) / 0.5))) + 0.2 * bump(t, 1.0, 0.05, 0.6);
+      arcDepth({ cx: 1440, cy: 560, rx: 220, ry: 70 }, 0, TAU, dBase * (1 - smooth(3.8, 4.3, t)), 1.25, P.lavender);
+      arcDepth({ cx: 1440, cy: 560, rx: 320, ry: 100 }, 0, TAU, dBase * (1 - smooth(6.5, 7.5, t)), 1.25, P.lavender);
 
-      // anel-rastro do Ponto em D2 (FICA): o traço fica e o α acumula de .15 a .5
+      // anel-rastro do Ponto em D2 (FICA): o traço fica e o α acumula de .15 a .6; ao fechar a volta (3,3) um flash
       if (t > 2.3) {
         const G = { cx: 1440, cy: 560, rx: 320, ry: 100 };
         const ts = Math.min(t, 3.5);
         const a0 = thetaB(2.3), a1 = thetaB(ts);
-        const ra = lerp(0.15, 0.5, smooth(2.3, 3.45, ts)) * lerp(1, 0.3, EIO(clamp((t - 3.5) / 0.5))) * (1 - smooth(6.5, 7.5, t));
-        arcDepth(G, a0, Math.min(a1, a0 + TAU), ra, 1.5, P.lilac, 0.55);
-        if (a1 > a0 + TAU) arcDepth(G, a0 + TAU, a1, ra * 0.7, 1.5, P.lilac, 0.55);
-        // "cometa": o último quarto de volta brilha
+        const lap = bump(t, 3.3, 0.05, 0.4);
+        const ra = (lerp(0.15, 0.6, smooth(2.3, 3.4, ts)) + 0.3 * lap) * lerp(1, 0.3, EIO(clamp((t - 3.5) / 0.5))) * (1 - smooth(6.5, 7.5, t));
+        const rcol = lap > 0.02 ? hexOf(lerpRGB(LIL, INK, 0.45 * lap)) : P.lilac;
+        arcDepth(G, a0, Math.min(a1, a0 + TAU), ra, 2, rcol, 0.55);
+        if (a1 > a0 + TAU) arcDepth(G, a0 + TAU, a1, ra * 0.7, 2, rcol, 0.55);
+        if (lap > 0.02) {                           // o anel completo "acende" num halo largo e some
+          arcDepth(G, 0, TAU, 0.16 * lap, 7, P.lavender, 0.5);
+        }
+        // "cometa": o último quarto de volta brilha — uma fita contínua (frente/trás), rosa na cabeça
         if (t < 3.75) {
           const ca = 1 - smooth(3.45, 3.75, t);
-          const N = 14;
           const thN = thetaB(t);
-          for (let j = 0; j < N; j++) {
-            const s0 = thN - (j + 1) * (Math.PI / 2) / N, s1 = thN - j * (Math.PI / 2) / N;
-            if (s1 <= a0) break;
-            const f = 1 - j / N;
-            const ob = orbB(t);
-            arcDepth({ cx: 1440, cy: 560, rx: ob.rx, ry: ob.ry }, Math.max(a0, s0), s1, 0.55 * f * f * ca, 1 + 2 * f, j < 4 ? P.pink : P.lavender, 0.5);
+          const span = Math.min(Math.PI / 2, thN - a0);
+          if (span > 0.02 && ca > 0.003) {
+            const ob = orbB(t), N = 36;
+            const pts = [], W = [], COL = [], AL = [], TH = [];
+            for (let i = 0; i <= N; i++) {
+              const f = i / N, a = thN - span * f;
+              TH.push(a);
+              pts.push(h.ellipsePt(1440, 560, ob.rx, ob.ry, ROT, a));
+              W.push(Math.max(0.5, 3.2 * Math.pow(1 - f, 0.7)));
+              COL.push(lerpRGB(PINK, LAV, smooth(0.15, 0.45, f)));
+              AL.push(0.6 * ca * Math.pow(1 - f, 1.6));
+            }
+            const FR = { c: ctx, k: 1 }, BK = { c: back, k: 0.5 };
+            ribbon(pts, W, COL, AL, (i) => (Math.sin((TH[i] + TH[i + 1]) / 2) > 0 ? FR : BK), { x: 1440, y: 560 });
           }
         }
       }
@@ -642,24 +755,24 @@ ${SEL} .s9-lab > span { display:inline-block; }
       // caixa-fantasma (2,5–3,0) e as 24 partículas (3,0–3,4)
       if (t >= 2.5 && t < 3.12) {
         const q = boxPos(t);
-        const a = 0.9 * EOUT(clamp((t - 2.5) / 0.3)) * (1 - smooth(3.0, 3.1, t));
-        if (t > 2.86 && t < 3.06) {          // glitch antes de sumir
+        const a = EOUT(clamp((t - 2.5) / 0.3)) * (1 - smooth(3.0, 3.1, t));
+        if (t > 2.86 && t < 3.06) {          // glitch antes de sumir (o deslocamento só empurra para FORA)
           const fr = Math.round(t * 30);
           const r = h.rng(fr * 131 + 7);
-          const dx = (r() - 0.5) * 16, dy = (r() - 0.5) * 5;
+          const dx = -r() * 12, dy = (r() - 0.5) * 5;
           drawBox(ctx, q.x + dx, q.y + dy, a, P.slate, t);
-          drawBox(ctx, q.x - dx * 0.7, q.y - dy, a * 0.45, P.pink, t);
+          drawBox(ctx, q.x + dx * 0.6 - 6, q.y - dy, a * 0.5, P.pink, t);
         } else drawBox(ctx, q.x, q.y, a, P.slate, t);
       }
+      // 3,0–3,4: 24 partículas (slate/lilás, 4–7 px) derivam 60–120 px para fora da máquina e somem
       if (t >= 3.0 && t < 3.42) {
-        const dt = t - 3.0, u = dt / 0.4;
-        const a = Math.pow(clamp(1 - u), 1.2);
+        const dt = t - 3.0, u = clamp(dt / 0.4);
+        const e = P2O(u);
+        const a = Math.pow(1 - u, 1.1);
         for (const p of BOXP) {
-          const sd = p.sp * dt * (1 - 0.45 * u);
-          const tk = 520 * p.tan * dt * (1 - 0.5 * u);
-          const x = BOX3.x + p.ox + BOXU.x * tk + p.dx * sd;
-          const y = BOX3.y + p.oy + BOXU.y * tk + p.dy * sd;
-          const s = p.sz * (1 - 0.4 * u);
+          const x = BOX3.x + p.ox + FL.x * p.drift * e + p.dx * p.spread * e;
+          const y = BOX3.y + p.oy + FL.y * p.drift * e + p.dy * p.spread * e;
+          const s = p.sz * (1 - 0.45 * u);
           ctx.fillStyle = hexA(p.col, 0.95 * a);
           ctx.fillRect(x - s / 2, y - s / 2, s, s);
         }
@@ -729,13 +842,14 @@ ${SEL} .s9-lab > span { display:inline-block; }
         }
       }
 
-      // rastros em espiral (últimos 1,2 s)
-      const trW = smooth(8.77, 9.25, t) * (1 - smooth(9.82, 9.93, t));
+      // rastros em espiral (8,3 → implosão): fitas contínuas amostradas por ângulo, no referencial do baricentro.
+      // Antes de 9,5: os últimos 0,9 s de órbita (≈65°), crescendo junto com as órbitas; na implosão o mesmo
+      // intervalo vira uma espiral de até 320° que se fecha no ponto de fusão. O de A corre ATRÁS da esfera A.
+      const trW = smooth(8.3, 8.7, t) * (1 - smooth(9.82, 9.93, t));
       if (trW > 0.003) {
-        const span = lerp(0.35, 0.5, smooth(9.2, 9.6, t));
-        const n = t > 9.45 ? 96 : 36;
-        longTrail(ctx, (s) => Bpos(s), t, span, n, PINK, VIO, pn.r * 0.9, trW);
-        longTrail(ctx, (s) => Apos(s), t, span, n, LIL, VIO, lerp(5, 9, smooth(9.5, 9.7, t)), trW * 0.85 * aA);
+        const Phi = Math.min(thetaB(t) - thetaB(t - 0.9), 320 * DEG);
+        spiralTrail(ctx, t, orbB, 0, Phi, pn.r * 0.9, PINK, VIO, 0.5 * trW, 0.6 * trW);
+        spiralTrail(back, t, orbA, Math.PI, Phi, lerp(6, 10, smooth(9.5, 9.7, t)), LIL, VIO, 0.5 * trW * aA);
       }
 
       // Ponto (com peso de profundidade: na metade de trás de D2 passa atrás da máquina)
@@ -743,12 +857,13 @@ ${SEL} .s9-lab > span { display:inline-block; }
       const speed = Math.hypot(pn.x - prev.x, pn.y - prev.y) * 30;
       const trk = smooth(480, 720, speed);
       const br = BR(t);
-      const fs = smooth(0.5, 1, uImp(t));        // fusão: o estilo do Ponto vira o da S10 (glowDot + halo largo)
+      const fs = smooth(0.5, 1, uImp(t));        // fusão: o halo do Ponto vira o da S10 (glowDot + halo largo)
       for (const [c, w] of [[ctx, pn.wf], [back, (1 - pn.wf) * 0.6]]) {
         if (w <= 0.003) continue;
         drawTrail(c, t, pn.r, trk * w * (1 - trW));
-        if (fs < 1) drawPonto(c, pn.x, pn.y, pn.r, br, w * (1 - fs), pn.gm);
-        if (fs > 0) drawFused(c, pn.x, pn.y, pn.r, pn.gm, w * fs);
+        if (fs < 1) haloPonto(c, pn.x, pn.y, pn.r, br, w * (1 - fs), pn.gm);
+        if (fs > 0) haloFused(c, pn.x, pn.y, pn.r, pn.gm, w * fs);
+        coreDot(c, pn.x, pn.y, pn.r, w);          // núcleo #FBF8FF uma única vez, por cima dos halos
       }
       // fusão (9,82): anel de energia
       if (t > 9.82 && t < 9.955) {

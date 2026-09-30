@@ -200,7 +200,7 @@ ${SEL} .eyebrow { letter-spacing:.22em; }
       tl.to(s, { opacity: 0, duration: 0.1, ease: 'power1.in' }, 5.2);
       // a cópia de baixo (L2) se dissolve na de cima enquanto se aproxima e some antes de encostar
       // (sem 'somos/somos' dobrado); a de cima segue inteira até casar com o 'omos' novo em 5,4 (troca seca)
-      if (i === 1) tl.to(w, { opacity: 0, duration: 0.2, ease: 'power1.in' }, 5.08);
+      if (i === 1) tl.to(w, { opacity: 0, duration: 0.2, ease: 'power1.in' }, 5.02);
       else tl.set(w, { opacity: 0 }, 5.4);
     });
     gsap.set([newS, newOmos, newO], { opacity: 0 });
@@ -247,8 +247,11 @@ ${SEL} .eyebrow { letter-spacing:.22em; }
     // recolhe rumo à origem (x 192), no mesmo ritmo do apagamento dos chars (direita → esquerda)
     tl.to(hl, { drawSVG: '0% 0%', duration: EN.chars.length * 0.012 + 0.012, ease: 'none' }, 9.5);
 
-    // --- saída de 'Somos o' + 'meccanismo.' (9,5–9,85): chars yPercent −120, stagger .012, mecca.in
-    tl.to([...SO.chars, ...ME.chars], { yPercent: -120, duration: 0.16, stagger: 0.012, ease: 'mecca.in' }, 9.5);
+    // --- saída de 'Somos o' + 'meccanismo.' (9,5–9,85): chars yPercent −120, stagger .012, mecca.in.
+    // Ordem da direita para a esquerda (como o eyebrow e ENGENHARIA…): o texto recua à frente do ícone que cresce
+    // no mergulho, em vez de ser atravessado por ele.
+    const outChars = [...SO.chars, ...ME.chars].map((c) => ({ c, x: h.rect(c).cx })).sort((a, b) => b.x - a.x).map((o) => o.c);
+    tl.to(outChars, { yPercent: -120, duration: 0.16, stagger: 0.012, ease: 'mecca.in' }, 9.5);
 
     // ================================================================== ÍCONE (400 px, centrado em 1520,540)
     const IC = { x: 1520, y: 540 };
@@ -267,9 +270,11 @@ ${SEL} .eyebrow { letter-spacing:.22em; }
     icon.dot.style.display = 'none';                     // o Ponto ocupa o encaixe
 
     gsap.set([icon.arcOuter, icon.arcInner], { visibility: 'hidden' });
-    tl.set(icon.arcOuter, { visibility: 'visible' }, 6.0);
+    // visibilidade 1/60 s depois do início do drawSVG: um traço de comprimento 0 com linecap redondo apareceria
+    // como um ponto violeta solto no quadro do DROP
+    tl.set(icon.arcOuter, { visibility: 'visible' }, 6.02);
     tl.fromTo(icon.arcOuter, { drawSVG: '0%' }, { drawSVG: '100%', duration: 0.8, ease: 'mecca.out' }, 6.0);
-    tl.set(icon.arcInner, { visibility: 'visible' }, 6.1);
+    tl.set(icon.arcInner, { visibility: 'visible' }, 6.12);
     tl.fromTo(icon.arcInner, { drawSVG: '0%' }, { drawSVG: '100%', duration: 0.7, ease: 'mecca.out' }, 6.1);
     gsap.set(icon.pupil, { svgOrigin: '114 114', scale: 0 });
     tl.to(icon.pupil, { scale: 1, duration: 0.6, ease: 'mecca.back' }, 6.2);
@@ -283,11 +288,14 @@ ${SEL} .eyebrow { letter-spacing:.22em; }
     tl.to(arcsG, { rotation: 360, duration: 1.5, ease: 'mecca.inOut' }, 8.0);
     const rotAt = (t) => TAU * eIO(seg(t, 8.0, 9.5));
 
-    // câmera do mergulho: scale 1→150 em torno do V (expo.in, ≈95× em 9,967): as paredes violeta da pupila
-    // saem do quadro sozinhas (sem dissolve). Órbitas, riders e aura (canvas, cujo lineWidth escala junto)
-    // esmaecem antes, em 9,5–9,75.
-    const cam = { s: 1, deco: 1 };
-    tl.to(cam, { s: 150, duration: 0.5, ease: 'expo.in' }, 9.5);
+    // câmera do mergulho em torno do V (9,5–10,0): curva exponencial (família expo.in, um pouco mais íngreme)
+    // 1→250 — ≈3× em 9,75, ≈37× em 9,9, ≈69× em 9,933 e ≈130× em 9,967. As paredes violeta da pupila saem do
+    // quadro sozinhas (sem dissolve) e o ícone cresce pouco em 9,5–9,7, enquanto o texto ainda está saindo.
+    // Órbitas, riders e aura (canvas, cujo lineWidth escala junto) esmaecem antes, em 9,5–9,75.
+    const ZS = 250, ZK = 14, Z0 = Math.pow(2, -ZK);
+    const zoomAt = (p) => 1 + (ZS - 1) * (Math.pow(2, ZK * (p - 1)) - Z0) / (1 - Z0);
+    const cam = { p: 0, deco: 1 };
+    tl.to(cam, { p: 1, duration: 0.5, ease: 'none' }, 9.5);
     tl.to(cam, { deco: 0, duration: 0.25, ease: 'power1.out' }, 9.5);
 
     // aura atrás do ícone, anéis e ondas (estado tweenável, desenhado no canvas)
@@ -473,7 +481,7 @@ ${SEL} .eyebrow { letter-spacing:.22em; }
     ];
     // as extremidades esquerdas das órbitas (x≈1210–1250) cairiam sobre o 'o.' de 'meccanismo.':
     // o trecho com x < XF1 esmaece até sumir em XF0 (lê como profundidade, sem cruzar o texto)
-    const XF0 = 1262, XF1 = 1345;
+    const XF0 = 1290, XF1 = 1372;
     const xFade = (x) => h.smooth(XF0, XF1, x);
     const xGrad = (c, color, a) => {
       const g = c.createLinearGradient(XF0, 0, XF1, 0);
@@ -525,7 +533,7 @@ ${SEL} .eyebrow { letter-spacing:.22em; }
     onFrame((lt) => {
       // um seek direto para t = 0 exato não renderiza o set de posição 0 (GSAP): garante o estado do corte
       if (lt < 1e-4) Object.assign(bg, BG_IN);
-      const s = cam.s, deco = cam.deco;
+      const s = zoomAt(cam.p), deco = cam.deco;
       zoomG.setAttribute('transform', `translate(${VPT.x.toFixed(2)} ${VPT.y.toFixed(2)}) scale(${f3(s)}) translate(${(-VPT.x).toFixed(2)} ${(-VPT.y).toFixed(2)})`);
 
       cb.setTransform(1, 0, 0, 1, 0, 0); cb.clearRect(0, 0, 1920, 1080);

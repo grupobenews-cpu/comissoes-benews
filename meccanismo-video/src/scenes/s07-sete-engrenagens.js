@@ -225,7 +225,7 @@ ${SEL} .s7-close em { background-repeat:no-repeat; }
     // o SplitText (deepSlice) pode clonar o <em>: aplica o shimmer em todos os que têm texto
     const ems = [...L3.querySelectorAll('em')].filter((e) => e.textContent.trim());
     ems.forEach((em) => {
-      em.style.backgroundImage = 'linear-gradient(100deg, rgba(251,248,255,0) 40%, rgba(251,248,255,.92) 50%, rgba(251,248,255,0) 60%), linear-gradient(90deg, #7c3aed, #c026d3)';
+      em.style.backgroundImage = 'linear-gradient(100deg, rgba(251,248,255,0) 40%, rgba(251,248,255,.92) 50%, rgba(251,248,255,0) 60%), linear-gradient(90deg, #c026d3, #7c3aed)';
       em.style.backgroundSize = '300% 100%, 100% 100%';
       em.style.backgroundPosition = '100% 0, 0 0';
     });

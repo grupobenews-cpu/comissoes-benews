@@ -683,6 +683,7 @@ ${SEL} .s10-flash { position:absolute; left:0; top:0; width:1920px; height:1080p
     cue(7, 'click', 'ponto encaixa', 1.0);
     cue(7, 'chime', 'GIRAR', 1.0);
 
+    root.__dbg = { pos, radAt };  // DEBUG-TEMP
     // medidas úteis para revisão
     root.dataset.s10 = JSON.stringify({
       P0: { x: +P0.x.toFixed(1), y: +P0.y.toFixed(1) }, DOT_R: +DOT_R.toFixed(1), base2: +base2.toFixed(1),

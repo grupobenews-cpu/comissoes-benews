@@ -53,7 +53,7 @@ svg.fill { position: absolute; inset: 0; width: 1920px; height: 1080px; overflow
 .t-muted { color: var(--muted); }
 .grad-text, .t-display em, .t-bricolage em {
   font-style: normal;
-  background: var(--grad-rev);
+  background: var(--grad); /* como no site: linear-gradient(90deg, --brand-from magenta, --brand-to violet) */
   -webkit-background-clip: text; background-clip: text;
   color: transparent;
   /* evita corte de descendentes com background-clip */

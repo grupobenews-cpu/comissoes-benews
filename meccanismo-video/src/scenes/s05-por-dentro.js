@@ -21,7 +21,7 @@ MECCA.scene({
     const TAU = Math.PI * 2, DEG = Math.PI / 180;
     const { clamp, lerp, hexA, smooth } = h;
     const E = (n) => gsap.parseEase(n);
-    const eOut = E('mecca.out'), eIn = E('mecca.in'), eIO = E('mecca.inOut'), eBack = E('mecca.back'), eGear = E('mecca.gear');
+    const eOut = E('mecca.out'), eIO = E('mecca.inOut'), eBack = E('mecca.back'), eGear = E('mecca.gear');
     const eP3io = E('power3.inOut'), eP2io = E('power2.inOut'), eP2o = E('power2.out');
     const seg = (t, a, b) => clamp((t - a) / (b - a));
     const f2 = (v) => (+v).toFixed(2);
@@ -85,7 +85,7 @@ ${SEL} .chip { font-size:20px; }
     tl.fromTo(chip, { scale: 0.85 }, { scale: 1, duration: 0.3, ease: 'mecca.back', immediateRender: false }, 5.0);
 
     // eyebrow digitado (0,025 s/char) e apagado de trás para frente
-    const eb = h.eyebrow('ENGENHARIA DE CRESCIMENTO', { x: 192, y: 120, anchor: 'cl', size: 22, parent: pushW });
+    const eb = h.eyebrow('ENGENHARIA DE CRESCIMENTO', { x: 192, y: 120, anchor: 'cl', size: 22, parent: textL });   // fixo em (192,120): fora do push
     const ebDash = eb.querySelector('.dash');
     const ebChars = h.split(eb.querySelector('.lbl'), { type: 'chars' }).chars;
     gsap.set(ebChars, { autoAlpha: 0 });
@@ -99,7 +99,7 @@ ${SEL} .chip { font-size:20px; }
     gsap.set(pushW, { transformOrigin: '192px 495px' });
     tl.fromTo(pushW, { scale: 1 }, { scale: 1.02, duration: 6.5, ease: 'none', immediateRender: false }, 1.0);
     tl.to(titleW, { x: -40, duration: 0.3, ease: 'mecca.in' }, 7.5);
-    tl.to(titleW, { opacity: 0, duration: 0.3, ease: 'power1.out' }, 7.5);   // some antes de o Ponto cruzar a coluna
+    tl.to(titleW, { opacity: 0, duration: 0.2, ease: 'power1.out' }, 7.5);   // 7,5–7,7: some antes de os mecca cruzarem a coluna (~7,66)
 
     // ================================================================== MÁQUINA (geometria)
     const DEPTH = 18;                                    // altura de dente comum (0,2 · 90)
@@ -133,12 +133,13 @@ ${SEL} .chip { font-size:20px; }
     const KW = { a: 4 / 3, b: -4 / 3, c: 1, d: -2, e: 4 / 3 };   // ω relativo ao motor (Gc +60°/s)
     const MC = { x: 1450, y: 520 };                     // centro da máquina (recuo de saída)
 
-    // ângulo acumulado do motor: ω 0 → 60°/s em 0,6 s (power2.out) a partir de 4,0
+    // ângulo acumulado do motor: ω 0 → 60°/s em 0,6 s (power2.out: ω = W·(1 − (1−u)³)) a partir de 4,0
+    //   θ = ∫ω = W·T·(u − (1 − (1−u)⁴)/4); depois da rampa, W·T·¾ + W·(t − 4,6)
     function motorA(t) {
       if (t <= 4) return 0;
       const T = 0.6, W = 60;
-      if (t < 4 + T) { const u = (t - 4) / T; return W * T * (u - (1 - Math.pow(1 - u, 3)) / 3); }
-      return W * T * (2 / 3) + W * (t - 4 - T);
+      if (t < 4 + T) { const u = (t - 4) / T; return W * T * (u - (1 - Math.pow(1 - u, 4)) / 4); }
+      return W * T * (3 / 4) + W * (t - 4 - T);
     }
     // engrenagens velhas "travadas": tremem sem conseguir girar
     const JAM = { a: [1.0, 2.0], e: [1.5, 2.5] };
@@ -285,14 +286,16 @@ ${SEL} .chip { font-size:20px; }
     const depthA = (ang) => 0.75 + 0.25 * clamp(Math.sin(ang) * 4, -1, 1);   // metade de trás α .5
 
     // estado de máquina (recuo de saída + tranco do motor)
+    const MX0 = 7.45, MX1 = 7.9;                        // recuo de saída
     function machineT(t) {
-      const ko = eIn(seg(t, 7.5, 7.9));
+      const u = seg(t, MX0, MX1);
+      const ks = eIO(u), ka = u * u * u;                 // escala 1 → .5 (mecca.inOut) · alfa 1 → 0 (power2.in)
       let dx = 0, dy = 0;
       if (t >= 4.0 && t < 4.45) {
         const u = t - 4.0, env = Math.exp(-u * 10) * (1 - seg(t, 4.3, 4.45));
         dx = 4 * Math.sin(u * 97) * env; dy = 3 * Math.sin(u * 131 + 1.3) * env;
       }
-      return { s: 1 - 0.5 * ko, a: 1 - ko, dx, dy };
+      return { s: 1 - 0.5 * ks, a: 1 - ka, dx, dy };
     }
     const mApply = (p, M) => ({ x: MC.x + (p.x - MC.x) * M.s + M.dx, y: MC.y + (p.y - MC.y) * M.s + M.dy });
 

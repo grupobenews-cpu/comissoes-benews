@@ -15,8 +15,11 @@
  */
 (function () {
   'use strict';
-  const W = 1920, H = 1080;
   const params = new URLSearchParams(location.search);
+  // formato: 'h' = 1920×1080 (padrão) · 'v' = 1080×1920 vertical (Reels/Stories/TikTok), cenas em scenes-v/
+  const FORMAT = params.get('format') === 'v' ? 'v' : 'h';
+  const W = FORMAT === 'v' ? 1080 : 1920, H = FORMAT === 'v' ? 1920 : 1080;
+  const SCENE_DIR = FORMAT === 'v' ? 'scenes-v' : 'scenes';
   const RENDER = params.has('render');
   const SOLO = params.get('solo') ? params.get('solo').split(',') : null;
   const NOGRAIN = params.has('nograin');
@@ -83,6 +86,8 @@
 
   // ---------------------------------------------------------------- stage
   const stage = document.getElementById('stage');
+  stage.style.width = W + 'px'; stage.style.height = H + 'px';
+  document.body.classList.add('format-' + FORMAT);
   const bgCanvas = el('canvas', { cls: 'layer', attrs: { width: W, height: H } }, stage);
   const scenesLayer = el('div', { cls: 'layer' }, stage);
   const grainCanvas = el('canvas', { cls: 'layer', attrs: { width: W, height: H }, style: { mixBlendMode: 'overlay', opacity: '0.5', pointerEvents: 'none' } }, stage);
@@ -438,7 +443,7 @@
     return { x, y, w, h: hh, left: x, top: y, right: x + w, bottom: y + hh, cx: x + w / 2, cy: y + hh / 2 };
   }
 
-  const helpers = { rect, fixGradient, rng, clamp, lerp, smooth, hexA, el, svg, uid, icon, logo, gearPath, gear, canvas, glowDot, ellipsePt, orbit, text, eyebrow, chip, split, strike, flash, shake, W, H, P, BEAT, BAR };
+  const helpers = { FORMAT, rect, fixGradient, rng, clamp, lerp, smooth, hexA, el, svg, uid, icon, logo, gearPath, gear, canvas, glowDot, ellipsePt, orbit, text, eyebrow, chip, split, strike, flash, shake, W, H, P, BEAT, BAR };
 
   // ---------------------------------------------------------------- cenas
   const defs = [];
@@ -464,7 +469,7 @@
       const tl = gsap.timeline();
       const hooks = [];
       const ctx = {
-        root, tl, D: d.duration, tail, start: d.start, W, H, P, h: helpers, bg, BEAT, BAR,
+        root, tl, D: d.duration, tail, start: d.start, W, H, FORMAT, P, h: helpers, bg, BEAT, BAR,
         onFrame: fn => hooks.push(fn),
         cue: (t, kind, note, gain) => cues.push({ t: +(d.start + t).toFixed(4), kind, note: note || '', gain: gain ?? 1, scene: d.id }),
       };
@@ -525,7 +530,7 @@
   const ready = (async () => {
     await loadFonts();
     const files = (window.MECCA_SCENES || []).filter(f => !SOLO || SOLO.some(p => f.startsWith(p)));
-    await loadScripts(files.map(f => `scenes/${f}`));
+    await loadScripts(files.map(f => `${SCENE_DIR}/${f}`));
     build();
     seek(Number(params.get('t') || 0));
     return true;
@@ -534,7 +539,7 @@
   window.MECCA = { scene: register, P, helpers, bg, master };
   window.__ready = ready;
   window.__seek = (t, fps) => { seek(t, fps); return true; };
-  window.__meta = () => ({ duration: DURATION, errors, cues: cues.slice().sort((a, b) => a.t - b.t), scenes: records.map(r => ({ id: r.id, start: r.start, end: r.end })) });
+  window.__meta = () => ({ format: FORMAT, width: W, height: H, duration: DURATION, errors, cues: cues.slice().sort((a, b) => a.t - b.t), scenes: records.map(r => ({ id: r.id, start: r.start, end: r.end })) });
 
   // ---------------------------------------------------------------- preview interativo
   if (!RENDER) {

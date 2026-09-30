@@ -5,10 +5,11 @@ import path from 'node:path';
 import { execFileSync } from 'node:child_process';
 import { args, launch, openStage, capture, ROOT } from './lib.mjs';
 const a = args();
-const out = path.resolve(ROOT, a.out || 'out/snaps/cuts');
+const fmt = a.format === 'v' ? 'v' : 'h';
+const out = path.resolve(ROOT, a.out || (fmt === 'v' ? 'out/snaps-v/cuts' : 'out/snaps/cuts'));
 fs.mkdirSync(out, { recursive: true });
 const b = await launch();
-const { page, meta, logs } = await openStage(b);
+const { page, meta, logs } = await openStage(b, '', fmt);
 const cdp = await page.context().newCDPSession(page);
 const cuts = meta.scenes.slice(1).map(s => s.start);
 const pairs = [];
@@ -33,9 +34,10 @@ for p in pairs:
     d = np.abs(a - b).max(axis=2)
     frac = (d > 40).mean() * 100
     print(f"corte {p['T']:6.1f}s  diff médio {d.mean():5.2f}  pixels >40: {frac:5.2f}%  máx {d.max()}")
-    ia = Image.open(p['A']).convert('RGB').resize((640, 360)); ib = Image.open(p['B']).convert('RGB').resize((640, 360))
-    dd = Image.fromarray(np.clip(d * 4, 0, 255).astype('uint8')).convert('RGB').resize((640, 360))
-    row = Image.new('RGB', (640 * 3 + 16, 390), (8, 4, 14)); row.paste(ia, (0, 30)); row.paste(ib, (648, 30)); row.paste(dd, (1296, 30))
+    tw, th = (640, 360) if a.shape[1] > a.shape[0] else (270, 480)
+    ia = Image.open(p['A']).convert('RGB').resize((tw, th)); ib = Image.open(p['B']).convert('RGB').resize((tw, th))
+    dd = Image.fromarray(np.clip(d * 4, 0, 255).astype('uint8')).convert('RGB').resize((tw, th))
+    row = Image.new('RGB', (tw * 3 + 16, th + 30), (8, 4, 14)); row.paste(ia, (0, 30)); row.paste(ib, (tw + 8, 30)); row.paste(dd, (2 * tw + 16, 30))
     ImageDraw.Draw(row).text((6, 6), f"corte {p['T']}s   [N: ultimo quadro]   [N+1: primeiro quadro]   [diferenca x4]   >40: {frac:.2f}%", fill=(196, 181, 253))
     rows.append(row)
 sheet = Image.new('RGB', (rows[0].width, sum(r.height for r in rows)))

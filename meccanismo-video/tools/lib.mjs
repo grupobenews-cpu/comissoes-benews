@@ -38,12 +38,15 @@ export async function launch() {
   });
 }
 
-export async function openStage(browser, query = '') {
-  const page = await browser.newPage({ viewport: { width: 1920, height: 1080 }, deviceScaleFactor: 1 });
+export const FORMATS = { h: { width: 1920, height: 1080 }, v: { width: 1080, height: 1920 } };
+export async function openStage(browser, query = '', format = 'h') {
+  const size = FORMATS[format] || FORMATS.h;
+  const page = await browser.newPage({ viewport: size, deviceScaleFactor: 1 });
+  page.__size = size;
   const logs = [];
   page.on('console', m => { if (m.type() === 'error' || m.type() === 'warning') logs.push(`[${m.type()}] ${m.text()}`); });
   page.on('pageerror', e => logs.push(`[pageerror] ${e.message}`));
-  const url = pathToFileURL(path.join(SRC, 'index.html')).href + '?render=1' + (query ? '&' + query : '');
+  const url = pathToFileURL(path.join(SRC, 'index.html')).href + '?render=1' + (format === 'v' ? '&format=v' : '') + (query ? '&' + query : '');
   await page.goto(url);
   await page.evaluate(() => window.__ready);
   const meta = await page.evaluate(() => window.__meta());
@@ -52,6 +55,7 @@ export async function openStage(browser, query = '') {
 
 export async function capture(page, cdp, t, fps, format = 'jpeg', quality = 95) {
   await page.evaluate(([tt, f]) => window.__seek(tt, f), [t, fps]);
-  const r = await cdp.send('Page.captureScreenshot', { format, quality: format === 'jpeg' ? quality : undefined, optimizeForSpeed: true, clip: { x: 0, y: 0, width: 1920, height: 1080, scale: 1 } });
+  const size = page.__size || { width: 1920, height: 1080 };
+  const r = await cdp.send('Page.captureScreenshot', { format, quality: format === 'jpeg' ? quality : undefined, optimizeForSpeed: true, clip: { x: 0, y: 0, width: size.width, height: size.height, scale: 1 } });
   return Buffer.from(r.data, 'base64');
 }

@@ -7,6 +7,7 @@ import { args, launch, openStage, capture, ffmpegPath, ROOT } from './lib.mjs';
 
 const a = args();
 const fps = Number(a.fps || 30);
+const fmt = a.format === 'v' ? 'v' : 'h';
 const workers = Number(a.workers || 3);
 const crf = String(a.crf || 16);
 const preset = String(a.preset || 'medium');
@@ -19,9 +20,9 @@ fs.mkdirSync(tmp, { recursive: true });
 const FF = ffmpegPath();
 
 const browser = await launch();
-const probe = await openStage(browser, a.solo ? `solo=${a.solo}` : '');
+const probe = await openStage(browser, a.solo ? `solo=${a.solo}` : '', fmt);
 const dur = probe.meta.duration;
-fs.writeFileSync(path.join(path.dirname(out), 'cues.json'), JSON.stringify({ duration: dur, fps, scenes: probe.meta.scenes, cues: probe.meta.cues }, null, 1));
+fs.writeFileSync(path.join(path.dirname(out), fmt === 'v' ? 'cues-v.json' : 'cues.json'), JSON.stringify({ duration: dur, fps, scenes: probe.meta.scenes, cues: probe.meta.cues }, null, 1));
 if (probe.meta.errors.length) console.warn('ERROS DE CENA:\n' + probe.meta.errors.join('\n'));
 await probe.page.close();
 
@@ -37,7 +38,7 @@ async function runWorker(w) {
   const a0 = f0 + w * per, a1 = Math.min(f1, a0 + per);
   if (a1 <= a0) return null;
   const seg = path.join(tmp, `seg${String(w).padStart(2, '0')}.mp4`);
-  const { page } = await openStage(browser, a.solo ? `solo=${a.solo}` : '');
+  const { page } = await openStage(browser, a.solo ? `solo=${a.solo}` : '', fmt);
   const cdp = await page.context().newCDPSession(page);
   const vf = MB > 1 ? ['-vf', `tmix=frames=${MB},select='eq(mod(n\\,${MB})\\,${MB - 1})',setpts=N/(${fps}*TB)`] : [];
   const ff = spawn(FF, ['-y', '-loglevel', 'error', '-f', 'image2pipe', '-framerate', String(fps * MB), '-c:v', 'mjpeg', '-i', '-',

@@ -32,17 +32,17 @@ body { font-family: var(--f-body); color: var(--ink); -webkit-font-smoothing: an
 
 #stage {
   position: absolute; left: 0; top: 0;
-  width: 1920px; height: 1080px;
+  width: 1920px; height: 1080px; /* o engine ajusta para o formato (1080×1920 no vertical) */
   overflow: hidden;
   background: var(--bg);
   transform-origin: 0 0;
   contain: strict;
 }
-#stage > .layer, .scene { position: absolute; inset: 0; width: 1920px; height: 1080px; }
+#stage > .layer, .scene { position: absolute; inset: 0; width: 100%; height: 100%; }
 .scene { visibility: hidden; overflow: hidden; }
 .scene.is-on { visibility: visible; }
-canvas.fill { position: absolute; inset: 0; width: 1920px; height: 1080px; }
-svg.fill { position: absolute; inset: 0; width: 1920px; height: 1080px; overflow: visible; }
+canvas.fill { position: absolute; inset: 0; width: 100%; height: 100%; }
+svg.fill { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
 .abs { position: absolute; }
 
 /* ---------- Tipografia ---------- */

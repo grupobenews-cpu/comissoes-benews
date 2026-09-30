@@ -105,3 +105,16 @@ node tools/snap.mjs --scene <id> --times 0,2.25,5.5   # quadros específicos (te
 Abra `sheet.png` e os PNGs com a ferramenta Read (ela mostra a imagem) e confira: texto legível e dentro da área segura,
 nada vazando/sobreposto sem intenção, primeiro e último quadro batendo com o que o storyboard pede para a transição,
 sem “ERROS/AVISOS” no final da saída. Itere até ficar com acabamento de estúdio.
+
+## Formato vertical (mobile 9:16 — 1080×1920)
+- As cenas verticais ficam em `src/scenes-v/<id>.js` (mesmos ids, mesmo `timing.js`, mesma trilha/narração).
+  Abrir: `src/index.html?format=v`. Snap: `node tools/snap.mjs --format v --scene <id> --every 0.5` (saída em `out/snaps-v/`).
+- `ctx.W`/`ctx.H` valem 1080/1920 e `h.canvas()` já cria canvas 1080×1920. Nunca use 1920/1080 fixos no código vertical.
+- **Área segura para texto e informação** (interfaces do Reels/TikTok/Stories cobrem topo e base):
+  x 90–990, y 250–1480. Nada importante em y < 250 nem em y > 1520; evite a faixa x > 960 entre y 1000–1700 (botões laterais).
+  Elementos decorativos (órbitas, partículas, engrenagens) podem sangrar para fora.
+- **Tamanhos mínimos no celular**: títulos 96–170 px; apoio/descrições ≥ 40 px (Inter 500); eyebrows/labels mono ≥ 26 px; chips ≥ 26 px.
+  Máximo ~16–18 caracteres por linha de título; quebre linhas em pontos naturais.
+- Composição típica: texto empilhado no terço superior/central (y 300–900) e o elemento visual (máquina, órbitas, ícone) no terço
+  inferior (y 1000–1450), ou visual centralizado com texto acima e abaixo. Tudo mais centralizado que no 16:9.
+- Timeline, tempos de texto, coreografia e **cues de som idênticos** à versão horizontal (a trilha e a narração são as mesmas).

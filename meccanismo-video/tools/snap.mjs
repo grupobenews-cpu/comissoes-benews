@@ -10,11 +10,12 @@ import { args, launch, openStage, capture, ROOT } from './lib.mjs';
 
 const a = args();
 const scene = a.scene && a.scene !== true ? String(a.scene) : null;
-const out = path.resolve(ROOT, a.out && a.out !== true ? a.out : `out/snaps/${scene || 'global'}`);
+const fmt = a.format === 'v' ? 'v' : 'h';
+const out = path.resolve(ROOT, a.out && a.out !== true ? a.out : `out/snaps${fmt === 'v' ? '-v' : ''}/${scene || 'global'}`);
 fs.mkdirSync(out, { recursive: true });
 
 const browser = await launch();
-const { page, meta, logs } = await openStage(browser, scene && !a.full ? `solo=${scene}` : '');
+const { page, meta, logs } = await openStage(browser, scene && !a.full ? `solo=${scene}` : '', fmt);
 const rec = scene ? meta.scenes.find(s => s.id.startsWith(scene)) : null;
 if (scene && !rec) { console.error(`cena ${scene} não encontrada. Cenas: ${meta.scenes.map(s => s.id).join(', ')}`); process.exit(2); }
 const base = rec ? rec.start : 0;
@@ -42,10 +43,10 @@ if (a.sheet || a.every || files.length > 1) {
 import sys, json
 from PIL import Image, ImageDraw, ImageFont
 items = json.loads(sys.argv[1]); out = sys.argv[2]
-tw, th = 640, 360
-cols = 3 if len(items) > 4 else 2 if len(items) > 1 else 1
+tw, th = (640, 360) if sys.argv[3] == 'h' else (300, 533)
+cols = (3 if len(items) > 4 else 2 if len(items) > 1 else 1) if sys.argv[3] == 'h' else (6 if len(items) > 6 else max(1, len(items)))
 rows = (len(items) + cols - 1) // cols
-sheet = Image.new('RGB', (cols * tw + (cols + 1) * 8, rows * (th + 30) + (rows + 1) * 8), (8, 4, 14))
+sheet = Image.new('RGB', (cols * tw + (cols + 1) * 8, rows * (th + 38) + 8), (8, 4, 14))
 try: font = ImageFont.truetype('/usr/share/fonts/truetype/dejavu/DejaVuSansMono.ttf', 18)
 except Exception: font = ImageFont.load_default()
 d = ImageDraw.Draw(sheet)
@@ -56,7 +57,7 @@ for i, it in enumerate(items):
     d.text((x, y + 2), 't = %.2fs' % it['t'], fill=(196, 181, 253), font=font)
 sheet.save(out)
 `;
-  try { execFileSync('python3', ['-c', py, JSON.stringify(files), sheet]); console.log(`folha de contato: ${sheet}`); } catch (e) { console.error('falha ao montar folha de contato', e.message); }
+  try { execFileSync('python3', ['-c', py, JSON.stringify(files), sheet, fmt]); console.log(`folha de contato: ${sheet}`); } catch (e) { console.error('falha ao montar folha de contato', e.message); }
 }
 console.log(`quadros: ${files.map(x => x.f).join('\n')}`);
 const errs = [...meta2.errors, ...logs];

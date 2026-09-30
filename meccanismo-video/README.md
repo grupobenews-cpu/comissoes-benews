@@ -5,10 +5,12 @@ posicionamento (“Não somos agência. Não somos consultoria. Somos o meccanis
 o método em 4 tempos, as 7 engrenagens (serviços), a operação contínua, os diferenciais e o CTA.
 Conteúdo, paleta e tipografia extraídos de www.meccanismo.com.br (ver `brief/`).
 
-## Entregáveis (`out/`)
-- `meccanismo.mp4` — vídeo final com trilha (H.264 + AAC).
-- `soundtrack.wav` — trilha sonora isolada.
-- `cues.json` — mapa de cenas e sincronização de som.
+## Entregáveis (`entregas/`)
+- `meccanismo-16x9.mp4` — versão horizontal 1920×1080 (YouTube, LinkedIn, site, apresentações), master de alta qualidade.
+- `meccanismo-9x16.mp4` — versão vertical 1080×1920 (Reels, Stories, TikTok, Shorts, status do WhatsApp), master.
+- `meccanismo-16x9-envio.mp4` / `meccanismo-9x16-envio.mp4` — cópias leves (~27 MB) para enviar por mensagem.
+
+Ambas: 100 s, 30 fps, motion blur, narração pt-BR + trilha original, áudio masterizado em −14 LUFS.
 
 ## Como funciona
 A animação é uma página HTML (`src/index.html`) controlada por uma timeline GSAP determinística.
@@ -36,12 +38,13 @@ Locução gerada com ElevenLabs (voz “Catarina Cordeiro”, pt-BR) via Magnifi
 e o texto/tempo de cada frase em `audio/vo/plan.json`. A música e os efeitos abaixam automaticamente sob a voz.
 
 ## Pré-visualizar
-Abra `src/index.html` num navegador (barra de play/scrub; espaço = play/pause, ←/→ = quadro a quadro).
+Abra `src/index.html` (16:9) ou `src/index.html?format=v` (9:16) num navegador (barra de play/scrub; espaço = play/pause, ←/→ = quadro a quadro).
 
 ## Renderizar
 Requisitos: Node 18+ com `playwright` (Chromium), Python 3 com `numpy scipy imageio-ffmpeg pillow`.
 ```bash
-node tools/render.mjs --workers 3 --mb 4 --out out/meccanismo-video-only.mp4   # vídeo (gera out/cues.json)
+node tools/render.mjs --workers 3 --mb 4 --out out/meccanismo-video-only.mp4   # vídeo 16:9 (gera out/cues.json)
+node tools/render.mjs --format v --workers 3 --mb 4 --out out/meccanismo-9x16-video-only.mp4   # vídeo 9:16 (cenas em src/scenes-v/)
 python3 tools/voice.py --out out/voice.wav                                         # locução posicionada
 python3 tools/finalize.py                                                          # trilha + voz, -14 LUFS, mux → out/meccanismo.mp4
 ```

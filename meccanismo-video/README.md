@@ -9,8 +9,10 @@ Conteúdo, paleta e tipografia extraídos de www.meccanismo.com.br (ver `brief/`
 - `meccanismo-16x9.mp4` — versão horizontal 1920×1080 (YouTube, LinkedIn, site, apresentações), master de alta qualidade.
 - `meccanismo-9x16.mp4` — versão vertical 1080×1920 (Reels, Stories, TikTok, Shorts, status do WhatsApp), master.
 - `meccanismo-16x9-envio.mp4` / `meccanismo-9x16-envio.mp4` — cópias leves (~27 MB) para enviar por mensagem.
+- `*-sem-narracao.mp4` / `*-sem-narracao-envio.mp4` — as mesmas peças só com trilha + efeitos (sem locução),
+  para feeds que tocam no mudo ou para usar com outra voz/legenda.
 
-Ambas: 100 s, 30 fps, motion blur, narração pt-BR + trilha original, áudio masterizado em −14 LUFS.
+Todas: 100 s, 30 fps, motion blur, trilha original, áudio masterizado em −14 LUFS.
 
 ## Como funciona
 A animação é uma página HTML (`src/index.html`) controlada por uma timeline GSAP determinística.
@@ -47,4 +49,5 @@ node tools/render.mjs --workers 3 --mb 4 --out out/meccanismo-video-only.mp4   #
 node tools/render.mjs --format v --workers 3 --mb 4 --out out/meccanismo-9x16-video-only.mp4   # vídeo 9:16 (cenas em src/scenes-v/)
 python3 tools/voice.py --out out/voice.wav                                         # locução posicionada
 python3 tools/finalize.py                                                          # trilha + voz, -14 LUFS, mux → out/meccanismo.mp4
+python3 tools/finalize.py --voice ""                                               # mesma coisa, sem narração
 ```

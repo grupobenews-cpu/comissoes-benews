@@ -8,3 +8,7 @@ out/soundtrack*.wav
 out/*.log
 out/preview-*.mp4
 out/review/
+out/snaps-v/
+out/*.mjs
+out/*.png
+out/review/

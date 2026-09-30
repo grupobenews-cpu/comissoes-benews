@@ -417,9 +417,15 @@
     tl.to(line, { scaleX: 1, duration: o.dur || 0.35, ease: 'mecca.snap' }, at);
     return line;
   }
-  // Flash de quadro inteiro
+  // Flash do impacto: brilho radial em blend 'screen' centrado no ponto do impacto (não deixa a imagem leitosa)
+  //   o: { color, peak, dur, cx, cy, r, blend }
   function flash(tl, root, at, o = {}) {
-    const f = el('div', { style: { position: 'absolute', inset: '0', background: o.color || '#FBF8FF', opacity: 0, pointerEvents: 'none', zIndex: 50, mixBlendMode: o.blend || 'screen' } }, root);
+    const col = o.color || '#FBF8FF';
+    const cx = o.cx ?? W / 2, cy = o.cy ?? H / 2, r = o.r ?? Math.round(Math.max(W, H) * 0.55);
+    const f = el('div', { style: {
+      position: 'absolute', inset: '0', pointerEvents: 'none', zIndex: 50, opacity: 0, mixBlendMode: o.blend || 'screen',
+      background: `radial-gradient(circle ${r}px at ${cx}px ${cy}px, ${hexA(col, 0.95)} 0%, ${hexA(col, 0.45)} 30%, ${hexA(col, 0.12)} 65%, ${hexA(col, 0)} 100%)`,
+    } }, root);
     tl.fromTo(f, { opacity: o.peak ?? 0.85 }, { opacity: 0, duration: o.dur || 0.45, ease: 'power2.out', immediateRender: false }, at);
     tl.set(f, { opacity: 0 }, 0);
     return f;

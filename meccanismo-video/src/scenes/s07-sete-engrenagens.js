@@ -283,7 +283,8 @@ ${SEL} .s7-close em { background-repeat:no-repeat; }
     // DROP B (54,0): onda de choque r 300→700 (lavanda 2 px, α .5→0, 0,6 s) e o traço engrossa 3→5 px e volta a 3 até 0,4.
     // O quadro t = 0 continua idêntico ao último da S06 (match cut): tudo isso aparece a partir do quadro seguinte.
     tl.to(S, { wave: 1, duration: 0.6, ease: 'none' }, 0);
-    tl.to(gradP, { attr: { 'stroke-width': 5 }, duration: 1 / 30, ease: 'none' }, 0);
+    // (começa em 0,002 porque o motor faz seek em t + 1e-4: o quadro 0 fica com os 3 px exatos da S06)
+    tl.to(gradP, { attr: { 'stroke-width': 5 }, duration: 1 / 30 - 0.002, ease: 'none' }, 0.002);
     tl.to(gradP, { attr: { 'stroke-width': 3 }, duration: 0.4 - 1 / 30, ease: 'power1.inOut' }, 1 / 30);
     cue(0, 'whoosh', 'círculo viaja', 0.4);
 

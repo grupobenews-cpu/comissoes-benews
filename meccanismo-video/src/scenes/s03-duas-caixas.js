@@ -384,16 +384,15 @@ MECCA.scene({
     const K1 = { x: HE.x + 3, y: HE.y + 90 }, K2 = { x: 620, y: 360 };
     const cb = (a, c1, c2, b, k) => { const u = 1 - k; return u * u * u * a + 3 * u * u * k * c1 + 3 * u * k * k * c2 + k * k * k * b; };
     function pontoPos(t) {
-      if (t < 1.0) return { x: P0.x, y: P0.y, r: 16 };
-      if (t < 1.5) {
-        // acompanha exatamente o '.' de 'caixas.' durante o FLIP (mesmas eases de x, y e escala)
-        const u = (t - 1.0) / 0.5, ks = FS(u), sc = 1 + (sB - 1) * ks;
-        const x = B.left + FB.dx * FX(u) + (P0.x - B.left) * sc;
-        const y = B.top + FB.dy * FY(u) + (P0.y - B.top) * sc;
+      if (t < FLIP.t0) return { x: P0.x, y: P0.y, r: 16 };
+      if (t < FLIP.t1) {
+        // acompanha exatamente o '.' de 'caixas.' durante o FLIP em grupo (semelhança linear no mesmo ease)
+        const u = (t - FLIP.t0) / FD, k = E_FLIP(u);
+        const x = lerp(P0.x, MP.x, k), y = lerp(P0.y, MP.y, k);
         const w = h.smooth(0.8, 1, u);              // funde nos últimos quadros com o '.' medido do header
-        return { x: lerp(x, PH.x, w), y: lerp(y, PH.y, w), r: lerp(16, 4, ks) };
+        return { x: lerp(x, PH.x, w), y: lerp(y, PH.y, w), r: lerp(16, 4, k) };
       }
-      if (t < 5.5) { const s = 1 + PUSH_H * clamp((t - 1.5) / 4); return { x: HC.x + (PH.x - HC.x) * s, y: HC.y + (PH.y - HC.y) * s, r: 4 * s }; }
+      if (t < 5.5) { const s = 1 + PUSH_H * clamp((t - FLIP.t1) / (5.5 - FLIP.t1)); return { x: HC.x + (PH.x - HC.x) * s, y: HC.y + (PH.y - HC.y) * s, r: 4 * s }; }
       if (t < 6.0) { const k = E_FLY((t - 5.5) / 0.5); return { x: cb(HE.x, K1.x, K2.x, P2.x, k), y: cb(HE.y, K1.y, K2.y, P2.y, k), r: lerp(4 * (1 + PUSH_H), 14, k) }; }
       return { x: P2.x, y: P2.y, r: 14 };
     }
@@ -403,7 +402,7 @@ MECCA.scene({
       return '#' + [16, 8, 0].map(sh => ch(sh).toString(16).padStart(2, '0')).join('');
     }
     // início do trecho de movimento que contém t (as amostras do rastro nunca voltam antes dele)
-    const segStart = (t) => (t < 1.0 ? 0 : t < 5.5 ? 1.0 : 5.5);
+    const segStart = (t) => (t < FLIP.t0 ? 0 : t < 5.5 ? FLIP.t0 : 5.5);
     // fita afunilada (polígono contínuo) ao longo das amostras: sem discos soltos, sem "contas"
     function ribbon(c, pts, ws, fill) {
       const m = pts.length, Lp = [], Rp = [];
@@ -427,7 +426,7 @@ MECCA.scene({
       const t0 = Math.max(t - WIN, segStart(t));
       if (t - t0 < 1 / 240) return;
       // enquanto o Ponto é glifo de 'caixas.' (FLIP), o rastro é só um fio discreto (raio ≤ 3 px)
-      const glyph = t < 1.5;
+      const glyph = t < FLIP.t1 + 0.1;
       const pts = [], ws = [];
       for (let j = 0; j <= N; j++) {
         const tt = t0 + ((t - t0) * j) / N;

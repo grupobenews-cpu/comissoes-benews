@@ -365,6 +365,65 @@ ${SEL} .t-display em { background-image:var(--grad); }
     // (nada de véu chapado/leitoso). O 1º quadro fica limpo (match cut com a S09): o pico cai no quadro seguinte.
     h.flash(tl, root, 1 / 30, { color: P.lilac, peak: 0.5, dur: 0.4, cx: 960, cy: 500, r: 900 });
 
+    // ================================================================== PARTÍCULAS DO FUNDO SEM SUJAR O LOCKUP (6,5+)
+    // O motor não mascara bg.particles; a partir de 6,5 a cena zera bg.particles e redesenha EXATAMENTE as mesmas
+    // partículas (mesma semente, mesmo movimento, mesmo cintilar, atenuadas pela vinheta como no motor) no canvas
+    // mais de baixo — e apaga, em 6,5–7,0, as que caem nos bboxes do lockup +8 px (ícone, wordmark, verbos, CTA, URL).
+    const PARTS = (() => {
+      const r = h.rng(20260929), arr = [];
+      for (let i = 0; i < 170; i++) {
+        arr.push({
+          x: r() * 1920, y: r() * 1080, z: 0.25 + r() * 0.95,
+          vx: (r() - 0.5) * 9, vy: -3 - r() * 10,
+          size: 0.6 + r() * 1.9, tw: r() * Math.PI * 2, tws: 0.6 + r() * 1.8,
+          c: r() < 0.62 ? '#C4B5FD' : r() < 0.6 ? '#A78BFA' : '#E249B0',
+        });
+      }
+      return arr;
+    })();
+    const PT_T = 6.5, PT_FADE = 0.5;
+    tl.set(bg, { particles: 0 }, PT_T);
+    const PBOX = [
+      { x0: 497, y0: 325, x1: 687, y1: 515 },             // ícone
+      { x0: 723, y0: 346, x1: 1423, y1: 494 },            // wordmark
+      { x0: vr.x, y0: vr.y, x1: vr.right, y1: vr.bottom }, // verbos
+      { x0: 700, y0: 694, x1: 1220, y1: 786 },            // CTA
+      { x0: ur.x, y0: ur.y, x1: ur.right, y1: ur.bottom }, // URL
+    ];
+    const eSinIO = E('sine.inOut');
+    function partMask(x, y) {
+      let m = 1;
+      for (const b of PBOX) {
+        const dx = Math.max(b.x0 - x, 0, x - b.x1), dy = Math.max(b.y0 - y, 0, y - b.y1);
+        m = Math.min(m, h.smooth(8, 20, Math.hypot(dx, dy)));
+      }
+      return m;
+    }
+    function drawParticles(lt, gt) {
+      cp.setTransform(1, 0, 0, 1, 0, 0); cp.clearRect(0, 0, 1920, 1080);
+      if (lt < PT_T - 0.01 || bg.particles > 1e-3) return;   // até 6,5 quem desenha é o motor
+      const kM = eSinIO(seg(lt, PT_T, PT_T + PT_FADE));
+      const tt = gt * bg.speed;
+      const R0 = 1080 * 0.35, R1 = 1080 * 1.05;
+      cp.save();
+      cp.globalCompositeOperation = 'lighter';
+      for (const p of PARTS) {
+        let x = (p.x + p.vx * tt * p.z + bg.driftX * p.z) % 1920; if (x < 0) x += 1920;
+        let y = (p.y + p.vy * tt * p.z + bg.driftY * p.z) % 1080; if (y < 0) y += 1080;
+        const tw = 0.45 + 0.55 * Math.sin(p.tw + gt * p.tws);
+        const a0 = 0.55 * tw * p.z;
+        if (a0 < 0.02) continue;
+        const vig = 1 - bg.vignette * clamp((Math.hypot(x - 960, y - 540) - R0) / (R1 - R0));
+        const a = a0 * vig * (1 - bg.dim) * lerp(1, partMask(x, y), kM);
+        if (a < 0.002) continue;
+        const rr = p.size * (0.7 + p.z * 0.6);
+        cp.fillStyle = hexA(p.c, a);
+        cp.beginPath(); cp.arc(x, y, rr, 0, TAU); cp.fill();
+        if (p.size > 2.2) { cp.fillStyle = hexA(p.c, a * 0.15); cp.beginPath(); cp.arc(x, y, rr * 4, 0, TAU); cp.fill(); }
+      }
+      cp.restore();
+    }
+
     // ================================================================== FUNDO
     const BG_IN = { glowA: 1, glowB: 1, glowC: 1, grid: 0, particles: 1, driftX: 0, driftY: 0, speed: 2, warp: 0.5, vignette: 0.55, dim: 0, hue: 0, grain: 1 };
     tl.set(bg, BG_IN, 0);
@@ -621,9 +680,10 @@ ${SEL} .t-display em { background-image:var(--grad); }
     }
 
     // ================================================================== onFrame
-    onFrame((lt) => {
+    onFrame((lt, gt) => {
       // seek direto para t = 0 exato não renderiza o set de posição 0 (GSAP): garante o estado do corte
       if (lt < 1e-4) Object.assign(bg, BG_IN);
+      drawParticles(lt, gt);
 
       // --- máquina de fundo (SVG)
       const ga = gearAng(lt);

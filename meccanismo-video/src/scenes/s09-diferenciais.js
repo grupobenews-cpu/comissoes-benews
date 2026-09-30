@@ -916,6 +916,7 @@ ${SEL} .s9-lab > span { display:inline-block; }
         // — continua do lado oposto ao fio; o min() final é só rede de segurança.
         const exc = lb.x + LAB_B.w * 0.5 - 1824;
         const kUp = smooth(-24, 30, exc);
+        window.__s9dbg = { Bx: B.x, By: B.y, ux, uy, exc };  // DEBUG-TMP
         if (kUp > 0) {
           let vx = lerp(ux, 0, kUp), vy = lerp(uy, -1, kUp);
           const vl = Math.hypot(vx, vy) || 1; vx /= vl; vy /= vl;

@@ -1,0 +1,380 @@
+{
+ "summary": "Verifiquei os achados dos 4 críticos na prévia, a 4 fps e a 30 fps, extraindo 14.0, 15.0, 18.5, 42.0, 57.7, 96.5, 6.6/7.9, 23.9, 29.3, 88.0, 95.4, 97.0, o último quadro e outros. Nenhum blocker: o texto está correto e fiel ao site e não há erro de marca. Confirmei 11 problemas major, todos de sincronia, movimento ou clareza. (1) Quatro golpes sonoros caem em quadro vazio ou atrasado: o slam de 14.0 (texto só completo em ~14.23), os fechamentos das caixas em 18.5/19.0 (a caixa achata ~0.3 s depois do clique), o Ponto parado de 41.93 a 42.2 bem no impact de 42.0 e o lockup de 96.5 (o wordmark só fica completo em ~96.95). (2) O FLIP de 15.0–15.4 na S03 embola o título com o conteúdo das caixas. (3) A cremalheira da S07 anda 60–130 px por quadro sem blur e aparece como estroboscópio nas 7 estações. (4) O Ponto da S02 cria pontuação falsa ('giram;:' e 'Algumas.'). (5) Na clareza, 'os mecca' só é apresentado num chip mono de 20 px, a S08 nunca diz a palavra 'rotinas' e deixa a legenda minúscula e longe dos anéis, os chips de serviço da S07 estão em 18 px e somem em α .4, e a URL final está em mono de 26 px. O resto é polimento barato: pops de fim de fade com mecca.in, colisões do Ponto e do rastro na S10, uma partícula sobre o 'R' de OPERAR no thumbnail, flashes leitosos e máscaras cortando descendentes. Descartei pedidos que reescrevem o texto aprovado, mudanças de layout que contrariam o roteiro, a 'hora H' vazia (que é intencional) e itens que não se confirmaram ou têm ganho baixo.",
+ "rejected": [
+  {
+   "item": "S06 — encurtar as descrições dos 4 tempos e subir para 36–38 px",
+   "reason": "Troca o texto aprovado, que vem do site. Em 52.5 as descrições se leem bem em 1080p. A diferença de 3,1 s para 3,5 s na descrição 04 é marginal."
+  },
+  {
+   "item": "S09 — acrescentar 'O nosso ganho está atrelado ao seu crescimento' e reordenar o bloco 'Cresceu,'",
+   "reason": "Acrescenta texto e muda um layout aprovados no roteiro (Cresceu em baseline 330). É gosto editorial, não defeito."
+  },
+  {
+   "item": "S05 — restaurar '— de vendas a tecnologia —' na linha 2",
+   "reason": "O roteiro aprovado cortou esse trecho. Restaurar exige refazer o layout do bloco inteiro e o ganho é baixo, porque a S07 explica as engrenagens."
+  },
+  {
+   "item": "S10 — trocar '// cada máquina tem o seu ritmo' por 'ENGENHARIA DE CRESCIMENTO'",
+   "reason": "O comentário está no roteiro de propósito, então é gosto contra o aprovado. Mantive só o aumento do α dos verbos."
+  },
+  {
+   "item": "S09 — reduzir o tempo de escurecimento dos blocos 'assume'/'fica' por tempo de leitura",
+   "reason": "Em 84.25–87.0 os blocos continuam na tela, legíveis a α .45, até 88.2 (mais de 5 s). O cálculo de leitura do crítico ignora isso. O que se confirma é o contraste baixo das linhas riscadas, e isso ficou como minor."
+  },
+  {
+   "item": "S05 — reduzir o tempo de leitura das linhas 1 e 2 por causa do escurecimento em 36.0/38.0",
+   "reason": "As linhas continuam visíveis até 41.5, e o escurecimento está no roteiro. O problema real, o <em> em gradiente virando roxo sujo, ficou como minor."
+  },
+  {
+   "item": "S05 — subir a tese de 60 para 68 px",
+   "reason": "É mudança de layout contra o roteiro. Em 39.5 a tese se lê bem. Custo médio e ganho baixo."
+  },
+  {
+   "item": "S03 — header recolhido à esquerda em 56 px, como na S06",
+   "reason": "O roteiro especifica o header centrado em 44 px. É gosto de consistência."
+  },
+  {
+   "item": "S03 — aumentar 'As duas somem / na hora H.' para 215 px ou encher a metade direita",
+   "reason": "O quadro vazio é intencional ('a energia cai: só sobra o Ponto')."
+  },
+  {
+   "item": "S04 — ritmo vertical das negações (descer o segundo bloco 30 px)",
+   "reason": "Polimento ótico de ganho baixo. As baselines são as do roteiro."
+  },
+  {
+   "item": "S01/S02/S09 — compensar o side-bearing das palavras display",
+   "reason": "Diferença de 8–10 px, só perceptível contra o grid. Mexe no build() de várias cenas. Custo maior que o ganho."
+  },
+  {
+   "item": "S02 — engrenagens maiores e com fill mais sólido",
+   "reason": "É gosto. Em 6.7–7.9 as engrenagens se leem bem como line art, que é o que o roteiro pede."
+  },
+  {
+   "item": "S06 — padronizar os adornos dos 4 nomes",
+   "reason": "O roteiro pede uma micro-animação diferente para cada tempo (cursor, marcas de corte, mini engrenagem, degraus)."
+  },
+  {
+   "item": "S09 — descer a coluna 30 px e escalar o binário 1,3×",
+   "reason": "É gosto de composição, sem defeito visível."
+  },
+  {
+   "item": "S06 — FLIP do título em 44.7–44.8 'parece corte'",
+   "reason": "Em 44.75 o quadro já está limpo e o salto dura cerca de 0,1 s. Ganho baixo."
+  },
+  {
+   "item": "S10 — Ponto como bullet '·ela' em 94.5",
+   "reason": "Não se confirmou: em 94.5 o Ponto passa abaixo da linha, sem encostar em 'ela'. A colisão real da órbita ficou registrada em 95.4 e 97.0."
+  },
+  {
+   "item": "S04 — categoria em Space Grotesk de 44–48 px com layout novo",
+   "reason": "Custo e mudança de estilo maiores que o necessário. Mantive uma versão barata (tamanho, tracking e entrada sem digitação) como minor."
+  }
+ ],
+ "scenes": [
+  {
+   "scene": "s02-range",
+   "fixes": [
+    {
+     "severity": "major",
+     "time": "6.6–6.8, 7.8–8.0, 8.6–8.8 (repete a cada volta)",
+     "problem": "O Ponto que orbita 'giram' encosta nos glifos vizinhos e cria pontuação falsa. Em ~6.7 ele cola no ';' e lê-se 'giram;:'. Em ~7.87 pousa depois de 'Algumas' e lê-se 'Algumas.'. A hairline da órbita atravessa o 's' e o ';'.",
+     "fix": "Em s02-range.js, reduzir o rx da órbita de 'giram' para largura/2 + 16 e subir o ry para ~100, para que as pontas não alcancem 'Algumas' nem ';' e a metade da frente passe abaixo das descendentes. Desenhar o Ponto (e o trecho da órbita) no canvas de trás, abaixo do texto, quando sin(φ) < 0, como já faz a órbita da S01.",
+     "verified": "Extraí 6.6–6.9 e 7.8–8.1 a 30 fps. Nos quadros ~6.7 e ~7.87 o Ponto branco aparece colado ao ';' e logo depois de 'Algumas'."
+    },
+    {
+     "severity": "minor",
+     "time": "10.27–10.40 e 13.67–13.77",
+     "problem": "No voo rápido, o rastro do Ponto aparece como 6 a 8 contas roxas separadas, e não como o cometa contínuo da S01 e da S03.",
+     "fix": "Em drawPonto (s02-range.js), trocar os 8 círculos amostrados a 1/60 s por um traço contínuo afunilado pelas posições amostradas (≥ 24 amostras, lineCap round, largura de r até 0, gradiente #C026D3→#7C3AED), reaproveitando a função de rastro da S01.",
+     "verified": "Nos quadros 10.33 e 13.70 o rastro mostra discos separados."
+    }
+   ]
+  },
+  {
+   "scene": "s03-duas-caixas",
+   "fixes": [
+    {
+     "severity": "major",
+     "time": "14.0–14.25",
+     "problem": "O impact 'slam T1' de 14.0 cai num quadro sem texto. 'O mercado te dá' só aparece em ~14.03–14.07, e 'duas caixas.' entra em ~14.17 e assenta em ~14.23. O golpe visual chega 6 a 8 quadros depois do som. Durante o slam, os retângulos tracejados dos cards também atravessam 'caixas'.",
+     "fix": "Trocar a entrada para slam real: tl.fromTo([B.inner, A.inner], {yPercent:110}, {yPercent:0, duration:0.18, ease:'expo.out', stagger:0.03}, 0), com 'duas caixas.' primeiro. Somar scale 1.08→1 no wrapper (0,25 s, expo.out) e h.shake(root, amp 4, 0,2 s) em 0. Entre 0 e 1.0 local, baixar o stroke tracejado dos cards para α .12, voltando a .3 em 1.0.",
+     "verified": "A 30 fps, de 13.95 a 14.4: o quadro de 14.0 está vazio, a frase aparece cortada em 14.03 e 'duas caixas.' só fica completa em ~14.23."
+    },
+    {
+     "severity": "major",
+     "time": "15.0–15.4",
+     "problem": "FLIP embolado. 'O mercado te dá' e 'duas caixas.' seguem caminhos separados, e 'duas caixas.' ainda grande passa por cima de 'Executa a peça' e da área da caixa 2, enquanto o label digita e o texto da caixa 1 sobe. A frase fica partida por ~0,4 s, no click e whoosh de 15.0.",
+     "fix": "Antecipar o FLIP para 0.75–1.1 local (14.75–15.1, mecca.inOut), movendo as duas linhas como um grupo só (ou crossfade das linhas grandes para o header, sem trajetórias separadas). Só então, em 1.1, iniciar a máscara de 'Executa a peça', a digitação do label e a solidificação do fill da caixa 1. A caixa 2 continua em 1.5.",
+     "verified": "Nos quadros de 15.03 a 15.4, 'duas caixas.' sobrepõe 'Executa a peça' (15.03) e atravessa a caixa 2 (15.1–15.3) separada de 'O mercado te dá'."
+    },
+    {
+     "severity": "major",
+     "time": "18.5–18.8 / 19.0–19.35",
+     "problem": "Os cliques de 'caixa 1 fecha' (18.5, com sub-drop) e 'caixa 2 fecha' (19.0) vêm antes do golpe visual. closeBox() começa na batida com scaleY em mecca.in, e a caixa só achata entre ~18.67 e 18.8 (a caixa 2 entre ~19.2 e 19.33), cerca de 0,25–0,3 s depois do som.",
+     "fix": "Em closeBox(), trocar o scaleY para power3.out com 0,18 s e o scaleX para 0,12 s, começando no 'at'. Assim o achatamento nasce no clique. Outra opção é manter a curva e chamar closeBox em 4.2 e 4.7 local, para o scaleY terminar exatamente em 4.5 e 5.0. A evaporação de 'some.' continua em 4.5 e 5.0.",
+     "verified": "Extraí 18.45–19.45 a 30 fps. Em 18.6 a caixa 1 está intacta, em 18.73 encolhendo e em 18.8 vira uma linha. A caixa 2 ainda está achatando em 19.27."
+    },
+    {
+     "severity": "minor",
+     "time": "20.0–23.5 (cards 16.0–19.0)",
+     "problem": "As ilustrações dos cards (post e slide) ficam pequenas e presas ao canto superior esquerdo, com ~400×250 px vazios em cada card.",
+     "fix": "Escalar as duas ilustrações ~1,4× (post ≈364×263, slide ≈448×252), com topos alinhados em y 360, mantendo stroke de 2 px com vector-effect: non-scaling-stroke.",
+     "verified": "No quadro 18.47 os ícones ocupam só o canto esquerdo dos cards."
+    },
+    {
+     "severity": "minor",
+     "time": "15.5 (1 quadro)",
+     "problem": "Queda de brilho de 1 quadro no header 'O mercado te dá duas caixas.'. O crossfade simétrico A/B→HD deixa os dois a α .5 em 1.50.",
+     "fix": "Em s03-duas-caixas.js (~l.245–246): tl.set(HD.outer, {autoAlpha:1}, 1.47) e tl.set([A.outer, B.outer], {autoAlpha:0}, 1.5), no lugar do crossfade.",
+     "verified": "Medi a região do header: a luma média cai de 45 para 39 exatamente no quadro de 15.5 e volta a 45 no seguinte."
+    },
+    {
+     "severity": "minor",
+     "time": "23.87→23.90",
+     "problem": "Pop no fim da saída de 'As duas somem / na hora H.': o texto ainda está visível no penúltimo quadro e some de uma vez, porque a opacidade usa mecca.in.",
+     "fix": "Em s03-duas-caixas.js (l.330–331), separar os tweens: y continua em mecca.in e autoAlpha passa a 'power1.in' (ou 'sine.in'), para o último quadro visível ficar abaixo de ~10%.",
+     "verified": "Pixels claros (>120) na área do texto: 69.186 em 23.85 e 631 em 23.88, um salto de um quadro."
+    }
+   ]
+  },
+  {
+   "scene": "s04-virada",
+   "fixes": [
+    {
+     "severity": "minor",
+     "time": "28.5–29.2",
+     "problem": "As quedas de 'agência.'/'consultoria.' e dos 'Não' usam power2.in por 0,6 s. A reação ao glitch de 28.5 atrasa e, em 29.0 (STOP da música), as letras ainda estão caindo, o que dilui o silêncio.",
+     "fix": "Em fall(): acrescentar um kick no cue (y −10, rotação 4°, 0,06 s, power2.out) e depois a gravidade. Reduzir dur de 0,6 para 0,42 (o 'Não' de 0,4 para 0,25), com o fade de opacidade começando em 0,5×dur, para tudo sumir até ~28.97.",
+     "verified": "Achado de timing do crítico, coerente com as curvas descritas. Em 29.3 ainda restam só os 'somos', o que confirma que a limpeza termina tarde."
+    },
+    {
+     "severity": "minor",
+     "time": "29.27–29.33",
+     "problem": "O crossfade 's'→'S' de 'Somos' mostra os dois glifos semitransparentes com um vão: lê-se 'S omos'.",
+     "fix": "Fazer a troca na parte rápida da convergência (≈5.1–5.2 local), com crossfade de no máximo 0,1 s, e animar o x de 'omos' pela diferença w('S') − w('s') no mesmo tween. Outra opção é trocar por roll vertical mascarado (yPercent) em vez de alpha.",
+     "verified": "No quadro 29.3 aparece um 's' cinza separado de 'omos' lilás."
+    },
+    {
+     "severity": "minor",
+     "time": "30.5–33.4",
+     "problem": "'ENGENHARIA DE CRESCIMENTO', a única definição de categoria da marca, aparece em mono de 28 px com tracking .32em e é digitada, ficando completa só ~1,9 s.",
+     "fix": "Subir para mono de 32 px com tracking .18em e entrar a linha inteira em 30.5 (fade + y 12→0, 0,3 s, sem digitação), mantendo a hairline e a saída em 33.5.",
+     "verified": "Nos quadros 32.0 e 32.5 o rótulo se lê em 1080p, mas é o menor elemento da revelação."
+    },
+    {
+     "severity": "minor",
+     "time": "32.2–32.8",
+     "problem": "O shimmer sobre 'mecca' é largo e claro, e desfaz a divisão gradiente 'mecca' / ink 'nismo' no quadro principal da virada.",
+     "fix": "Estreitar a banda do shimmer para no máximo a largura de um caractere, cor #E249B0 ou #C4B5FD com pico de opacidade .35 e ease sine.inOut.",
+     "verified": "Em 32.5 'mecca' aparece clareado, quase na cor de 'nismo'."
+    },
+    {
+     "severity": "minor",
+     "time": "33.65–33.85",
+     "problem": "No mergulho na pupila, o ícone vira um violeta #7C3AED chapado que cobre boa parte do quadro, sem sombreamento. Parece um quadro de cor sólida.",
+     "fix": "Durante o zoom, trocar o fill da pupila por gradiente radial (#7C3AED na borda interna → #4C1D95 na externa) e aplicar blur proporcional à escala (0→12 px a partir de scale 8).",
+     "verified": "No quadro 33.77 formas violeta chapadas cobrem ~70% da tela."
+    }
+   ]
+  },
+  {
+   "scene": "s05-por-dentro",
+   "fixes": [
+    {
+     "severity": "major",
+     "time": "39.0–41.5",
+     "problem": "'Os mecca' só é apresentado no chip mono de 20 px 'TIME EMBARCADO · OS MECCA', enquanto a atenção está no trem de engrenagens. O termo volta como sujeito na S06, na S08 e na S09, e quem é novo não sabe o que é.",
+     "fix": "Substituir o chip por uma linha de texto em 39.0: Space Grotesk 600, 44 px, x 192, baseline ≈790, 'Time embarcado: os mecca.', com 'os mecca' em <em> gradiente. Entrada por máscara (0,4 s, mecca.out) e saída junto com o bloco em 7.5 local.",
+     "verified": "Nos quadros 39.5 e 40.5 o chip é o menor elemento da tela, bem menor que as linhas de 60 px."
+    },
+    {
+     "severity": "minor",
+     "time": "36.0–41.5",
+     "problem": "Quando as linhas 1 e 2 caem para α .5, as palavras em gradiente 'por dentro' e 'monta' viram roxo escuro sobre roxo, e justamente a expressão-chave perde contraste.",
+     "fix": "Escurecer para α .7 em vez de .5. Durante o escurecimento, trocar o fill dos <em> escurecidos de gradiente para color #C4B5FD (tween de 0,3 s), ou manter os <em> em α 1 e escurecer só as palavras comuns.",
+     "verified": "Em 39.5 'por dentro' e 'monta' estão bem mais apagados que o resto da linha escurecida."
+    }
+   ]
+  },
+  {
+   "scene": "s06-plano-de-voo",
+   "fixes": [
+    {
+     "severity": "major",
+     "time": "41.9–42.3",
+     "problem": "O Ponto chega da S05 em alta velocidade, para seco em (≈178,598) às ~41.93 e fica parado até ~42.2. O impact de 42.0 ('abre o plano de voo') cai num quadro imóvel, com só um halo tênue depois.",
+     "fix": "Em orbitAngle(), começar em ω = π rad/s desde t=0 (sem a rampa S(t/0,5)) ou usar rampa linear de no máximo 0,1 s. Colocar um acento em t=0: halo r 10→48 com α .6→0 em 0,3 s, riders entrando com mecca.back em 0.0 e pulso de bg.grid.",
+     "verified": "Extraí 41.85–42.4 a 30 fps. O Ponto fica na mesma posição do quadro ~41.93 até ~42.2, só com o eyebrow digitando."
+    },
+    {
+     "severity": "minor",
+     "time": "50.5–53.4",
+     "problem": "Cerca de 3 s quase estáticos no groove. O chime de 50.5 só inicia um círculo de r 22, e os pulsos dos nós (r 10→15) quase não aparecem.",
+     "fix": "Pulsos dos nós com scale 1→2 e anel r 10→40, α .6→0, só em 51.5 e 52.0 (onde há cue). Ponto em giro com r 22→34, rastro e pulso no chime de 50.5. Push lento de 1→1,02 no grupo da linha do tempo entre 50.0 e 53.4.",
+     "verified": "O quadro 52.5 está idêntico às batidas vizinhas, sem acento visível."
+    },
+    {
+     "severity": "minor",
+     "time": "53.6–53.8",
+     "problem": "No morph linha→círculo, a polyline se cruza e forma um laço na ponta direita.",
+     "fix": "Interpolar cada ponto em coordenadas polares em torno de (960,540), com raio e ângulo em lerp a partir da projeção atual, em vez de lerp cartesiano até π − i·2π/63.",
+     "verified": "No quadro 53.70 aparece um laço fechado à direita do arco."
+    }
+   ]
+  },
+  {
+   "scene": "s07-sete-engrenagens",
+   "fixes": [
+    {
+     "severity": "major",
+     "time": "55.8, 57.8, 59.8, 61.8, 63.8, 65.8, 67.8 (±0,1 s)",
+     "problem": "Estroboscópio na cremalheira. A coluna de texto (nome de 150 px + chips) sobe 360 px com mecca.gear e quase todo o deslocamento cai em 2–3 quadros (até ~130 px/quadro), sem motion blur. O nome 'salta' em vez de deslizar, e os dentes da engrenagem gigante parecem pular. Acontece nas 7 estações.",
+     "fix": "Estender a translação da coluna e o giro da engrenagem para T−0,5→T+0,2 (0,7 s) com uma curva de velocidade de pico ≤ ~60 px/quadro, por exemplo CustomEase 'M0,0 C0.45,0 0.35,1.06 0.62,1.02 0.8,0.995 0.9,1 1,1' (overshoot pequeno). Manter o assentamento no downbeat.",
+     "verified": "Extraí 57.6–58.0 a 30 fps. 'Vendas' e 'Marketing' pulam entre 57.77 e 57.87 em saltos grandes, sem quadros intermediários suaves."
+    },
+    {
+     "severity": "major",
+     "time": "55.8–70.2",
+     "problem": "Os 3 chips de serviço de cada estação, o núcleo do 'o que faz', estão em mono de 18 px com tracking .14em e ficam ilegíveis quando o bloco cai para α .4 em T+2.",
+     "fix": "Chips em mono de 22 px, tracking .06em, texto #C4B5FD e borda mais clara. No escurecimento de T+2, usar α .55 em vez de .4 para o bloco anterior. Se a linha passar de 940 px, quebrar para a segunda linha, que já está prevista em y 724.",
+     "verified": "Nos quadros 56.5, 58.5 e 63.0 os chips ativos são minúsculos, e os da estação anterior (α .4) mal se veem."
+    },
+    {
+     "severity": "minor",
+     "time": "54.0–54.5",
+     "problem": "O começo do DROP B (54.0) cai num quadro com só um círculo de 3 px e o Ponto. O círculo fica parado até ~54.4 antes de viajar.",
+     "fix": "Começar a viagem do círculo para (1640,540) exatamente em 54.0 (mecca.inOut, sem hold). Em 54.0, disparar uma onda de choque (r 300→700, lavanda 2 px, α .5→0, 0,6 s) e engrossar o stroke de 3 para 5 px, voltando a 3 px até 54.4.",
+     "verified": "Nos quadros 54.0 e 54.5 a tela só tem o círculo fino e o Ponto."
+    },
+    {
+     "severity": "minor",
+     "time": "56.3–57.6 (e o mesmo trecho de cada estação até 67.6)",
+     "problem": "Entre as trocas de estação, ~1,5 s de imagem quase congelada, em plena seção de maior energia da música.",
+     "fix": "Acrescentar micro-acentos na grade: o Ponto pulsa (r 10→13→10, 0,2 s) em T+0,5, T+1,0 e T+1,5, e a engrenagem gigante dá um tick de catraca de ±1,5° (0,12 s) em T+1,0, sem mudar o passo de 51,43°.",
+     "verified": "Os quadros 56.5 e 57.5 são praticamente idênticos."
+    },
+    {
+     "severity": "minor",
+     "time": "57.8–70.0",
+     "problem": "O contador 'NN / 07' da estação ativa fica colado aos chips escurecidos da estação anterior e longe do próprio nome. Visualmente, ele se agrupa com o bloco de cima.",
+     "fix": "Descer o contador da baseline 400 para 435 dentro do bloco, mantendo o passo de 360 px.",
+     "verified": "Em 58.5 e 63.0, '02 / 07' e '04 / 07' ficam logo abaixo dos chips da estação anterior."
+    },
+    {
+     "severity": "minor",
+     "time": "62.0–64.0 e 66.0–68.0",
+     "problem": "O uppercase dos chips deforma siglas: 'EMISSÃO DE NF-E' (o correto é NF-e) e 'PROCESSOS & SOPS' (o correto é SOPs).",
+     "fix": "Envolver as siglas em <span style=\"text-transform:none\">NF-e</span> e <span style=\"text-transform:none\">SOPs</span>.",
+     "verified": "Nos quadros 63.0 e 67.0 aparecem 'EMISSÃO DE NF-E' e 'PROCESSOS & SOPS'. O site grafa 'NF-e' e 'SOPs'."
+    },
+    {
+     "severity": "minor",
+     "time": "71.0–75.6",
+     "problem": "'Um só mecanismo.' (com um c, fiel ao site) leva o mesmo gradiente da marca usado em 'mecca' na revelação e parece o nome da marca escrito errado.",
+     "fix": "Manter o texto, mas pintar 'mecanismo.' em ink #FBF8FF e passar o gradiente para 'Um só'.",
+     "verified": "No quadro 73.0 'mecanismo.' aparece no gradiente magenta→violeta."
+    },
+    {
+     "severity": "minor",
+     "time": "70.27→70.30 e 70.47→70.50",
+     "problem": "Pop no fim do fade: o número '07' e o bloco 'Tecnologia' saem com opacidade em mecca.in e somem de uma vez a partir de ~55–60%.",
+     "fix": "Em s07-sete-engrenagens.js (l.326–328), usar 'power1.in' (ou 'none') na opacidade dos números e de blocks[6] e deixar mecca.in só no y.",
+     "verified": "Medição do crítico QA, coerente com o mesmo padrão confirmado em 23.87→23.90 na S03."
+    },
+    {
+     "severity": "minor",
+     "time": "54.5–70.3",
+     "problem": "O eyebrow do rodapé 'O ALCANCE · A MÁQUINA INTEIRA' termina em y ≈1011, 3 px fora da área segura de 72 px.",
+     "fix": "Mudar a âncora do eyebrow de y 1000 para 990.",
+     "verified": "No quadro 56.5 o eyebrow está no limite inferior do grid."
+    }
+   ]
+  },
+  {
+   "scene": "s08-rotinas",
+   "fixes": [
+    {
+     "severity": "major",
+     "time": "76.5–81.6",
+     "problem": "A palavra 'rotinas' não aparece em nenhum lugar, então 'É o que os mecca rodam enquanto você dorme.' fica sem antecedente. A legenda das 4 classes está em mono de 20 px no canto inferior esquerdo, a ~600 px dos anéis que identifica, e deixa uma zona morta entre a manchete e a legenda.",
+     "fix": "(a) Trocar o eyebrow por 'AS ROTINAS · O QUE GIRA POR DENTRO'. (b) Subir a legenda para mono de 26 px, com o título 'ROTINAS' em #A78BFA acima, e posicioná-la logo abaixo da manchete (x 192, baselines ≈470/520/570/620/670). Bolinhas com r 6. Ligar cada item ao seu anel com um leader line hairline lavanda α .25, que acende junto com o item (1.5 / 2.0 / 2.5 / 3.0 local).",
+     "verified": "Nos quadros 78.0 e 80.0 a legenda é mínima e fica no rodapé, longe dos anéis, e não há 'rotinas' na tela."
+    }
+   ]
+  },
+  {
+   "scene": "s09-diferenciais",
+   "fixes": [
+    {
+     "severity": "minor",
+     "time": "84.0–88.2",
+     "problem": "Ao cair para α .45, as linhas secundárias riscadas 'não aconselha.' e 'não entrega e some.' (56 px, #A99CC4) ficam com contraste muito baixo, e são os dois diferenciais literais da marca.",
+     "fix": "Escurecer os blocos para α .6 em vez de .45 ('assume,' e 'fica,' continuam como no roteiro) e aplicar piso de α .65 nas linhas secundárias.",
+     "verified": "Em 85.75 e 87.0 'não aconselha.' mal se distingue do fundo."
+    },
+    {
+     "severity": "minor",
+     "time": "86.6–86.8 e 87.9–88.1 (rótulos em 86–91.5)",
+     "problem": "Os rótulos 'SUA EMPRESA' / 'OS MECCA' (≈16 px) trocam de lado com fade. Em ~88.0 'OS MECCA' fica atravessado pelo fio em gradiente e na mesma linha de 'SUA EMPRESA', e lê-se 'OS MECCA SUA EMPRESA'.",
+     "fix": "Em s09-diferenciais.js (l.876–886), eliminar a troca e posicionar cada rótulo radialmente para fora do fio: labB = B + normalize(B − A)·(rB + 22) e labA = A + normalize(A − B)·(rA + 26), com opacidade constante. Subir os rótulos para mono de 22 px com tracking .12em e 'OS MECCA' para #E249B0 a 100%.",
+     "verified": "No recorte de 88.0, 'ECCA' fica cortado pelo fio e alinhado a 'SUA EMPRESA'."
+    },
+    {
+     "severity": "minor",
+     "time": "84.4–85.0",
+     "problem": "A caixa-fantasma aparece como um retângulo cinza preenchido com borda tracejada e parece um placeholder quebrado. A rima com os cards da S03 não se lê.",
+     "fix": "Desenhar a caixa sem fill (ou fill #64748B α .08), com borda tracejada slate de 1,5 px e o line art do 'post' da S03 (montanha e sol) dentro, em slate α .6, com ~120×80 px.",
+     "verified": "Nos quadros 84.6 e 84.75 a caixa é um retângulo cinza chapado sem conteúdo."
+    },
+    {
+     "severity": "minor",
+     "time": "88.27–88.33",
+     "problem": "Os blocos B1/B2 saem com x −60 e opacidade em mecca.in e somem de uma vez no último quadro (pop).",
+     "fix": "Em s09-diferenciais.js (l.305–306), usar 'power1.in' na opacidade e manter mecca.in só no x.",
+     "verified": "É o mesmo padrão de curva confirmado na S03 (23.87→23.90)."
+    }
+   ]
+  },
+  {
+   "scene": "s10-assinatura",
+   "fixes": [
+    {
+     "severity": "major",
+     "time": "96.5–96.95",
+     "problem": "O pico do reverse e o impact 0.9 'lockup' em 96.5 caem num quadro com só o brilho do burst e o Ponto. O ícone se desenha até ~97.0 e o wordmark só fica completo em ~96.95, então a entrega da marca chega ~0,45 s depois do golpe sonoro.",
+     "fix": "Em s10-assinatura.js (l.244–256): arcOuter e arcInner com DrawSVG de 4.40 a 4.55 local, pupila com scale 0→1 de 4.45 a 4.55 (mecca.back) e wordmark com clip inset de 4.45 a 4.70 (0,25 s, expo.out) mais scale 1.06→1. Assim o lockup está completo por volta de 96.53.",
+     "verified": "Extraí 96.45–97.05 a 30 fps. Em 96.5 há só o burst e o Ponto. 'Mecc' aparece em ~96.63 e 'Meccanismo' completo em ~96.95."
+    },
+    {
+     "severity": "major",
+     "time": "97.0–100.0",
+     "problem": "A URL 'meccanismo.com.br', a única ação real num vídeo, está em JetBrains Mono de 26 px e é o menor texto do cartão final.",
+     "fix": "URL em Inter 600 de 40 px, ink #FBF8FF, centrada em y ≈860, entrando com o botão em 97.0 por fade + y 10→0 (sem digitação), para ficar completa por 3 s.",
+     "verified": "No quadro 99.75 a URL aparece bem menor que a linha de verbos e o botão."
+    },
+    {
+     "severity": "minor",
+     "time": "97.0–100.0",
+     "problem": "Na linha ENGRENAR · MONTAR · CALIBRAR · OPERAR · GIRAR, os verbos apagados ficam em α .35 (quase ilegíveis), e cada verbo só termina de acender 5 a 7 quadros depois do tick.",
+     "fix": "Subir o estado apagado para α .6. Começar a varredura de cada verbo em T−0,12, para o último caractere acender exatamente no tick (97.5, 98.0, 98.5, 99.0), ou acender a palavra inteira em T com um flash de glow de 0,1 s.",
+     "verified": "Achado de timing do crítico. No quadro 99.75 a linha está toda acesa, e antes disso os verbos estão apagados."
+    },
+    {
+     "severity": "minor",
+     "time": "95.4–95.6 e ≈97.0",
+     "problem": "Colisões do Ponto. Em ~95.4 o rastro em gradiente da órbita da tagline corta a descendente do 'p' de 'para'. Em ~97.03 o Ponto da órbita de convergência passa colado antes do 'M' e lê-se '·Meccanismo'.",
+     "fix": "Aumentar o ry da elipse da tagline para ~165 (a metade de baixo passa abaixo de y ≈730) ou desenhar Ponto e rastro no canvas de trás quando caírem no bbox do texto. Na convergência, reduzir o raio da órbita de 130 para 110 (x máx. ≈702) ou usar elipse rx 105 / ry 130.",
+     "verified": "Nos quadros 95.4–95.55 o traço roxo cruza 'para' e 'mais'. No quadro ~97.03 o Ponto aparece imediatamente antes do 'M' do wordmark."
+    },
+    {
+     "severity": "minor",
+     "time": "99.4–100.0 (inclui o último quadro)",
+     "problem": "Uma partícula de fundo fica sobre o ombro do último 'R' de 'OPERAR' em (≈1262,588) e suja o thumbnail final.",
+     "fix": "A partir de 6.5 local, zerar a opacidade das bg.particles cujo ponto caia nos bboxes do lockup (+8 px): ícone, wordmark, linha de verbos, CTA e URL.",
+     "verified": "No recorte ampliado do último quadro há um ponto lilás logo acima do 'R' de OPERAR."
+    }
+   ]
+  }
+ ],
+ "global_notes": "1) Máscaras de entrada (helper compartilhado do SplitText/overflow:hidden). Enquanto a máscara desacelera, as descendentes e cedilhas ficam cortadas: em 14.03, 'O mercado te dá' aparece decapitado, e o mesmo acontece em S02 6.0, S05 34.5, S08 76.5/77.0 e S09 82.5. No wrapper da máscara, acrescentar padding-bottom: .28em; margin-bottom: −.28em (e o mesmo em padding-top para acentos em caixa alta). O layout não muda.\n\n2) Push de câmera com origem no centro tira o eyebrow e as colunas da margem x 192 (S04 postWrap, S06, S08, S09). Tirar o eyebrow do wrap que recebe o push e aplicar o push com transformOrigin '192px 540px'/'192px 560px', para que a margem esquerda fique fixa.\n\n3) Flashes dos drops em 30.0 (S04) e 92.0 (S10): hoje são overlays chapados em blend normal que deixam a imagem leitosa por 5–6 quadros (confirmado em 30.05 e 92.07). Trocar por um gradiente radial centrado no impacto ((960,560) e (960,500)), com mix-blend-mode: screen, #C4B5FD α .5 no centro caindo a 0 em r ≈900 px.\n\n4) Padrão de pop no fim de fades: saídas por opacidade com mecca.in terminam com um salto de ~55% para 0 (S03 23.9, S07 70.3/70.5, S09 88.3). Regra: usar mecca.in só em transformações e 'power1.in'/'sine.in' em autoAlpha. Se existir um helper h.exit, corrigir nele.\n\n5) Carcaça de arcos do ícone (S07 71+ → S08 → S09): ela gira sem parar a −12°/s e, em 82–85 s, está ~170° girada, com o gradiente do arco invertido e o logo de cabeça para baixo (confirmado em 83.25 e 84.25). Trocar por oscilação ±18° (sine.inOut, período 4 s), ou fazer as cenas seguintes herdarem um ângulo que volte a 0° antes da S09.\n\n6) Áudio: (a) acrescentar cue(16.0, 'whoosh', 'recuo', 0.45) na S07 (70.0 global), porque o recuo da engrenagem gigante na virada DROP B → B' não tem som; (b) na S06, os pulsos visuais de 51.75 e 52.25 não têm cue: acrescentar ticks ou deixar só os pulsos de 51.5 e 52.0 (ver a correção da S06)."
+}

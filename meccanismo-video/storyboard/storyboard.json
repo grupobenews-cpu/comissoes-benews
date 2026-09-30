@@ -1,0 +1,1311 @@
+{
+ "title": "MECCANISMO: a máquina que faz a sua empresa girar (storyboard final sintetizado)",
+ "total_seconds": 100,
+ "bpm": 120,
+ "scores": [
+  {
+   "key": "storyboard-1-mecanico",
+   "narrative": 8,
+   "brand_fidelity": 7,
+   "visual_ambition": 10,
+   "feasibility": 4,
+   "rhythm": 8,
+   "notes": "Tem a metáfora física mais forte e rigorosa: módulos incompatíveis rangendo, a última faísca que sobrevive, a solda do ícone, a roda de Genebra como método, o planetário cujo anel são os arcos do ícone (a máquina vira o logo) e o encaixe do ponto no V da pupila como 'assume'. Pontos fracos: (1) faltam trechos obrigatórios, a saber a tese 'entra por dentro / monta as engrenagens que faltam / fica operando o motor', os 3 serviços por engrenagem, 'cresceu, a gente cresce junto' e 'enquanto você dorme' (as rotinas só aparecem como rótulos); (2) é praticamente inviável para vários desenvolvedores independentes: a fase das engrenagens depende de um relógio mestre global com LUT de ω integrada, fórmulas de Willis e uma roda de Genebra, os handoffs exigem ângulos idênticos entre cenas e há zoom de 55× rastreando um ponto; (3) o método em forma de roda de Genebra é bonito, mas abstrato para quem vê. O ritmo é bom, com travamentos na batida e drops em 32 e 84."
+  },
+  {
+   "key": "storyboard-2-tipografico",
+   "narrative": 9,
+   "brand_fidelity": 9,
+   "visual_ambition": 8,
+   "feasibility": 7,
+   "rhythm": 7,
+   "notes": "É o mais completo e fiel ao site: gancho, range, as duas caixas, as negações riscadas com o Ponto como 'bala', o drop no 'meccanismo', a tese 'por dentro', o método em colunas, as 7 estações com apelido, o log, 'fica,' continuando aceso, 'Cresceu,' crescendo, 'dorme.' respirando e o CTA com o ponto encaixando no ícone. O Ponto como fio condutor e o ícone sem ponto até o fim são ótimas ideias. Pontos fracos: (1) 4 a 5 chips por engrenagem (o brief pede 3), o que deixa as estações de 2 s pouco legíveis: o nome fica só 1,75 s; (2) o zoom pela contraforma do 'q' e vários handoffs presos a glifos medidos são frágeis entre desenvolvedores; (3) S08 com 18 s e S07 com 22 s deixam um meio longo; (4) o anel de métricas em textPath fica poluído. Mesmo assim, é a melhor base."
+  },
+  {
+   "key": "storyboard-3-orbital",
+   "narrative": 7,
+   "brand_fidelity": 8,
+   "visual_ambition": 8,
+   "feasibility": 5,
+   "rhythm": 7,
+   "notes": "Chegou truncado: faltam S01–S03 e o começo da S04, então as notas valem só para a parte legível. Ideias fortes para enxertar: o Ponto que se divide nos 4 mecca; exatamente 3 serviços por engrenagem, como luas; os anéis de rotina com partículas por classe e o modo noite; o sistema binário 'SUA EMPRESA' + 'OS MECCA' preso por um fio como imagem de 'pele no jogo'; a caixa-fantasma que rima com as caixas do mercado; o raio rígido das 3 órbitas em 'previsível'. Contras: câmera em world com whip-pans de 1300 px, troca de z-index por profundidade quadro a quadro, carrossel elíptico com o ícone recortado no topo e morph de linha para arco gigante; a viabilidade entre desenvolvedores fica média. As legendas das engrenagens a 0,55 de escala têm legibilidade discutível."
+  }
+ ],
+ "synthesis_rationale": "O vencedor é o Storyboard 2 (tipográfico). Ele é o único que cobre toda a narrativa obrigatória com texto fiel ao site, e seu fio condutor, o PONTO (o ponto orbital do ícone = os mecca), funciona com qualquer desenvolvedor, porque cada cena só precisa receber e entregar o Ponto numa posição declarada.\n\nMudanças sobre a base:\n(1) O Ponto ganha um arco de sentido. Na virada, ele se ENCAIXA no ícone: o logo aparece completo. Logo depois, sai do logo e mergulha no V da pupila, que é o \"a gente entra por dentro\". A partir daí o ícone aparece sem o ponto, porque os mecca estão fora operando. No CTA o ponto volta para casa.\n(2) Criei a cena S05 \"Por dentro\". A tese entra / monta / fica operando faltava no SB1 e no SB2 era só texto. Aqui o Ponto se divide nos 4 mecca (SB3), eles instalam as engrenagens que faltam na máquina do cliente e o trem começa a girar. É o primeiro giro saudável do vídeo e o payoff do \"range\".\n(3) Nas 7 engrenagens, cada uma tem exatamente 3 serviços curtos em chips que saem do Ponto. A coluna de texto é uma cremalheira acoplada à engrenagem gigante: o passo de 360 px por estação corresponde a 51,43° no raio primitivo de 401 px, o que é fisicamente coerente. A estação anterior continua legível (α .4) por mais um compasso, então cada conjunto fica ~4 s na tela e cumpre a regra de legibilidade.\n(4) Do SB1: o blueprint com a lente de interferência rosa, que mostra o erro de engenharia; as letras de \"range\" desabando; a fórmula de fase de engrenamento, usada localmente em cada cena e nunca entre cenas; o planetário cujo anel externo são os arcos do ícone (a máquina completa lembra o logo); o Ponto encaixando no V da pupila como \"assume\"; a evaporação de \"some\".\n(5) Do SB3: os anéis de rotina (4 classes, partículas, modo noite, mecca saltando), a caixa-fantasma que \"some\" no diferencial \"fica\" e o sistema binário SUA EMPRESA / OS MECCA com fio em gradiente para \"pele no jogo\" e \"cresce junto\".\n(6) Cortei o que é frágil: o zoom pelo \"q\" virou colapso da órbita nas engrenagens; não há relógio mestre global nem LUT; não há câmera em world.\n\nResultado: 10 cenas e 100 s (50 compassos). Todas as cenas começam e têm duração em múltiplos de 2 s, com tail 0. Toda transição é um match cut com o primeiro e o último quadro descritos, e textos em múltiplos de 0,5 s conferidos contra 1,5 s + 0,25 s/palavra.",
+ "global_motifs": "CAMADA DE FUNDO PERSISTENTE (motor, desenhada por baixo de todas as cenas; as cenas não pintam fundo opaco):\n- Base #160A27.\n- Três radiais suaves: glowA violeta #7C3AED no topo-esquerdo, glowB magenta #C026D3 no topo-direito, glowC violeta embaixo ao centro. Todos derivam lentamente.\n- Malha de pontos (bg.grid) só nos momentos 'planta técnica': S02 4,5–7,5; S06; S07 até 16,0.\n- Partículas ambientes (bg.particles 1).\n- Linhas de velocidade radiais (bg.warp) só nos mergulhos: S04→S05 e S09→S10.\n- Vinheta .55 e grain 1.\n- Estados de bg nos cortes (valor exato no último quadro da cena que sai = primeiro quadro da que entra):\n  - 6,0: padrão.\n  - 14,0: padrão, grid 0.\n  - 24,0: dim .5, vignette .75, glowA/B .6, particles .5.\n  - 34,0: warp 1, speed 3, dim 0, glow 1.\n  - 42,0: padrão.\n  - 54,0: grid .2.\n  - 76,0: padrão, grid 0.\n  - 82,0: padrão.\n  - 92,0: warp .5, speed 2.\n  - Fim em 100,0: padrão com glowA/B 1,1.\n\nO PONTO (fio condutor único) = o ponto orbital do ícone = 'os mecca'.\n- Desenho padrão em canvas de cada cena: núcleo #FBF8FF com r 10 e h.glowDot lavanda #A78BFA (alpha .6, raio ×3).\n- Acima de 600 px/s, rastro com as últimas 8 posições, alpha decrescente e cor de #C026D3 para #7C3AED.\n- Cada cena recebe e entrega o Ponto na posição e raio declarados no primeiro e no último quadro. Sequência de papéis:\n  1. Nasce no escuro (S01) e vira o ponto final de 'máquina.'.\n  2. Satélite de 'giram' e ponto final de 'engenharia.' (S02).\n  3. Ponto final de 'caixas.' e de 'H.', o único que sobra quando tudo some (S03).\n  4. A bala que risca 'agência' e 'consultoria' e ENCAIXA no ícone no drop (S04): logo completo, cor #7C3AED.\n  5. Sai do ícone e mergulha no V da pupila (entra por dentro).\n  6. Divide-se nos 4 mecca que montam as engrenagens (S05).\n  7. Sonda da linha do tempo (S06).\n  8. Estação de onde saem os serviços (S07).\n  9. Os 4 mecca saltando entre os anéis de rotina (S08).\n  10. Assume o motor, fica orbitando e vira o corpo 'OS MECCA' do binário (S09).\n  11. Órbita da tagline e ENCAIXE FINAL no ícone do lockup (S10).\n- Entre S04 9,5 e S10 7,0 o ícone aparece SEM o ponto (icon.dot oculto): os mecca estão fora, operando.\n\nREGRAS DE ENGRENAGEM (locais, por cena):\n- Engrenagens acopladas usam a mesma altura de dente.\n- Distância entre centros = r1 + r2 − profundidade do dente.\n- Velocidades ω2 = −ω1·N1/N2.\n- Fase inicial para dente cair em vão: θB = ψ + 180° + 180°/NB − (NA/NB)·(θA − ψ), com ψ = direção A→B.\n- Nada de fase global entre cenas: cada cena parte do ângulo que ela mesma declara.\n- Engrenagens 'doentes' têm stroke slate #64748B α .6. As 'saudáveis' têm stroke lavanda #A78BFA ou gradiente #C026D3→#7C3AED.\n\nÓRBITAS:\n- Elipses finas, hairline de 1–1,5 px, lavanda #A78BFA com α .2–.35.\n- Inclinação padrão −14°. Órbitas que abraçam texto usam −6°; a linha do tempo, 0°.\n- Riders: pontos r 4–6 em #C026D3 / #A78BFA / #C4B5FD / #E249B0.\n- A metade de trás passa atrás do objeto (canvas de trás) e com α ×.5.\n\nTIPOGRAFIA E ESTILO COMUNS:\n- Margem de texto padrão x 192. Eyebrow h.eyebrow (JetBrains Mono 500, 22 px, CAIXA ALTA, tracking .22em, #A78BFA, com traço automático) em (192,120), âncora 'cl', exceto quando a cena disser outra posição. Troca de eyebrow: apaga de trás para frente (0,02 s/char) e digita o novo (0,025 s/char).\n- Títulos em Space Grotesk 700 (classe t-display, tracking −0,035em) na cor ink #FBF8FF.\n- Destaque <em> com gradiente da marca (linear 90deg #C026D3→#7C3AED), só em palavras positivas ou de marca.\n- Palavras negativas em muted #A99CC4. Apoio em Inter 500, #C4B5FD. Números em Bricolage Grotesque 800. Chips com h.chip (mono 18–20 px, borda lavanda).\n- Riscos com h.strike em gradiente magenta→violeta, só em 'agência', 'consultoria', 'aconselha' e 'entrega e some'.\n- Glow (drop-shadow/glowDot) só em elementos pequenos: Ponto, riders, botão, núcleo do ícone. Áreas grandes usam os radiais do fundo.\n- Entradas: máscara (yPercent 110→0) com mecca.out, 0,5–0,7 s. Saídas: mecca.in, 0,25–0,4 s. Staggers de 0,02–0,06.\n- Nenhum texto fica parado sem micro-movimento: push lento de 1→1,02–1,03, respiração de glow ou giro de engrenagem.\n- No máximo ~10 palavras em destaque por vez: linhas anteriores caem para α .4–.55.\n- Proibido chamar a Meccanismo de agência ou consultoria. Essas palavras só aparecem como rótulo das caixas do mercado e riscadas.\n- Sem números ilustrativos e sem nomes de clientes. Só números estruturais: 01–04, 0k / 07, 'Quatro', 'Sete', 4 classes de rotina.\n\nCONTINUIDADE: tail 0 em todas as cenas. Todo corte é match cut: o último quadro da cena N é idêntico ao primeiro da cena N+1, conforme o 'PRIMEIRO QUADRO' do layout de cada cena e o 'ÚLTIMO QUADRO' do transition_out.",
+ "scenes": [
+  {
+   "id": "s01-toda-empresa",
+   "name": "Toda empresa é uma máquina",
+   "start": 0,
+   "duration": 6,
+   "purpose": "Gancho frio: apresentar o mundo escuro, o Ponto (os mecca) e a premissa da marca 'Toda empresa é uma máquina.'.",
+   "text": [
+    {
+     "content": "O PROBLEMA",
+     "t_in": 0.5,
+     "t_out": 6,
+     "style": "h.eyebrow JetBrains Mono 500 22 px #A78BFA, tracking .22em, com traço, em (192,120) âncora cl",
+     "animation": "Digitação a 0,025 s/char a partir de 0,5. Continua visível até o fim e segue idêntica na S02."
+    },
+    {
+     "content": "Toda empresa é uma",
+     "t_in": 1,
+     "t_out": 5.5,
+     "style": "Space Grotesk 700, 88 px, #FBF8FF, x 192, baseline 400 (linha ≈ 809 px)",
+     "animation": "Palavras por máscara (yPercent 110→0, 0,5 s, mecca.out): 'Toda empresa' em 1,0 e 'é uma' em 1,5. Saída em 5,5–5,8: chars yPercent 0→−110, stagger .015, mecca.in."
+    },
+    {
+     "content": "máquina.",
+     "t_in": 2,
+     "t_out": 5.5,
+     "style": "Space Grotesk 700, 330 px, <em> gradiente #C026D3→#7C3AED, x 180, baseline 740 (≈1370 px, até x≈1550). O glifo '.' fica com color transparent: o Ponto ocupa o lugar dele.",
+     "animation": "Chars yPercent 105→0, stagger .025, 0,55 s expo.out; o wrapper faz scaleX 1,06→1 no mesmo intervalo. Saída igual à linha de cima (5,5–5,8)."
+    }
+   ],
+   "layout": "PRIMEIRO QUADRO: tela só com o fundo em #120720 (glowA/B/C = 0, particles 0), sem texto; Ponto com escala 0 em (960,540).\n\nComposição:\n- Bloco tipográfico alinhado à esquerda, com contraste de escala 88 × 330 px.\n- Grid editorial: 13 linhas verticais hairline rgba(255,255,255,.05) em x = 192 + 128·k (k = 0…12), de y 72 a 1008, mais duas horizontais em y 72 e 1008.\n- Órbita que abraça 'máquina.': centro (930,640), rx 820, ry 170, rot −6°, lavanda α .3, 1,5 px. Usa dois canvases: o de trás fica abaixo do texto e o da frente acima.\n- Posição do '.' de 'máquina.': medir em build() com getBoundingClientRect do último char após o split. Fallback ≈ (1520,725).",
+   "visuals": "Fundo escuro que acende devagar.\n\nO Ponto:\n- núcleo #FBF8FF com glow lavanda;\n- pulsa a cada batida;\n- vira o ponto final da frase.\n\nGrid editorial fino. A órbita elíptica em volta de 'máquina.' tem dois riders: magenta #C026D3 com r 5 e lavanda #A78BFA com r 4. Eles são as peças da máquina, que na S02 viram engrenagens.",
+   "choreography": "0,0\n- bg.glowA/B/C 0→1 (0,0–3,0, sine.inOut). bg.particles 0→1 (0,0–4,0).\n- O Ponto nasce em (960,540) com r 8 (scale 0→1, 0,3 s, mecca.back).\n- Pulso a cada batida 0,5 / 1,0 / 1,5 / 2,0: scale 1→1,5→1 em 0,25 s.\n\n0,5–1,5: grid editorial desenha com DrawSVG de cima para baixo (stagger .03, 0,8 s, mecca.inOut). As horizontais crescem do centro.\n\n1,0 / 1,5: entram as palavras de H2.\n\n2,0: entra 'máquina.'.\n\n2,5–3,0: o Ponto voa em arco até a posição do '.' (MotionPath, curviness 1,5, mecca.inOut).\n\n3,0: pouso.\n- Squash scaleX 1,5 / scaleY 0,6 → 1 (elastic.out(1,.5), 0,4 s).\n- r passa a 22.\n\n3,0–4,5: a órbita se desenha (from 0→1, mecca.inOut).\n\n4,0: surgem os dois riders (período 4 s, fases 0° e 180°, rider magenta começando em 0°).\n\n1,0–5,5: push lento no grupo de texto (scale 1→1,03, linear).\n\n5,0: grid editorial → α .03.",
+   "transition_out": "Colapso para dentro do mecanismo. Tail 0.\n\n5,5–6,0:\n- O texto sai por máscara para cima.\n- A órbita encolhe (rx 820→0, ry 170→0) em direção a (1600,390), power3.in.\n- O rider magenta voa até (1600,300) e o lavanda até (1600,480), ambos com r 5→14 (power3.inOut).\n- O Ponto sai do '.' e vai para (1000,540), com r 22→10.\n- O grid editorial vai a α 0.\n\nÚLTIMO QUADRO:\n- Fundo padrão (glow 1, particles 1, grid 0, warp 0).\n- Eyebrow 'O PROBLEMA' em (192,120).\n- Disco #C026D3 com r 14 em (1600,300) e disco #A78BFA com r 14 em (1600,480).\n- Ponto em (1000,540) com r 10.\n- Nenhum outro texto.",
+   "sound_cues": [
+    {
+     "t": 0,
+     "kind": "tick",
+     "note": "primeira batida no escuro, ganho .6"
+    },
+    {
+     "t": 1,
+     "kind": "click",
+     "note": ".3"
+    },
+    {
+     "t": 1.5,
+     "kind": "click",
+     "note": ".3"
+    },
+    {
+     "t": 2,
+     "kind": "impact",
+     "note": "'máquina.' .6"
+    },
+    {
+     "t": 3,
+     "kind": "click",
+     "note": "Ponto pousa como ponto final .8"
+    },
+    {
+     "t": 4,
+     "kind": "chime",
+     "note": "riders .25"
+    },
+    {
+     "t": 5.75,
+     "kind": "whoosh",
+     "note": "colapso .7"
+    }
+   ]
+  },
+  {
+   "id": "s02-range",
+   "name": "Algumas giram; a maioria range",
+   "start": 6,
+   "duration": 8,
+   "purpose": "O problema como fenômeno físico: duas engrenagens emperram e rangem. 'Não falta esforço — falta engenharia.' A planta técnica mostra o erro (interferência entre os dentes).",
+   "text": [
+    {
+     "content": "O PROBLEMA",
+     "t_in": 0,
+     "t_out": 8,
+     "style": "h.eyebrow 22 px #A78BFA em (192,120) âncora cl",
+     "animation": "Já visível no quadro 0 (continuidade da S01). Continua na S03."
+    },
+    {
+     "content": "Algumas giram; / a maioria range.",
+     "t_in": 0,
+     "t_out": 3.5,
+     "style": "Space Grotesk 700, 150 px, #FBF8FF. Linha 1 em x 192, baseline 430 ('giram' em #C4B5FD). Linha 2 em x 192, baseline 610 ('range' em pink #E249B0).",
+     "animation": "Linha 1 em 0,0 com palavras por máscara (0,5 s, mecca.out). Linha 2 em 0,5 com entrada rápida (0,25 s, expo.out). Os chars de 'range' tremem ±6 px em y e ±4° em cada rangido. Saída em 3,5–3,8: os chars DESABAM (y +80, rotação ±20° via h.rng(2), power2.in, stagger .01)."
+    },
+    {
+     "content": "Não falta esforço —",
+     "t_in": 4,
+     "t_out": 7.5,
+     "style": "Space Grotesk 700, 96 px, #FBF8FF, x 192, baseline 380",
+     "animation": "Máscara, 0,4 s, mecca.out. Saída em 7,5–7,8: yPercent 0→−110, mecca.in."
+    },
+    {
+     "content": "falta engenharia.",
+     "t_in": 4.5,
+     "t_out": 7.5,
+     "style": "'falta' em Space Grotesk 700, 96 px, ink, x 192, baseline 500. 'engenharia.' em Space Grotesk 700, 220 px, <em> gradiente, x 192, baseline 760 (≈1182 px, até x≈1374). O '.' é transparente: o Ponto ocupa o lugar.",
+     "animation": "'falta' por máscara. 'engenharia.' com chars em stagger .02, 0,35 s, expo.out. Shimmer do gradiente (background-position) de 6,0 a 7,5. Saída em 7,5–7,8, mecca.in."
+    }
+   ],
+   "layout": "PRIMEIRO QUADRO: idêntico ao último da S01 (discos em (1600,300) e (1600,480), Ponto em (1000,540) com r 10, eyebrow).\n\nEngrenagens (h.gear):\n- G1: centro (1600,300), r 100, 12 dentes, depth .2, hole .22.\n- G2: centro (1600,480), mesmas medidas.\n- Distância entre centros de 180 (= 100 + 100 − 20): acopladas.\n- Stroke #A78BFA 2,5 px e fill #1A0B2E α .85.\n- Ângulo inicial: G1 0°, G2 15° (meio dente, ou seja, engrenadas).\n- Ponto de engrenamento em (1600,390).\n\nO texto ocupa x 192–1374. As engrenagens ficam em x 1500–1700 e y 200–580, sem sobreposição.",
+   "visuals": "Duas engrenagens em line art, que depois emperram. Faíscas rosa #E249B0 saem do ponto de contato.\n\nPlanta técnica em hairline lavanda:\n- círculos primitivos tracejados;\n- linha entre centros com ticks;\n- miras;\n- lente de interferência rosa, que mostra os dentes invadindo o vizinho.\n\nO Ponto orbita 'giram' e depois vira o ponto final de 'engenharia.'.",
+   "choreography": "0,0–0,5\n- Os discos viram G1/G2 (scale .14→1, mecca.back, 0,5 s; G2 começa +0,1 s depois).\n- Giro saudável: G1 +120°/s, G2 −120°/s.\n- O Ponto entra numa órbita em volta de 'giram': elipse no centro do bbox da palavra, rx = largura/2 + 48, ry 78, rot −6°, hairline lavanda α .3. Período de 2 s.\n\n0,5: 'range'. G2 fica 7° fora de fase e as duas desaceleram até 0 em 0,35 s (power3.out).\n\nRangidos em 1,0 / 1,5 / 2,0 / 2,5 / 3,0:\n- G1 faz keyframes [+5°, −3°, +2°, 0] em 0,14 s; G2 faz o mesmo com o sinal oposto.\n- 5 faíscas #E249B0 (r 3) saem de (1600,390): raio de 20 a 46 px, fade de 0,3 s, ângulos via h.rng(índice da batida).\n\n3,5–3,8: bloco A desaba e a órbita de 'giram' colapsa. O Ponto vai para (1100,640).\n\n4,0: tranco forte de ±9°, com 10 faíscas e h.shake(root, amp 3, 0,25 s).\n\n4,5: 'falta engenharia.'. O Ponto pousa como o '.' de 'engenharia.', com r 16.\n\n4,5–6,0: PLANTA TÉCNICA\n- bg.grid 0→.25.\n- Círculos primitivos tracejados r 90, 1 px, rgba(167,139,250,.5), dash 4/6. DrawSVG de 4,5 a 5,0.\n- Linha entre os centros com 5 ticks e miras de ±18 px nos centros (5,0).\n- Lente de interferência: interseção dos círculos de ponta, preenchida com #E249B0 α .25 (5,0–5,5).\n\n6,0–7,5\n- A lente pulsa (α .25↔.45) a cada batida.\n- As engrenagens continuam travadas, só com vibração de ±1,5°.\n- Push lento do texto (1→1,02).\n\n7,5–8,0: MORPH\n- A rotação vai para o múltiplo de 30° mais próximo.\n- MorphSVG de 0,5 s (mecca.inOut):\n  - G1 vira um retângulo arredondado de x 192 a 946, y 250 a 850, raio 28;\n  - G2 vira um retângulo de x 972 a 1726, y 250 a 850;\n  - ambos com stroke rgba(167,139,250,.3), 1,5 px, dash 8/10, sem fill.\n- A planta técnica some e bg.grid volta a 0.\n- O Ponto sai do '.' e voa para (1625,690).",
+   "transition_out": "Morph: as duas engrenagens emperradas viram as duas caixas do mercado. Tail 0.\n\nÚLTIMO QUADRO:\n- Dois retângulos tracejados (x 192–946 e 972–1726, y 250–850, r 28, stroke rgba(167,139,250,.3), dash 8/10).\n- Eyebrow 'O PROBLEMA'.\n- Ponto em (1625,690) com r 16.\n- bg padrão, grid 0.\n- Nenhum outro texto.",
+   "sound_cues": [
+    {
+     "t": 0,
+     "kind": "whoosh",
+     "note": ".3"
+    },
+    {
+     "t": 0.5,
+     "kind": "glitch",
+     "note": "trava .4"
+    },
+    {
+     "t": 1,
+     "kind": "glitch",
+     "note": "rangido .25"
+    },
+    {
+     "t": 1.5,
+     "kind": "click",
+     "note": ".35"
+    },
+    {
+     "t": 2,
+     "kind": "glitch",
+     "note": ".25"
+    },
+    {
+     "t": 2.5,
+     "kind": "click",
+     "note": ".35"
+    },
+    {
+     "t": 3,
+     "kind": "glitch",
+     "note": ".25"
+    },
+    {
+     "t": 3.5,
+     "kind": "whoosh",
+     "note": "letras desabam .3"
+    },
+    {
+     "t": 4,
+     "kind": "impact",
+     "note": "esforço .5 (+glitch .5)"
+    },
+    {
+     "t": 4.5,
+     "kind": "click",
+     "note": "Ponto pousa .6"
+    },
+    {
+     "t": 5,
+     "kind": "tick",
+     "note": "caneta técnica .4"
+    },
+    {
+     "t": 5.5,
+     "kind": "tick",
+     "note": ".3"
+    },
+    {
+     "t": 7.75,
+     "kind": "whoosh",
+     "note": "morph .5"
+    }
+   ]
+  },
+  {
+   "id": "s03-duas-caixas",
+   "name": "O mercado te dá duas caixas",
+   "start": 14,
+   "duration": 10,
+   "purpose": "Mostrar as duas soluções do mercado. Caixa 1 (agência) executa a peça e some; caixa 2 (consultoria) entrega o slide e some. As duas somem na hora H e a energia cai: só sobra o Ponto.",
+   "text": [
+    {
+     "content": "O PROBLEMA",
+     "t_in": 0,
+     "t_out": 9.5,
+     "style": "h.eyebrow 22 px em (192,120)",
+     "animation": "Já visível no quadro 0. Saída junto com T2 (9,5–9,8)."
+    },
+    {
+     "content": "O mercado te dá / duas caixas.",
+     "t_in": 0,
+     "t_out": 5.5,
+     "style": "'O mercado te dá' em Space Grotesk 700, 96 px, ink, x 192, baseline 420. 'duas caixas.' em Space Grotesk 700, 260 px, ink ('duas' em #C4B5FD), x 192, baseline 700 (≈1455 px). Depois de 1,0 as duas linhas viram um header de uma linha: Space Grotesk 700, 44 px, centrado em x 960, baseline 196.",
+     "animation": "Slam por máscara (0,5 s, mecca.out; linhas com stagger .12). FLIP em 1,0–1,5 (mecca.inOut): as linhas grandes encolhem e sobem para o header, com crossfade. O header sai em 5,5–5,8."
+    },
+    {
+     "content": "CAIXA 1 — AGÊNCIA",
+     "t_in": 1,
+     "t_out": 4.5,
+     "style": "JetBrains Mono 500, 22 px, tracking .2em, #A78BFA, tl em (240,300)",
+     "animation": "Digitação (0,3 s). Sai quando a caixa fecha."
+    },
+    {
+     "content": "Executa a peça / e some.",
+     "t_in": 1,
+     "t_out": 4.5,
+     "style": "Space Grotesk 700, 84 px, ink, x 240, baselines 690 / 790. 'e some.' em muted #A99CC4.",
+     "animation": "Máscara por linha, stagger .12, 0,5 s. Em 3,0, 'e some.' pisca em steps (1→.3→1→.3→1, 0,3 s). Em 4,5, 'some.' EVAPORA (y −24, blur 0→6 px, α→0, stagger .03 por char, 0,3 s) e o resto sai por máscara."
+    },
+    {
+     "content": "CAIXA 2 — CONSULTORIA",
+     "t_in": 1.5,
+     "t_out": 5,
+     "style": "JetBrains Mono 500, 22 px, #A78BFA, tl em (1020,300)",
+     "animation": "Digitação (0,3 s)."
+    },
+    {
+     "content": "Entrega o slide / e some.",
+     "t_in": 1.5,
+     "t_out": 5,
+     "style": "Space Grotesk 700, 84 px, ink, x 1020, baselines 690 / 790. 'e some.' em #A99CC4.",
+     "animation": "Igual à caixa 1. Pisca em 3,5. 'some.' evapora em 5,0."
+    },
+    {
+     "content": "As duas somem / na hora H.",
+     "t_in": 6,
+     "t_out": 9.5,
+     "style": "Space Grotesk 700, 180 px, ink, x 192. Linha 1 com baseline 500 (≈1257 px), com 'somem' em #A99CC4. Linha 2 com baseline 700 (≈809 px). O '.' de 'H.' é transparente: é o Ponto.",
+     "animation": "SLAM: yPercent 100→0, 0,35 s, expo.out, linhas com stagger .1. h.shake(root, amp 6). Em 6,0–9,5, push lento (1→1,03) e os chars de 'somem' tremulam (α .85–1). Em 9,5–9,85, as letras de 'somem' somem uma a uma (s-o-m-e-m, stagger .07, scaleY→0 e fade de 0,15 s). O resto sai em 9,6–9,9 (fade com y −10)."
+    }
+   ],
+   "layout": "PRIMEIRO QUADRO: igual ao último da S02 (dois retângulos tracejados, eyebrow, Ponto em (1625,690) com r 16).\n\nSplit editorial em dois cards:\n- Card 1: x 192–946, y 250–850, raio 28.\n- Card 2: x 972–1726, y 250–850, raio 28.\n\nConteúdo dos cards:\n- Labels mono no topo, em y 300.\n- Ilustrações em line art:\n  - 'peça' (um post): tl (240,372), 260×188, raio 14. Tem área de imagem de 228×112 com montanha (polyline) e sol (r 12), mais duas barras de texto hairline em y 524 e 544 (larguras 180 e 120).\n  - 'slide' (16:9): tl (1020,372), 320×180. Tem barra de título hairline, 3 barras de largura 36 com alturas 48 / 82 / 120 e base em y 530, e uma linha de tendência hairline.\n- Títulos com baselines 690 / 790.\n\nO header 'O mercado te dá duas caixas.' fica centrado com baseline 196, acima dos cards.",
+   "visuals": "Os cards solidificam:\n- fill #241038 α .9;\n- borda lavanda sólida rgba(167,139,250,.5);\n- line art lavanda de 2 px.\n\nAs ilustrações flutuam. Ao fechar, as caixas colapsam, os objetos ficam sozinhos flutuando e depois se fatiam em tiras. No fim a energia cai e só sobra o Ponto no escuro.",
+   "choreography": "0,0: slam de T1. O Ponto é o '.' de 'caixas.' (≈1625,690).\n\n1,0–1,5: FLIP de T1 para o header. O Ponto vira o '.' do header, com r 4.\n\n1,0 — caixa 1 solidifica:\n- fill α 0→.9 (0,3 s);\n- dash 8/10 → sólido;\n- label digitado;\n- ilustração com DrawSVG 0→100% (0,5 s);\n- títulos por máscara.\n\n1,5: caixa 2, com a mesma coreografia.\n\n1,5–4,5: as ilustrações flutuam (±4 px, seno de 2 s) e as bordas fazem shimmer.\n\n4,5 — caixa 1 fecha:\n- o retângulo faz scaleY 1→.01 em torno de y 550 (0,3 s) e depois scaleX →0 (0,15 s), mecca.in;\n- os textos saem;\n- a peça fica sozinha e sobe 16 px.\n\n5,0: caixa 2 fecha e o slide fica sozinho.\n\n5,5–5,8\n- Peça e slide são fatiados em 5 tiras horizontais (clip-path): deslocam ±24 px em 0,12 s e somem (scale 0, 0,2 s).\n- O header sai.\n- O Ponto se solta do header e vai para (990,690) até 6,0.\n\n6,0: slam de T2 com shake. O Ponto é o '.' de 'H.', com r 14.\n\n9,0–10,0: a energia cai.\n- bg.dim 0→.5\n- vignette .55→.75\n- glowA/B 1→.6\n- particles 1→.5\n\n9,5–9,9: 'somem' some letra por letra e o resto de T2 sai. Só o Ponto fica aceso, pulsando uma vez em 9,5.",
+   "transition_out": "Blackout motivado: tudo some e o Ponto final é o único sobrevivente. Tail 0.\n\nÚLTIMO QUADRO:\n- Sem texto.\n- Só o Ponto em (990,690), com r 14.\n- bg: dim .5, vignette .75, glowA/B .6, particles .5, grid 0.",
+   "sound_cues": [
+    {
+     "t": 0,
+     "kind": "impact",
+     "note": "slam T1 .7"
+    },
+    {
+     "t": 1,
+     "kind": "click",
+     "note": "caixa 1 .5 (+whoosh .35)"
+    },
+    {
+     "t": 1.5,
+     "kind": "click",
+     "note": "caixa 2 .5"
+    },
+    {
+     "t": 3,
+     "kind": "glitch",
+     "note": "pisca .15"
+    },
+    {
+     "t": 3.5,
+     "kind": "glitch",
+     "note": ".15"
+    },
+    {
+     "t": 4.5,
+     "kind": "click",
+     "note": "caixa 1 fecha .7"
+    },
+    {
+     "t": 4.5,
+     "kind": "sub-drop",
+     "note": ".35"
+    },
+    {
+     "t": 5,
+     "kind": "click",
+     "note": "caixa 2 fecha .7"
+    },
+    {
+     "t": 5.5,
+     "kind": "glitch",
+     "note": "fatiamento .7"
+    },
+    {
+     "t": 6,
+     "kind": "impact",
+     "note": "'As duas somem na hora H.' 1.0"
+    },
+    {
+     "t": 9,
+     "kind": "sub-drop",
+     "note": "energia cai .5"
+    },
+    {
+     "t": 9.5,
+     "kind": "glitch",
+     "note": "'somem' some .3"
+    }
+   ]
+  },
+  {
+   "id": "s04-virada",
+   "name": "Não somos agência. Somos o meccanismo.",
+   "start": 24,
+   "duration": 10,
+   "purpose": "A virada. Negar as duas caixas com riscos, fazer silêncio e revelar a marca no DROP (global 30,0). O Ponto encaixa no ícone: logo completo e categoria ENGENHARIA DE CRESCIMENTO. No fim, o Ponto sai do logo e mergulha no V da pupila, que é o 'a gente entra por dentro'.",
+   "text": [
+    {
+     "content": "A VIRADA",
+     "t_in": 0,
+     "t_out": 9.5,
+     "style": "h.eyebrow 22 px #A78BFA em (192,120)",
+     "animation": "Digitado em 0,0. Em 6,0 ganha o texto adicional ' — MECCANISMO' (digitação), ficando 'A VIRADA — MECCANISMO'. Saída em 9,5."
+    },
+    {
+     "content": "Não somos agência.",
+     "t_in": 0,
+     "t_out": 4.5,
+     "style": "'Não somos' em Space Grotesk 500, 64 px, #C4B5FD, x 192, baseline 232. 'agência.' em Space Grotesk 700, 260 px, ink, x 192, baseline 470 (≈1000 px).",
+     "animation": "Slam por máscara (0,35 s, expo.out; 'Não somos' entra 0,05 s antes). Em 1,0, h.strike sobre 'agência.' com espessura 16, gradiente #C026D3→#7C3AED, y ≈ 379, 0,25 s, expo.out. 'agência.' vai para #A99CC4 α .45 (0,3 s). Em 4,5, 'agência.' e o risco caem (chars com rotação ±40° via h.rng, y +700, stagger .015, 0,6 s power2.in). Em 4,75, 'Não' cai da mesma forma (0,4 s)."
+    },
+    {
+     "content": "Não somos consultoria.",
+     "t_in": 1.5,
+     "t_out": 4.5,
+     "style": "'Não somos' em 64 px #C4B5FD, x 192, baseline 590. 'consultoria.' em Space Grotesk 700, 260 px, ink, x 192, baseline 830 (≈1400 px, até x≈1592).",
+     "animation": "Slam em 1,5. Risco em 2,5 com y ≈ 739. Queda em 4,5 e 'Não' em 4,75, como na linha anterior."
+    },
+    {
+     "content": "Somos o",
+     "t_in": 5,
+     "t_out": 9.5,
+     "style": "Space Grotesk 500, 88 px, #C4B5FD, x 192, baseline 400",
+     "animation": "5,0–5,4: os dois 'somos' que sobraram, em (≈320,232) e (≈320,590), convergem para x 192, baseline 400, crescendo de 64 para 88 px (mecca.inOut). Fazem crossfade num único 'Somos' ('s'→'S'). Em 5,5 aparece ' o' (fade com y 8→0, 0,2 s). Saída em 9,5–9,85: chars yPercent −120, stagger .012, mecca.in."
+    },
+    {
+     "content": "meccanismo.",
+     "t_in": 6,
+     "t_out": 9.5,
+     "style": "Space Grotesk 700, 180 px, x 192, baseline 620 (≈1073 px, até x≈1265). 'mecca' em <em> gradiente e 'nismo.' em #F5F3FF.",
+     "animation": "DROP: scale 1,35→1 e blur 16→0 em 0,3 s, expo.out (transformOrigin à esquerda). Shimmer do gradiente em 8,0–9,5. Saída junto com 'Somos o'."
+    },
+    {
+     "content": "ENGENHARIA DE CRESCIMENTO",
+     "t_in": 7,
+     "t_out": 9.5,
+     "style": "JetBrains Mono 500, 28 px, tracking .32em, #A78BFA, x 192, baseline 740. Hairline de 1 px lavanda α .5 embaixo, em y 760.",
+     "animation": "Chars digitados (stagger .02). Hairline desenha em 7,5–8,0 (DrawSVG). Saída em 9,5."
+    }
+   ],
+   "layout": "PRIMEIRO QUADRO: igual ao último da S03 (sem texto, Ponto em (990,690) com r 14, bg dim .5, vignette .75, glow .6).\n\nNegações: coluna única em x 192, com baselines 232 / 470 / 590 / 830.\n\nPós-drop:\n- Texto à esquerda, de x 192 a 1265.\n- Ícone oficial (h.icon, 400 px, SEM ponto: icon.dot oculto) centrado em (1520,540), com bbox x 1320–1720 e y 340–740.\n- Encaixe do ponto do ícone: (208,160) no viewBox, que na tela fica em (1685,621) com r 17,5.\n- V da pupila: (114,70) no viewBox, que na tela fica em (1520,463).",
+   "visuals": "Riscos em gradiente com o Ponto correndo na ponta, como uma bala com rastro. Implosão seguida de silêncio.\n\nNo drop:\n- flash lavanda;\n- onda de choque;\n- bloom dos radiais;\n- o ícone se desenha;\n- o Ponto voa até o encaixe e o logo fica completo (#7C3AED).\n\nDepois os arcos giram uma volta ('a máquina engrena'), duas órbitas finas contornam o ícone, e vem o mergulho pelo V da pupila.",
+   "choreography": "0,0\n- Slam da linha 1.\n- O Ponto vai de (990,690) até o início do risco, (180,379), entre 0,25 e 0,75 (mecca.inOut).\n\n1,0: RISCO 1. O Ponto corre na ponta do risco com rastro e para em (1192,379).\n\n1,5: slam da linha 2. O Ponto desce em arco até (180,739) entre 1,9 e 2,4.\n\n2,5: RISCO 2. O Ponto para em (1592,739).\n\n2,5–4,5: TENSÃO\n- Wrapper de texto: scale 1→1,04 (power2.in).\n- h.shake nas palavras riscadas (amp 3, n 16, 2,0 s).\n- Os riscos pulsam de brilho a cada batida.\n- bg.warp 0→.35 (3,0–4,5).\n\n4,5 / 4,75: quedas.\n\n5,0: STOP (a música corta)\n- bg.warp →0 (0,2 s).\n- Fusão dos dois 'somos'.\n- O Ponto vai para (960,560) e 'carrega': r 14→6, glow ×2,5 (power4.in, 5,0–6,0).\n\n5,5: ' o'. Silêncio.\n\n6,0: DROP (global 30,0)\n- 'meccanismo.' entra.\n- h.flash(#C4B5FD, pico .35, 0,35 s).\n- h.shake(root, amp 12, n 6, 0,45 s).\n- Onda de choque no canvas a partir de (960,560): r 0→1300, stroke lavanda 3 px, α .8→0, 0,9 s, power2.out.\n- bg: dim .5→0 (0,2 s), vignette →.55, glowA/B .6→1,8 (0,1 s) →1,2 (até 7,5) →1,0 (até 9,0), particles →1.\n\n6,0–6,8: ícone\n- arcOuter com DrawSVG 0→100% (mecca.out); arcInner de 6,1 a 6,8.\n- Pupila escala 0→1 (6,2–6,8, mecca.back).\n\n6,5–7,0: o Ponto sai de (960,560) em arco (curviness 1,2) até (1685,621), com r 6→17,5.\n\n7,0: ENCAIXE\n- O Ponto muda de cor: núcleo #FBF8FF → #7C3AED.\n- Anel de choque r 17→80, α .8→0, 0,4 s.\n- Pulso do ícone: scale 1→1,04→1.\n- O logo fica completo.\n\n8,0–9,5\n- O grupo arcOuter + arcInner + Ponto gira +360° em torno do centro do ícone (mecca.inOut). A pupila fica fixa.\n- Duas órbitas finas se desenham em volta do ícone (8,0–8,8): rx 320 e 280, ry .3·rx, rot −14°, α .22, cada uma com um rider (#C026D3 e #A78BFA, períodos de 2 s e 4 s).\n\n9,5–10,0: MERGULHO\n- O texto sai.\n- O Ponto se solta do encaixe e volta a núcleo #FBF8FF com r 6, indo até o V (1520,463) entre 9,5 e 9,75 (power3.in).\n- Zoom do wrapper do ícone e das órbitas: scale 1→40 com transformOrigin (1520,463) px, expo.in, 9,5–10,0. As paredes violeta da pupila passam pela câmera.\n- bg.warp 0→1 e speed 1→3.",
+   "transition_out": "Mergulho pelo V da pupila (o Ponto entra por dentro). Tail 0.\n\nÚLTIMO QUADRO:\n- O ícone já passou da câmera: nada dele fica visível, só algum resto de violeta nos cantos, abaixo de α .1.\n- Sem texto.\n- Ponto em (1520,463), núcleo #FBF8FF, r 6.\n- bg: warp 1, speed 3, dim 0, glow 1, vignette .55.",
+   "sound_cues": [
+    {
+     "t": 0,
+     "kind": "impact",
+     "note": "slam .8"
+    },
+    {
+     "t": 1,
+     "kind": "whoosh",
+     "note": "risco 1 .5 (+click .9)"
+    },
+    {
+     "t": 1.5,
+     "kind": "impact",
+     "note": "slam 2 .8"
+    },
+    {
+     "t": 2.5,
+     "kind": "whoosh",
+     "note": "risco 2 .5 (+click .9)"
+    },
+    {
+     "t": 4.5,
+     "kind": "glitch",
+     "note": "palavras caem .5"
+    },
+    {
+     "t": 4.75,
+     "kind": "click",
+     "note": "'Não' cai .4"
+    },
+    {
+     "t": 5,
+     "kind": "stop",
+     "note": "silêncio"
+    },
+    {
+     "t": 5.5,
+     "kind": "tick",
+     "note": "' o' .8"
+    },
+    {
+     "t": 6,
+     "kind": "impact",
+     "note": "DROP 1.0"
+    },
+    {
+     "t": 6,
+     "kind": "sub-drop",
+     "note": "DROP 1.0"
+    },
+    {
+     "t": 7,
+     "kind": "click",
+     "note": "ponto encaixa no logo .9"
+    },
+    {
+     "t": 7,
+     "kind": "chime",
+     "note": ".6"
+    },
+    {
+     "t": 8,
+     "kind": "whoosh",
+     "note": "arcos giram .4"
+    },
+    {
+     "t": 9.75,
+     "kind": "whoosh",
+     "note": "mergulho 1.0"
+    },
+    {
+     "t": 10,
+     "kind": "reverse",
+     "note": "pico no corte .7"
+    }
+   ]
+  },
+  {
+   "id": "s05-por-dentro",
+   "name": "A gente entra por dentro",
+   "start": 34,
+   "duration": 8,
+   "purpose": "O que a Meccanismo faz. Entra por dentro do negócio, monta as engrenagens que faltam e fica operando o motor. O Ponto se divide nos 4 mecca (time embarcado), que instalam as peças que faltam. O trem de engrenagens gira saudável pela primeira vez.",
+   "text": [
+    {
+     "content": "ENGENHARIA DE CRESCIMENTO",
+     "t_in": 0.5,
+     "t_out": 7.5,
+     "style": "h.eyebrow 22 px #A78BFA em (192,120)",
+     "animation": "Digitação. Saída em 7,5."
+    },
+    {
+     "content": "A gente entra / por dentro do seu negócio,",
+     "t_in": 0.5,
+     "t_out": 7.5,
+     "style": "Space Grotesk 700, 60 px, ink, x 192, baselines 290 / 360, largura máx. 880 ('por dentro' em <em> gradiente)",
+     "animation": "Máscara por linha (0,6 s, mecca.out, stagger .08). Em 2,0 cai para α .5 (0,3 s). Saída em 7,5–7,8: x −40, fade, mecca.in."
+    },
+    {
+     "content": "monta as engrenagens / que faltam —",
+     "t_in": 2,
+     "t_out": 7.5,
+     "style": "Space Grotesk 700, 60 px, ink, x 192, baselines 460 / 530 ('monta' em <em>)",
+     "animation": "Máscara por linha. Em 4,0 cai para α .5."
+    },
+    {
+     "content": "e fica operando o motor / com você.",
+     "t_in": 4,
+     "t_out": 7.5,
+     "style": "Space Grotesk 700, 60 px, ink, x 192, baselines 630 / 700 ('fica operando' em <em>)",
+     "animation": "Máscara por linha."
+    },
+    {
+     "content": "TIME EMBARCADO · OS MECCA",
+     "t_in": 5,
+     "t_out": 7.5,
+     "style": "h.chip 20 px, tl em (192,760)",
+     "animation": "Pop: scale .85→1 e fade, 0,3 s, mecca.back."
+    }
+   ],
+   "layout": "PRIMEIRO QUADRO: igual ao último da S04 (fundo com warp 1 e speed 3, Ponto em (1520,463) com r 6, nada mais).\n\nTexto à esquerda, de x 192 a ≈1070.\n\nÀ direita, a máquina do cliente: trem de 5 engrenagens (h.gear, mesma altura de dente; distância entre centros = r1 + r2 − 0,2·r1).\n\n| engrenagem | centro | r | dentes | estado inicial |\n|---|---|---|---|---|\n| Ga | (1180,600) | 90 | 12 | existente, stroke slate #64748B α .6, fill #1A0B2E |\n| Gb | (1320,519) | 90 | 12 | FALTA |\n| Gc | (1500,585) | 120 | 16 | FALTA, é o motor |\n| Gd | (1578,450) | 60 | 8 | FALTA |\n| Ge | (1714,426) | 90 | 12 | existente, slate |\n\nAs faltantes aparecem como círculos primitivos tracejados, lavanda α .35, dash 4/6.\n\nA máquina ocupa x 1090–1804 e y 336–705.\n\nÓrbita dos mecca: centro (1450,520), rx 380, ry 130, rot −14°.",
+   "visuals": "Interior em planta técnica. Duas engrenagens velhas em slate e três encaixes vazios tracejados, com um '×' rosa no centro de cada vazio.\n\nO Ponto faz o diagnóstico e depois explode em 4 mecca: núcleo #FBF8FF com r 7 e halo #E249B0 α .5. Os mecca trazem as engrenagens novas (fill #241038, stroke gradiente #C026D3→#7C3AED, 2,5 px) e recalibram as velhas (slate → lavanda).\n\nO motor liga e o trem inteiro gira. Os 4 mecca ficam em órbita com rastros.",
+   "choreography": "0,0–0,6: bg.warp 1→0, speed 3→1 (expo.out).\n\n0,0–1,0: a máquina aparece.\n- Ga e Ge: scale .9→1, α 0→1.\n- Encaixes tracejados: DrawSVG de 0,3 a 1,0.\n\n0,0–0,5: o Ponto (r 6→10) vai de (1520,463) até (1320,300).\n\n0,5–2,0: DIAGNÓSTICO\n- O Ponto percorre um MotionPath pelos centros vazios: Gb em 0,9, Gc em 1,3, Gd em 1,7.\n- Em cada um, um '×' rosa #E249B0 pulsa (scale 0→1→.8, 0,25 s).\n- Termina em (1450,250) em 2,0.\n\n2,0: o Ponto se DIVIDE em 4 mecca (burst de 0,3 s com mecca.back, 90° entre eles, raio 40).\n\n2,5 / 3,0 / 3,5: os mecca 1, 2 e 3 voam (0,4 s, power3.inOut) até Gb, Gc e Gd.\n- Cada engrenagem nasce do mecca: scale 0→1 e rotação −90°→fase correta, mecca.gear, 0,45 s, terminando na batida.\n- A fase segue θB = ψ + 180° + 180°/NB − (NA/NB)·(θA − ψ) em relação à vizinha já posta, para dente cair em vão.\n- Anel de faísca r→r + 40, α .6→0, 0,35 s.\n\n3,5–4,0: o mecca 4 toca Ga e Ge. O stroke delas vai de slate para #A78BFA (0,4 s).\n\n4,0: MOTOR\n- Gc: ω 0→+60°/s em 0,6 s (power2.out). Hub de Gc acende #7C3AED.\n- As demais engrenagens pela razão de dentes: Gb −80°/s, Ga +80°/s, Gd −120°/s, Ge +80°/s.\n- Onda saindo de Gc: r 120→220, α .6→0, 0,5 s.\n\n4,5–7,5: os 4 mecca entram na órbita (1450,520; rx 380, ry 130, rot −14°).\n- Período de 4 s, fases 0/90/180/270°.\n- Rastros de 6 amostras.\n- Na metade de trás passam atrás das engrenagens, com α .5.\n\nDe 1,0 a 7,5, push lento do texto (1→1,02).",
+   "transition_out": "A máquina do cliente recua e a órbita vira o plano de voo. Tail 0.\n\n7,5–8,0:\n- O texto sai.\n- O trem de engrenagens encolhe para o próprio centro (scale 1→.5, α→0, mecca.in).\n- Os 4 mecca convergem num único Ponto.\n- A órbita faz tween de (1450,520; rx 380; ry 130; −14°) para (960,600; rx 780; ry 120; 0°), mecca.inOut, com o Ponto no ponto mais à esquerda.\n\nÚLTIMO QUADRO:\n- Só a elipse hairline lavanda α .3 com centro (960,600), rx 780, ry 120, rot 0.\n- Ponto em (180,600) com r 10.\n- bg padrão, grid 0.\n- Sem texto.",
+   "sound_cues": [
+    {
+     "t": 0,
+     "kind": "impact",
+     "note": "chegada .6"
+    },
+    {
+     "t": 0.9,
+     "kind": "tick",
+     "note": "diagnóstico .4"
+    },
+    {
+     "t": 1.3,
+     "kind": "tick",
+     "note": ".4"
+    },
+    {
+     "t": 1.7,
+     "kind": "tick",
+     "note": ".4"
+    },
+    {
+     "t": 2,
+     "kind": "chime",
+     "note": "divide em 4 mecca .5"
+    },
+    {
+     "t": 2.5,
+     "kind": "click",
+     "note": "engrenagem montada .7"
+    },
+    {
+     "t": 3,
+     "kind": "click",
+     "note": ".7"
+    },
+    {
+     "t": 3.5,
+     "kind": "click",
+     "note": ".7"
+    },
+    {
+     "t": 4,
+     "kind": "impact",
+     "note": "motor liga .8"
+    },
+    {
+     "t": 4,
+     "kind": "sub-drop",
+     "note": ".4"
+    },
+    {
+     "t": 5,
+     "kind": "click",
+     "note": "chip .4"
+    },
+    {
+     "t": 7.75,
+     "kind": "whoosh",
+     "note": ".5"
+    }
+   ]
+  },
+  {
+   "id": "s06-plano-de-voo",
+   "name": "O plano de voo: quatro tempos",
+   "start": 42,
+   "duration": 12,
+   "purpose": "O método em 4 tempos: Diagnóstico, Engenharia, Operação e Escala. A órbita se deita e vira a linha do tempo; o Ponto é a sonda. No fim, o Ponto gira sozinho e a linha se fecha em círculo.",
+   "text": [
+    {
+     "content": "O PLANO DE VOO",
+     "t_in": 0,
+     "t_out": 11.5,
+     "style": "h.eyebrow 22 px em (192,120)",
+     "animation": "Digitação a partir de 0,0."
+    },
+    {
+     "content": "Quatro tempos",
+     "t_in": 0.5,
+     "t_out": 11.5,
+     "style": "Space Grotesk 700, 180 px, ink, x 192, baseline 380 (≈1210 px). Depois vira header de 56 px com baseline 200.",
+     "animation": "Chars stagger .02, 0,5 s, mecca.out. FLIP para header em 2,5–3,0 (mecca.inOut). Saída em 11,5."
+    },
+    {
+     "content": "até a máquina girar sozinha.",
+     "t_in": 1,
+     "t_out": 11.5,
+     "style": "Space Grotesk 500, 60 px, #C4B5FD, x 192, baseline 470 ('girar sozinha' em <em>). Depois vira header de 26 px com baseline 240.",
+     "animation": "Máscara. FLIP em 2,5–3,0. Saída em 11,5."
+    },
+    {
+     "content": "01 · Diagnóstico — Abrimos a máquina e achamos qual engrenagem travou o crescimento.",
+     "t_in": 3,
+     "t_out": 11.5,
+     "style": "Número '01' em Bricolage 800, 120 px, gradiente, x 192, baseline 540. Nome em Space Grotesk 700, 56 px, ink, x 192, baseline 660. Descrição em Inter 500, 28 px, #C4B5FD, largura 360, lh 1,35, 1ª baseline 712.",
+     "animation": "O número sobe de trás da linha (máscara com base em y 572, yPercent 100→0, 0,45 s, expo.out). O nome é revelado por uma linha de varredura (2 px lavanda, altura 70, 0,35 s, clip). A descrição entra em 3,5 (linhas com y 16→0 e fade, stagger .06, 0,4 s)."
+    },
+    {
+     "content": "02 · Engenharia — Montamos o que falta: processo, time, ferramenta e número.",
+     "t_in": 4.5,
+     "t_out": 11.5,
+     "style": "Mesmos estilos, x 582",
+     "animation": "Número sobe. Os chars do nome caem de y −30 (mecca.back, stagger .025) e 4 marcas de corte em L de 12 px se desenham em volta. Descrição em 5,0."
+    },
+    {
+     "content": "03 · Operação — Os mecca assumem as rotinas e operam por dentro.",
+     "t_in": 6,
+     "t_out": 11.5,
+     "style": "Mesmos estilos, x 972",
+     "animation": "Número sobe. Os chars do nome sobem. Uma mini engrenagem (r 14, 8 dentes, lavanda) aparece 24 px depois do nome, na altura de y 642, e gira a 90°/s, com 3 pontinhos (r 2,5, #C4B5FD / #A78BFA / #C026D3) orbitando (rx 30, ry 10). Descrição em 6,5."
+    },
+    {
+     "content": "04 · Escala — Tudo engrenado e medido, o crescimento vira previsível.",
+     "t_in": 7.5,
+     "t_out": 11.5,
+     "style": "Mesmos estilos, x 1362 (a descrição termina em x ≤ 1722)",
+     "animation": "Número sobe. O nome cresce a partir da base (scaleY 0→1, origin 50% 100%, stagger .04) e uma escadinha de 3 degraus (hairline lavanda) se desenha depois da palavra. Descrição em 8,0."
+    }
+   ],
+   "layout": "PRIMEIRO QUADRO: igual ao último da S05 (elipse com centro (960,600), rx 780, ry 120; Ponto em (180,600) com r 10; sem texto).\n\nDepois de 3,0:\n- Header no topo-esquerdo: eyebrow em y 120, 'Quatro tempos' com baseline 200, subtítulo com baseline 240.\n- Linha do tempo em y 580, de x 192 a 1728.\n- 4 colunas com passo de 390 (x 192 / 582 / 972 / 1362). Guias hairline α .05 de y 440 a 900.\n- Nós em (192,580), (582,580), (972,580) e (1362,580).\n- Números acima da linha, nomes e descrições abaixo.",
+   "visuals": "Clima de planta técnica: bg.grid .35.\n\nA linha do tempo fica tracejada à frente do Ponto (lavanda α .35, dash 6/10) e sólida atrás dele (gradiente de 3 px).\n\nNós: r 10, fill #7C3AED, anel lavanda de 2 px, halo que expande.\n\nO Ponto é a sonda. No fim ele gira num círculo pequeno no fim da linha: a máquina gira sozinha.",
+   "choreography": "0,0–1,5\n- bg.grid 0→.35 (0,5–1,5).\n- O Ponto percorre a elipse (período 2 s, começando em 180°), com 2 riders (#C026D3 r 5 e #A78BFA r 4) a 120° e 240°.\n\n2,5–3,0: A ÓRBITA SE DEITA\n- ry 120→0, rx 780→768, centro (960,600)→(960,580), mecca.inOut. A elipse vira a linha de x 192 a 1728.\n- Os riders somem.\n- O Ponto desliza até (192,580).\n- Header FLIP.\n\nTEMPOS em 3,0 / 4,5 / 6,0 / 7,5:\n- O Ponto viaja até o nó (de T−0,4 a T, mecca.inOut) e o trecho percorrido fica sólido.\n- No tempo T:\n  - o nó aparece (r 0→10, mecca.back, 0,3 s);\n  - halo r 10→48 com α .6→0;\n  - o número sobe;\n  - a micro-animação do nome roda.\n- Em T+0,5 entra a descrição.\n- As colunas anteriores ficam em α 1; os nomes anteriores vão para α .7.\n\n8,0–8,5: o Ponto vai até o fim da linha (1728,580) e o último trecho fica sólido.\n\n8,5–11,5: o Ponto gira num círculo r 22 com centro (1706,580), 1 volta/s.\n\n9,5 / 9,75 / 10,0 / 10,25: os 4 nós pulsam em sequência (scale 1→1,5→1, 0,2 s).",
+   "transition_out": "A linha do tempo se fecha em círculo, que na S07 ganha dentes. Tail 0.\n\n11,5–12,0:\n- Números afundam na linha. Nomes, descrições, header e eyebrow saem (0,3 s, mecca.in, stagger .03).\n- bg.grid .35→.2.\n- A linha é uma polyline de 64 pontos. O ponto i vai de (192 + i·1536/63, 580) para (960 + 300·cos(π − i·2π/63), 540 + 300·sin(π − i·2π/63)), de 11,4 a 12,0 (power3.inOut). A linha fica toda sólida em gradiente de 3 px.\n- O Ponto vai na ponta e fecha o laço em (660,540).\n\nÚLTIMO QUADRO:\n- Círculo sólido (gradiente #C026D3→#7C3AED, 3 px) com centro (960,540) e r 300.\n- Ponto em (660,540) com r 10.\n- bg.grid .2.\n- Sem texto.",
+   "sound_cues": [
+    {
+     "t": 0,
+     "kind": "impact",
+     "note": ".6"
+    },
+    {
+     "t": 2.75,
+     "kind": "whoosh",
+     "note": "órbita deita .4"
+    },
+    {
+     "t": 3,
+     "kind": "click",
+     "note": "tempo 01 .8 (+impact .4)"
+    },
+    {
+     "t": 4.5,
+     "kind": "click",
+     "note": "tempo 02 .8"
+    },
+    {
+     "t": 6,
+     "kind": "click",
+     "note": "tempo 03 .8"
+    },
+    {
+     "t": 6.5,
+     "kind": "chime",
+     "note": "mini engrenagem .3"
+    },
+    {
+     "t": 7.5,
+     "kind": "click",
+     "note": "tempo 04 .8 (+impact .5)"
+    },
+    {
+     "t": 8.5,
+     "kind": "chime",
+     "note": "gira sozinha .6"
+    },
+    {
+     "t": 9.5,
+     "kind": "tick",
+     "note": "pulsos .35"
+    },
+    {
+     "t": 10,
+     "kind": "tick",
+     "note": ".35"
+    },
+    {
+     "t": 11.75,
+     "kind": "whoosh",
+     "note": "linha → círculo .6"
+    }
+   ]
+  },
+  {
+   "id": "s07-sete-engrenagens",
+   "name": "Uma máquina. Sete engrenagens. Um só mecanismo.",
+   "start": 54,
+   "duration": 22,
+   "purpose": "Os serviços. Cada uma das 7 engrenagens aparece no downbeat de um compasso com nome, apelido e 3 serviços-chave. A coluna de texto é uma cremalheira movida pela engrenagem gigante. O fechamento monta a máquina inteira: os 7 planetas em volta de um sol com a pupila no cubo e uma carcaça feita dos arcos do ícone. 'Uma máquina. Sete engrenagens. Um só mecanismo.'",
+   "text": [
+    {
+     "content": "O ALCANCE · A MÁQUINA INTEIRA",
+     "t_in": 0.5,
+     "t_out": 16,
+     "style": "h.eyebrow 22 px #A78BFA em (192,1000), âncora cl (rodapé, porque o topo recebe a estação anterior)",
+     "animation": "Digitação. Saída em 16,0–16,3."
+    },
+    {
+     "content": "01 / 07 · Vendas · Engrenagem do fechamento · [PLAYBOOK DE VENDAS] [PROSPECÇÃO ATIVA (SDR)] [CRM OPERADO]",
+     "t_in": 2,
+     "t_out": 6,
+     "style": "Bloco de estação, ativo com o topo em y 360:\n- contador '01 / 07' em JetBrains Mono 500, 24 px, #A78BFA, baseline 400;\n- nome em Space Grotesk 700, 150 px, ink, baseline 575;\n- apelido em Inter 500, 38 px, #C4B5FD, baseline 635;\n- chips h.chip (JetBrains Mono 500, 18 px, CAIXA ALTA, tracking .14em, altura 44, gap 12) numa linha a partir de x 192, com topo em y 668; se a linha passar de 940 px, quebra para y 724.",
+     "animation": "Cremalheira: o bloco sobe de +360 para 0 em T−0,35→T+0,15 (mecca.gear), α 0→1. Os chips SAEM DO PONTO: MotionPath de (1180,540) até a posição final, curviness 1,2, scale .6→1, stagger .05, 0,45 s, mecca.out, a partir de T. Em T+2, o bloco sobe para −360 com α →.4, e o contador vai a α 0. Em T+4, sobe para −720 com α →0."
+    },
+    {
+     "content": "02 / 07 · Marketing · Engrenagem da demanda · [TRÁFEGO PAGO] [CONTEÚDO & SOCIAL] [SEO]",
+     "t_in": 4,
+     "t_out": 8,
+     "style": "Mesmo bloco de estação",
+     "animation": "Mesmo ciclo, com T = 4,0."
+    },
+    {
+     "content": "03 / 07 · Comercial · Engrenagem das regras do jogo · [PRICING & MARGEM] [CANAIS & PARCERIAS] [RETENÇÃO & CS]",
+     "t_in": 6,
+     "t_out": 10,
+     "style": "Mesmo bloco de estação",
+     "animation": "T = 6,0."
+    },
+    {
+     "content": "04 / 07 · Fiscal · Engrenagem da conformidade eficiente · [PLANEJAMENTO TRIBUTÁRIO] [COMPLIANCE FISCAL] [EMISSÃO DE NF-E]",
+     "t_in": 8,
+     "t_out": 12,
+     "style": "Mesmo bloco de estação",
+     "animation": "T = 8,0."
+    },
+    {
+     "content": "05 / 07 · Logística · Engrenagem da entrega · [ESTOQUE & COMPRAS] [FRETES] [FULFILLMENT & EXPEDIÇÃO]",
+     "t_in": 10,
+     "t_out": 14,
+     "style": "Mesmo bloco de estação",
+     "animation": "T = 10,0."
+    },
+    {
+     "content": "06 / 07 · Sistemas · Engrenagem do sistema nervoso · [PROCESSOS & SOPS] [ERP / CRM] [BI & DASHBOARDS]",
+     "t_in": 12,
+     "t_out": 16,
+     "style": "Mesmo bloco de estação",
+     "animation": "T = 12,0. Sai junto com todos em 16,0–16,3 (y −60, α→0)."
+    },
+    {
+     "content": "07 / 07 · Tecnologia · Engrenagem digital · [SOFTWARE SOB MEDIDA] [SITES & E-COMMERCE] [IA APLICADA]",
+     "t_in": 14,
+     "t_out": 16.5,
+     "style": "Mesmo bloco de estação",
+     "animation": "T = 14,0. Fica ativo até 16,25. Saída em 16,25–16,5 (y −60, α→0, mecca.in)."
+    },
+    {
+     "content": "Uma máquina.",
+     "t_in": 17,
+     "t_out": 21.5,
+     "style": "Space Grotesk 700, 88 px, ink, x 192, baseline 420",
+     "animation": "Máscara, 0,6 s, mecca.out. Saída em 21,5–21,75 por máscara para cima."
+    },
+    {
+     "content": "Sete engrenagens.",
+     "t_in": 17.5,
+     "t_out": 21.5,
+     "style": "Space Grotesk 700, 88 px, ink, x 192, baseline 530 (≈745 px)",
+     "animation": "Máscara."
+    },
+    {
+     "content": "Um só mecanismo.",
+     "t_in": 18,
+     "t_out": 21.5,
+     "style": "Space Grotesk 700, 88 px, x 192, baseline 640, 'mecanismo.' em <em> gradiente",
+     "animation": "Máscara. Shimmer do gradiente em 19,0–20,5."
+    }
+   ],
+   "layout": "PRIMEIRO QUADRO: igual ao último da S06 (círculo em gradiente com centro (960,540) e r 300; Ponto em (660,540) com r 10; grid .2).\n\nEngrenagem gigante (h.gear):\n- centro (1640,540), r 420, 28 dentes (4 por estação), depth .08, raio primitivo ≈ 401;\n- fill #1A0B2E α .8, stroke #A78BFA α .5, 2 px;\n- anel interno r 300 hairline e 7 raios hairline;\n- borda esquerda em x 1220; o resto é recortado pela direita.\n\nNúmeros '01'–'07' na engrenagem:\n- Bricolage 800, 56 px, #A78BFA α .6, no raio 330, sempre em pé (contra-rotação);\n- número k no ângulo 180° − 51,43°·k + θ (ângulos em sentido horário, 0° = +x);\n- o número ativo fica às 9 horas, em (1310,540), com ink e scale 1,15.\n\nCubo: h.icon de 200 px SEM ponto, no centro da engrenagem.\n\nO Ponto fica 'estacionado' em (1180,540).\n\nColuna de texto (cremalheira):\n- clip x 150–1160, y 72–800;\n- bloco ativo com topo em y 360;\n- bloco anterior em y 0 (nome com baseline 215), α .4.\n\nFechamento:\n- sol em (1400,560);\n- carcaça = arcos do ícone (h.icon de 710 px centrado em (1400,560), só arcOuter + arcInner, raio 330, stroke ≈ 50);\n- texto à esquerda, x 192–937.",
+   "visuals": "Uma engrenagem gigante recortada gira como um escape de relógio, uma estação (51,43°) por compasso. O lado esquerdo dela sobe e empurra a coluna de texto para cima (cremalheira). O passo de 360 px corresponde ao arco de 51,43° no raio primitivo de 401.\n\nA cada estação, o Ponto pulsa e cospe os 3 chips de serviço.\n\nNo fechamento, a engrenagem encolhe e vira o SOL de um planetário:\n- 7 planetas nomeados;\n- pupila no cubo;\n- carcaça feita dos arcos do ícone;\n- o Ponto orbita tudo.\nA máquina lembra o logo, mas continua sem o ponto.",
+   "choreography": "0,0–1,0: o círculo viaja de (960,540) r 300 para (1640,540) r 401 (mecca.inOut). O Ponto acompanha o ponto mais à esquerda, chegando a (1239,540).\n\n1,0–1,5\n- MorphSVG do círculo para h.gearPath (r 420, 28 dentes, depth .08), mecca.back.\n- O stroke faz crossfade de gradiente para lavanda α .5.\n- Os números fazem pop (stagger .05).\n- O cubo-ícone escala 0→1 (1,25, mecca.back).\n- O Ponto vai para (1180,540).\n\nCICLO DE ESTAÇÃO (T = 2, 4, 6, 8, 10, 12, 14):\n- T−0,35→T+0,15: a engrenagem gira de θ = 51,43·(k−1) para 51,43·k em sentido horário (mecca.gear: overshoot e assentamento). A coluna de texto translada −360 px com o mesmo easing e o mesmo intervalo: é a cremalheira.\n- T−0,1: o contador vira como split-flap (0,25 s).\n- T: número ativo em ink com scale 1,15; o anterior volta a α .6. O Ponto pulsa (r 10→16→10) e solta os chips.\n\n16,0–17,0: RECUO\n- Números, raios e anel interno fazem fade (16,0–16,3).\n- A engrenagem vai de (1640,540) com r 420 para (1400,560) com r 130 (scale .31, mecca.inOut).\n- Os arcos do cubo-ícone somem e fica só a pupila, com 110 px de largura, no centro do sol.\n- bg.grid .2→0.\n\n16,5–17,25: 7 PLANETAS\n- h.gear com r 78, 16 dentes, depth .13, sem furo.\n- Fill alternado #241038 / #2D1149, stroke #A78BFA 1,5 px.\n- Saem do centro do sol até a distância 198, nos ângulos −90° + (k−1)·51,43° (stagger .06, mecca.back).\n- Posições:\n\n  | planeta | centro |\n  |---|---|\n  | Vendas | (1400,362) |\n  | Marketing | (1555,437) |\n  | Comercial | (1593,604) |\n  | Fiscal | (1486,738) |\n  | Logística | (1314,738) |\n  | Sistemas | (1207,604) |\n  | Tecnologia | (1245,437) |\n\n- Cada planeta leva o seu nome em pé no centro (Space Grotesk 600, 18 px, ink).\n- Fase de cada planeta pela fórmula de engrenamento com o sol.\n\n17,0–17,75: a carcaça (arcos do ícone de 710 px) se desenha com DrawSVG 0→100% (mecca.out).\n\n18,0: TUDO ENGRENA\n- Sol +36°/s (horário), planetas −63°/s, carcaça −12°/s.\n- Onda de choque r 350→900, α .5→0.\n- Um destaque magenta percorre os planetas de um em um (0,12 s cada).\n- O Ponto passa a orbitar a máquina num círculo r 390 em volta de (1400,560), período de 3 s, com rastro.\n- bg.particles 1→1,3.",
+   "transition_out": "A máquina completa encolhe e se afasta para dar espaço às rotinas. Tail 0.\n\n21,5–22,0:\n- O texto sai.\n- Os nomes dos planetas fazem fade.\n- A máquina inteira (sol, planetas e carcaça) vai de (1400,560) com scale 1 para (1300,580) com scale .55 (mecca.inOut), sem parar de girar.\n- O Ponto sai da órbita e vai para o cubo (1300,580), com r 10.\n- bg.particles volta a 1.\n\nÚLTIMO QUADRO:\n- Máquina em (1300,580), scale .55 (carcaça r ≈ 181), girando nas mesmas velocidades, sem nomes.\n- Ponto em (1300,580) sobre a pupila.\n- bg padrão, grid 0.\n- Sem texto.",
+   "sound_cues": [
+    {
+     "t": 0,
+     "kind": "whoosh",
+     "note": ".4"
+    },
+    {
+     "t": 1,
+     "kind": "impact",
+     "note": "dentes nascem .8"
+    },
+    {
+     "t": 1.25,
+     "kind": "chime",
+     "note": ".3"
+    },
+    {
+     "t": 2,
+     "kind": "click",
+     "note": "Vendas 1.0 (+impact .35)"
+    },
+    {
+     "t": 4,
+     "kind": "click",
+     "note": "Marketing 1.0"
+    },
+    {
+     "t": 6,
+     "kind": "click",
+     "note": "Comercial 1.0"
+    },
+    {
+     "t": 8,
+     "kind": "click",
+     "note": "Fiscal 1.0"
+    },
+    {
+     "t": 10,
+     "kind": "click",
+     "note": "Logística 1.0"
+    },
+    {
+     "t": 12,
+     "kind": "click",
+     "note": "Sistemas 1.0"
+    },
+    {
+     "t": 14,
+     "kind": "click",
+     "note": "Tecnologia 1.0"
+    },
+    {
+     "t": 14,
+     "kind": "impact",
+     "note": ".6"
+    },
+    {
+     "t": 16.5,
+     "kind": "whoosh",
+     "note": "planetas .6"
+    },
+    {
+     "t": 17,
+     "kind": "whoosh",
+     "note": "carcaça .5"
+    },
+    {
+     "t": 18,
+     "kind": "impact",
+     "note": "tudo engrena 1.0"
+    },
+    {
+     "t": 18,
+     "kind": "chime",
+     "note": ".7"
+    },
+    {
+     "t": 21.75,
+     "kind": "whoosh",
+     "note": ".5"
+    }
+   ]
+  },
+  {
+   "id": "s08-rotinas",
+   "name": "O que gira por dentro",
+   "start": 76,
+   "duration": 6,
+   "purpose": "Operação contínua: as 4 classes de rotina (diárias, semanais, mensais e verificações) giram sem parar em volta da máquina. 'É o que os mecca rodam enquanto você dorme.' Sem números.",
+   "text": [
+    {
+     "content": "O QUE GIRA POR DENTRO",
+     "t_in": 0.5,
+     "t_out": 5.5,
+     "style": "h.eyebrow 22 px em (192,120)",
+     "animation": "Digitação."
+    },
+    {
+     "content": "É o que os mecca rodam / enquanto você dorme.",
+     "t_in": 0.5,
+     "t_out": 5.5,
+     "style": "Space Grotesk 700, 84 px, ink, x 192, baselines 260 / 355 ('os mecca' em <em> gradiente). Linha 1 com ≈913 px.",
+     "animation": "Máscara por linha (linha 2 em 1,0), 0,6 s, mecca.out. O '.' de 'dorme.' respira: opacity .6↔1, período de 2 s. Saída em 5,5–5,8, mecca.in."
+    },
+    {
+     "content": "● DIÁRIAS",
+     "t_in": 1.5,
+     "t_out": 5.5,
+     "style": "JetBrains Mono 500, 20 px, tracking .2em, #C4B5FD, x 192, baseline 850, bolinha #C4B5FD",
+     "animation": "Desliza 20 px da esquerda com fade, 0,4 s, mecca.out."
+    },
+    {
+     "content": "● SEMANAIS",
+     "t_in": 2,
+     "t_out": 5.5,
+     "style": "Mesmo estilo, baseline 888, bolinha #A78BFA",
+     "animation": "Idem."
+    },
+    {
+     "content": "● MENSAIS",
+     "t_in": 2.5,
+     "t_out": 5.5,
+     "style": "Mesmo estilo, baseline 926, bolinha #7C3AED",
+     "animation": "Idem."
+    },
+    {
+     "content": "◆ VERIFICAÇÕES & CONFERÊNCIAS",
+     "t_in": 3,
+     "t_out": 5.5,
+     "style": "Mesmo estilo, baseline 964, losango #C026D3",
+     "animation": "Idem."
+    }
+   ],
+   "layout": "PRIMEIRO QUADRO: igual ao último da S07 (máquina em (1300,580) com scale .55, girando; Ponto no cubo; sem texto).\n\nTexto no topo-esquerdo, de y 170 a 375. Legenda no rodapé-esquerdo, de x 192 a ≈652, y 830–970.\n\nAnéis de rotina com centro (1300,580), rot −14°, ry = .32·rx:\n\n| anel | rx |\n|---|---|\n| Diárias | 250 |\n| Semanais | 320 |\n| Mensais | 390 |\n| Verificações | 460 |\n\nExtensão total dos anéis: x ≈ 850–1750, y ≈ 395–765.",
+   "visuals": "Quatro anéis de partículas girando em velocidades diferentes em volta da máquina (h.orbit hairline α .2 e partículas no canvas, com jitter determinístico de ±1,5 px):\n\n| anel | partículas | ω | aparência |\n|---|---|---|---|\n| Diárias | 40 | 120°/s | #C4B5FD, r 2,4, rastro de 5 amostras |\n| Semanais | 28 | 60°/s | #A78BFA, r 2,8 |\n| Mensais | 16 | 30°/s | #7C3AED, r 3,4, com halo |\n| Verificações | 12 losangos de 8 px | 18°/s | #C026D3; cada um pisca #E249B0 ao passar por θ = 90° (a conferência) |\n\nModo noite: fundo escurece e os anéis brilham. Os 4 mecca (núcleo branco, halo rosa) saltam de anel em anel operando.",
+   "choreography": "0,0–5,5: a máquina segue girando. Sol +36°/s × escala, planetas −63°/s, carcaça −12°/s.\n\n1,5 / 2,0 / 2,5 / 3,0: cada anel acende junto com a sua linha da legenda.\n- As partículas nascem na posição do Ponto (1300,580) e se espalham até seus lugares no anel em 0,6 s (mecca.out).\n- O traço fino do anel se desenha no mesmo intervalo.\n\n3,0\n- O Ponto se divide nos 4 mecca (burst de 0,3 s).\n- Em cada batida de 3,5 a 5,5, cada mecca salta para o anel vizinho (arco curto de 0,3 s, mecca.inOut, com rastro).\n\n3,0–4,0: MODO NOITE\n- bg.dim 0→.35, glowA/B 1→.5, vignette .55→.75.\n- A máquina vai a α .5.\n- As partículas ficam 30% mais claras e a velocidade sobe ×1→1,25.\n\n5,0–5,75: a noite se desfaz. bg volta ao padrão, a máquina volta a α 1 e a velocidade volta a ×1.",
+   "transition_out": "As rotinas se recolhem em duas órbitas e a máquina desliza para a área de demonstração da S09. Tail 0.\n\n5,5–6,0:\n- Texto e legenda saem.\n- Os anéis Diárias e Semanais fazem fade.\n- O anel Mensais vira D1 e o anel Verificações vira D2, ambos com centro (1440,560) e rot −14°:\n  - D1: rx 220, ry 70;\n  - D2: rx 320, ry 100;\n  - só a hairline, α .3, sem partículas.\n- A máquina vai para (1440,560) com scale .45 (relativa ao fechamento da S07).\n- Os 4 mecca convergem num Ponto em D2 no ângulo 0° (≈1750,483).\n\nÚLTIMO QUADRO:\n- Máquina em (1440,560) com scale .45, girando.\n- D1 e D2 em hairline.\n- Ponto em (1750,483) com r 10.\n- bg padrão.\n- Sem texto.",
+   "sound_cues": [
+    {
+     "t": 0.5,
+     "kind": "whoosh",
+     "note": ".3"
+    },
+    {
+     "t": 1.5,
+     "kind": "tick",
+     "note": "diárias .45"
+    },
+    {
+     "t": 2,
+     "kind": "tick",
+     "note": "semanais .45"
+    },
+    {
+     "t": 2.5,
+     "kind": "tick",
+     "note": "mensais .45"
+    },
+    {
+     "t": 3,
+     "kind": "chime",
+     "note": "verificações + 4 mecca .5"
+    },
+    {
+     "t": 3.5,
+     "kind": "sub-drop",
+     "note": "noite .4"
+    },
+    {
+     "t": 4,
+     "kind": "tick",
+     "note": "saltos .35"
+    },
+    {
+     "t": 5,
+     "kind": "tick",
+     "note": ".35"
+    },
+    {
+     "t": 5.75,
+     "kind": "whoosh",
+     "note": ".4"
+    }
+   ]
+  },
+  {
+   "id": "s09-diferenciais",
+   "name": "A gente assume, fica e tem pele no jogo",
+   "start": 82,
+   "duration": 10,
+   "purpose": "Os diferenciais como manifesto, cada um demonstrado fisicamente:\n- assume, não aconselha: o Ponto toma o motor;\n- fica, não entrega e some: a caixa-fantasma some e o Ponto continua;\n- pele no jogo: sócio de resultado, no sistema binário SUA EMPRESA / OS MECCA;\n- cresceu, a gente cresce junto: o binário cresce junto.",
+   "text": [
+    {
+     "content": "A GENTE ASSUME, OPERA E FICA",
+     "t_in": 0.5,
+     "t_out": 9.5,
+     "style": "h.eyebrow 22 px em (192,120)",
+     "animation": "Digitação."
+    },
+    {
+     "content": "A gente assume, / não aconselha.",
+     "t_in": 0.5,
+     "t_out": 6,
+     "style": "'A gente assume,' em Space Grotesk 700, 110 px, ink, x 192, baseline 250 ('assume,' em <em>). 'não aconselha.' em Space Grotesk 600, 56 px, #A99CC4, x 192, baseline 320.",
+     "animation": "Linha a em 0,5, com o verbo batendo: scale 1,25→1, 0,25 s, expo.out, origem à esquerda. Linha b em 1,0 por máscara. Em 1,5, h.strike sobre 'aconselha' (espessura 6, gradiente, 0,25 s). Em 2,0, o bloco cai para α .45 ('assume,' fica em .7). Saída em 6,0–6,3 (x −60, fade, mecca.in)."
+    },
+    {
+     "content": "A gente fica, / não entrega e some.",
+     "t_in": 2,
+     "t_out": 6,
+     "style": "'A gente fica,' em 110 px, baseline 450 ('fica,' em <em>). 'não entrega e some.' em 56 px, #A99CC4, baseline 520.",
+     "animation": "Linha a em 2,0 com o mesmo bater do verbo. Linha b em 2,5. Em 3,0, risco sobre 'entrega e some'. Em 3,5 o bloco cai para α .45, mas 'fica,' CONTINUA em α 1. Saída em 6,0–6,3."
+    },
+    {
+     "content": "A gente tem / pele no jogo — / sócio de resultado.",
+     "t_in": 3.5,
+     "t_out": 9.5,
+     "style": "'A gente tem' em Space Grotesk 500, 56 px, #C4B5FD, baseline 610. 'pele no jogo —' em Space Grotesk 700, 110 px, <em> gradiente, com glow rosa, baseline 720. 'sócio de resultado.' em Space Grotesk 700, 56 px, ink, baseline 795. Tudo em x 192.",
+     "animation": "'A gente tem' e 'pele no jogo —' em 3,5, por máscara, com o verbo batendo. 'sócio de resultado.' em 4,0, com sublinhado em gradiente de 3 px se desenhando (4,0–4,5). 'pele no jogo' pulsa text-shadow 0 0 24px #E249B0 (α .55↔0) em cada batida de 4,0 a 6,0. Em 7,0 o bloco cai para α .55. Saída em 9,5–9,8."
+    },
+    {
+     "content": "Cresceu, / a gente cresce junto.",
+     "t_in": 6.5,
+     "t_out": 9.5,
+     "style": "'Cresceu,' em Space Grotesk 700, 150 px, <em> gradiente, x 192, baseline 330 (≈588 px). 'a gente cresce junto.' em Space Grotesk 700, 72 px, ink, x 192, baseline 430.",
+     "animation": "Máscara em 6,5 (linha 2 com +0,1 s). 'Cresceu,' CRESCE junto: +3% de escala em cada batida de 7,0 a 9,0 (0,18 s, mecca.back, origem esquerda-base), até 1,12. Saída em 9,5–9,8."
+    }
+   ],
+   "layout": "PRIMEIRO QUADRO: igual ao último da S08 (máquina em (1440,560) com scale .45; D1 com rx 220 e ry 70; D2 com rx 320 e ry 100, rot −14°; Ponto em (1750,483); sem texto).\n\nTexto em coluna à esquerda, x 192–1100:\n- baselines 250/320, 450/520 e 610/720/795;\n- depois de 6,5, 'Cresceu' ocupa as baselines 330/430.\n\nÁrea de demonstração à direita, centrada em (1440,560), com extensão x ≈ 1125–1760.\n\nV da pupila (cubo da máquina) em ≈(1440,546).",
+   "visuals": "A máquina pequena com o anel D1/D2 em volta.\n\n- ASSUME: o Ponto mergulha no V da pupila e a máquina acelera.\n- FICA: o Ponto orbita D2 deixando rastros-anel que se acumulam. Uma caixa-fantasma tracejada slate de 120×80 (rima com a S03) passa em D1 e se desfaz em partículas no 'some'.\n- PELE NO JOGO: a máquina colapsa na pupila e a pupila vira o corpo A 'SUA EMPRESA'. O Ponto vira o corpo B 'OS MECCA'. Os dois formam um sistema binário ligado por um fio em gradiente com glow.\n- CRESCE JUNTO: órbitas e corpos crescem juntos, com ondas saindo do baricentro.",
+   "choreography": "0,5–1,0: o Ponto sai de D2 e mergulha no V (1440,546) (power3.in).\n\n1,0: ENCAIXE\n- A pupila pisca #7C3AED→#C4B5FD→#7C3AED.\n- A máquina acelera: sol de 36 para 90°/s (0,3 s, power2.out), assentando em 72°/s (0,7 s). Planetas pela razão de dentes.\n- Onda curta r 60→180.\n\n2,0\n- O Ponto sai do cubo para D2 (0,3 s) e passa a orbitá-la com período de 1 s.\n- A cada volta deixa um anel-rastro com α acumulando de .15 a .5 (fica).\n\n2,5: caixa-fantasma entra\n- Retângulo 120×80, raio 10, stroke #64748B 1,5 px, dash 6/6.\n- Entra pela esquerda sobre D1 no ângulo 180° e viaja pela elipse.\n\n3,0: 'some'. A caixa se solta pela tangente e vira 24 partículas slate que somem em 0,4 s.\n\n3,5–4,0: PELE NO JOGO\n- Os planetas recolhem para o sol e o sol some (0,3 s, mecca.in). A carcaça faz fade.\n- A pupila faz MorphSVG para um círculo r 40 com fill radial #C4B5FD→#6D28D9: corpo A.\n- D1/D2 vão para α .15.\n- A partir de 4,0, sistema binário em volta do baricentro (1440,560), a 72°/s:\n  - A em órbita de 40×14;\n  - B (o Ponto, r 11) em órbita de 200×70;\n  - θB = θA + 180°;\n  - rot −14°.\n- Fio de 2 px entre A e B, gradiente #C026D3→#7C3AED, com glow.\n- Rótulos: 'SUA EMPRESA' (mono 16 #C4B5FD, 50 px abaixo de A) e 'OS MECCA' (mono 16 #E249B0, 28 px acima de B), entrando em 4,0.\n\n6,5–9,5: CRESCE JUNTO\n- Baricentro y 560→480 (3,0 s, power1.inOut).\n- Órbita de A 40→56 e de B 200→250.\n- Raio de A 40→52 e de B 11→15.\n- Rastros em espiral nos últimos 1,2 s.\n- Ondas elípticas saindo do baricentro em 7,0 / 7,5 / 8,0 / 8,5: rx 250→420, α .45→0, 0,9 s, power2.out.",
+   "transition_out": "Pré-drop: o binário implode num ponto único de energia. Tail 0.\n\n9,5–10,0:\n- O texto sai.\n- O binário espirala para dentro (órbitas →0, power3.in). A e B se fundem num ponto núcleo #FBF8FF com r 20 e glow ×2, que vai para (960,500).\n- Fio e rótulos fazem fade.\n- bg.warp 0→.5, speed 1→2.\n\nÚLTIMO QUADRO:\n- Só o ponto fundido em (960,500) com r 20 e glow forte.\n- bg: warp .5, speed 2, resto no padrão.\n- Sem texto.",
+   "sound_cues": [
+    {
+     "t": 0.5,
+     "kind": "impact",
+     "note": "'assume' .7"
+    },
+    {
+     "t": 1,
+     "kind": "click",
+     "note": "Ponto assume o motor .9"
+    },
+    {
+     "t": 1.5,
+     "kind": "whoosh",
+     "note": "risco .3"
+    },
+    {
+     "t": 2,
+     "kind": "impact",
+     "note": "'fica' .7"
+    },
+    {
+     "t": 3,
+     "kind": "glitch",
+     "note": "caixa some .35 (+whoosh risco .3)"
+    },
+    {
+     "t": 3.5,
+     "kind": "impact",
+     "note": "'pele no jogo' .8"
+    },
+    {
+     "t": 4,
+     "kind": "chime",
+     "note": "sócio de resultado .5"
+    },
+    {
+     "t": 6.5,
+     "kind": "impact",
+     "note": "'Cresceu' .6"
+    },
+    {
+     "t": 7,
+     "kind": "tick",
+     "note": "cresce .3"
+    },
+    {
+     "t": 7.5,
+     "kind": "tick",
+     "note": ".3"
+    },
+    {
+     "t": 8,
+     "kind": "tick",
+     "note": ".3"
+    },
+    {
+     "t": 8.5,
+     "kind": "tick",
+     "note": ".3"
+    },
+    {
+     "t": 10,
+     "kind": "riser",
+     "note": "pico no corte 1.0"
+    }
+   ]
+  },
+  {
+   "id": "s10-assinatura",
+   "name": "Quando a máquina engrena, ela não para mais",
+   "start": 92,
+   "duration": 8,
+   "purpose": "Clímax e assinatura. A tagline sobre a máquina acelerando, depois a convergência para o lockup oficial, o CTA 'Abrir minha máquina →', meccanismo.com.br e o ciclo ENGRENAR · MONTAR · CALIBRAR · OPERAR · GIRAR. O Ponto volta para casa: encaixa no ícone e o logo fica completo.",
+   "text": [
+    {
+     "content": "// cada máquina tem o seu ritmo",
+     "t_in": 0.5,
+     "t_out": 8,
+     "style": "JetBrains Mono 500, 22 px, #A78BFA, minúsculas (h.text com cls t-mono, sem uppercase), tl em (192,108)",
+     "animation": "Digitação a 0,025 s/char."
+    },
+    {
+     "content": "Quando a máquina engrena,",
+     "t_in": 0,
+     "t_out": 4,
+     "style": "Space Grotesk 700, 124 px, ink, centrado em x 960, baseline 440 (≈1563 px), 'engrena,' em <em>",
+     "animation": "Palavras escalam 1,25→1 com fade (0,5 s, power4.out, stagger .06). Saída em 4,0–4,5: chars scale →.6 e fade em direção ao centro, stagger das bordas para dentro (.008)."
+    },
+    {
+     "content": "ela não para mais.",
+     "t_in": 0.5,
+     "t_out": 4,
+     "style": "Space Grotesk 700, 190 px, ink, centrado em x 960, baseline 680 (≈1530 px). O '.' de 'mais.' é transparente até 2,0: é o Ponto.",
+     "animation": "Palavras escalam 1,25→1 (0,5 s, power4.out, stagger .06). Push lento de 1→1,03. Saída igual à linha de cima."
+    },
+    {
+     "content": "Meccanismo (lockup: ícone + wordmark)",
+     "t_in": 4.5,
+     "t_out": 8,
+     "style": "h.icon de 190 px SEM ponto até 7,0, com bbox x 497–687 e y 325–515 (centro (592,420)). h.logo de 700 px com bbox x 723–1423 e y 346–494 ('Mecca' em gradiente, 'nismo' em #F5F3FF). Glow radial violeta α .35 atrás do lockup.",
+     "animation": "Arcos do ícone com DrawSVG 0→100% (0,5 s, mecca.out). Pupila scale 0→1 (mecca.back). Wordmark revelado por clip-path inset(0 100% 0 0)→inset(0), 0,6 s, mecca.out, a partir de 4,6."
+    },
+    {
+     "content": "ENGRENAR · MONTAR · CALIBRAR · OPERAR · GIRAR",
+     "t_in": 5,
+     "t_out": 8,
+     "style": "JetBrains Mono 500, 24 px, tracking .3em, centrado em x 960, baseline 610 (≈886 px). Começa em #A78BFA α .35.",
+     "animation": "Chars aparecem com stagger .01. Onda de brilho: cada verbo passa a ink #FBF8FF com glow e fica aceso. ENGRENAR em 5,0, MONTAR em 5,5, CALIBRAR em 6,0, OPERAR em 6,5, GIRAR em 7,0."
+    },
+    {
+     "content": "Abrir minha máquina →",
+     "t_in": 5,
+     "t_out": 8,
+     "style": "Botão pílula de 520×92 centrado em (960,740), fill #7C3AED, box-shadow 0 0 40px rgba(124,58,237,.5), texto Inter 600 34 px #FBF8FF",
+     "animation": "Pop: scale .85→1 com fade, 0,4 s, mecca.back. Brilho atravessa o botão em 6,0 (faixa diagonal branca α .25, 0,5 s). A seta '→' dá um nudge de +8 px em cada batida de 5,5 a 7,5 (yoyo de 0,25 s)."
+    },
+    {
+     "content": "meccanismo.com.br",
+     "t_in": 5.5,
+     "t_out": 8,
+     "style": "JetBrains Mono 500, 26 px, #C4B5FD, minúsculas, centrado em x 960, baseline 860",
+     "animation": "Digitação (stagger .03)."
+    }
+   ],
+   "layout": "PRIMEIRO QUADRO: igual ao último da S09 (ponto fundido em (960,500) com r 20; warp .5; speed 2; sem texto).\n\nDe 0,0 a 4,0:\n- Tagline centrada (baselines 440 / 680).\n- Atrás dela, uma máquina a α .18: 7 engrenagens (r 110, 14 dentes) em volta de (960,560), com o ícone central sem ponto (180 px, α .25).\n- 3 órbitas grandes com centro (960,560):\n\n  | rx | ry | rot |\n  |---|---|---|\n  | 1000 | 300 | −6° |\n  | 800 | 240 | −3° |\n  | 600 | 180 | −9° |\n\nDepois de 4,5, lockup centrado:\n- ícone em x 497–687;\n- wordmark em x 723–1423;\n- verbos com baseline 610;\n- CTA centrado em (960,740);\n- URL com baseline 860.\n\nEncaixe final do ponto: (670,458), r 8,3 (= (208,160) × 190/228 + (497,325)).",
+   "visuals": "Drop final:\n- flash;\n- onda de choque;\n- a máquina de fundo engata e acelera;\n- órbitas com riders e rastros;\n- o Ponto deixa de ser o ponto final de 'mais.' e passa a orbitar a frase: literalmente não para.\n\nDepois tudo converge para o lockup oficial. O Ponto orbita o ícone e, no último tempo, encaixa em casa, mudando de branco para #7C3AED. O último quadro é limpo e serve de thumbnail.",
+   "choreography": "0,0: DROP FINAL (global 92,0)\n- h.flash(#C4B5FD, pico .5, 0,35 s).\n- Onda de choque a partir de (960,500): r 0→1300, lavanda 3 px.\n- bg.warp .5→0 e speed 2→1 (0–0,5).\n- glowA/B 1→1,4→1,1.\n- As 7 engrenagens de fundo ENCAIXAM do raio 420 para 330 em volta de (960,560) (mecca.gear, stagger .04) e começam a girar a 30°/s, em sentidos alternados.\n- As órbitas se desenham (0,6 s) com riders #C026D3 / #A78BFA / #C4B5FD e rastros de 12 posições.\n\n0,0–0,5: o Ponto sai de (960,500) e vira o '.' de 'mais.' (≈1712,670), com r 20→14.\n\n1,0–4,0: NÃO PARA\n- Engrenagens de 30°/s para 300°/s (power2.in).\n- Riders ×1→×4, rastros mais longos.\n- bg.warp 0→.45 e speed 1→2,5.\n- A partir de 2,0 o Ponto sai do '.' e orbita a frase numa elipse com centro (960,560), rx 820, ry 130, rot −4°. O período cai de 1,5 s para 0,75 s até 4,0, com rastro em gradiente.\n\n4,0–4,5: CONVERGÊNCIA\n- A tagline sai.\n- Engrenagens e órbitas colapsam em (960,560) (0,4 s, mecca.in).\n- warp →0, speed →1.\n- O Ponto é puxado para uma órbita circular r 130 em volta de (592,420), 1 volta/s, com rastro.\n\n4,5: lockup. 5,0: verbos e CTA. 5,5: URL.\n\n6,5–7,0: o Ponto espirala para dentro (raio 130→0 em volta do encaixe, power3.in) até (670,458).\n\n7,0: CLIQUE FINAL\n- O Ponto encaixa: r 8,3, cor de núcleo #FBF8FF para #7C3AED (glow some).\n- Anel r 0→90, lavanda, α .8→0, 0,5 s.\n- GIRAR acende.\n- Pulso do lockup (scale 1→1,02→1).\n- glowA/B 1,1→1,4→1,1.\n\n7,0–8,0: hold.\n- Uma órbita fina (rx 560, ry 170, centro (960,440), α .12) com um rider minúsculo (r 3, período 4 s) continua girando em volta do lockup.\n- O glow do lockup respira.",
+   "transition_out": "Fim do vídeo. Não há corte.\n\nÚLTIMO QUADRO (thumbnail):\n- Lockup completo com o ponto #7C3AED no encaixe.\n- Verbos acesos.\n- CTA.\n- URL.\n- Órbita fina com rider.\n- bg padrão com glowA/B 1,1.",
+   "sound_cues": [
+    {
+     "t": 0,
+     "kind": "impact",
+     "note": "DROP final 1.0"
+    },
+    {
+     "t": 0,
+     "kind": "sub-drop",
+     "note": ".8"
+    },
+    {
+     "t": 0.5,
+     "kind": "impact",
+     "note": "segunda linha .7"
+    },
+    {
+     "t": 2,
+     "kind": "whoosh",
+     "note": "Ponto sai orbitando .3"
+    },
+    {
+     "t": 3,
+     "kind": "whoosh",
+     "note": ".3"
+    },
+    {
+     "t": 4.5,
+     "kind": "reverse",
+     "note": "pico na convergência .8"
+    },
+    {
+     "t": 4.5,
+     "kind": "impact",
+     "note": "lockup .9"
+    },
+    {
+     "t": 5,
+     "kind": "tick",
+     "note": "ENGRENAR .4"
+    },
+    {
+     "t": 5,
+     "kind": "click",
+     "note": "CTA .6"
+    },
+    {
+     "t": 5.5,
+     "kind": "tick",
+     "note": "MONTAR .4"
+    },
+    {
+     "t": 6,
+     "kind": "tick",
+     "note": "CALIBRAR .4"
+    },
+    {
+     "t": 6.5,
+     "kind": "tick",
+     "note": "OPERAR .4"
+    },
+    {
+     "t": 7,
+     "kind": "click",
+     "note": "ponto encaixa 1.0"
+    },
+    {
+     "t": 7,
+     "kind": "chime",
+     "note": "GIRAR 1.0"
+    }
+   ]
+  }
+ ],
+ "music_map": [
+  {
+   "bar_from": 1,
+   "bar_to": 3,
+   "section": "INTRO — ignição (0–6 s)",
+   "description": "Camadas pad e ticks. Cutoff 500→1100, ganho .8. O Ponto pisca nos ticks."
+  },
+  {
+   "bar_from": 4,
+   "bar_to": 7,
+   "section": "BUILD 1 — range (6–14 s)",
+   "description": "Camadas pad, sub, kick-half e ticks. Cutoff 900→1400. Os glitch e click dos cues fazem os rangidos."
+  },
+  {
+   "bar_from": 8,
+   "bar_to": 10,
+   "section": "BUILD 2 — as duas caixas (14–20 s)",
+   "description": "Camadas pad, sub, bass e kick 4/4. Cutoff 1200→1800."
+  },
+  {
+   "bar_from": 11,
+   "bar_to": 12,
+   "section": "BUILD 2b — hora H (20–24 s)",
+   "description": "Entra o arp no slam de 20,0. De 22 a 24 o filtro fecha (2400→600) enquanto a energia cai."
+  },
+  {
+   "bar_from": 13,
+   "bar_to": 15,
+   "section": "RISER — a virada (24–30 s)",
+   "description": "Camadas pad, sub, bass, kick, clap e ticks. Cutoff 2400→5000. Stop em 29,0 e silêncio até 30,0; só o tick de ' o' em 29,5."
+  },
+  {
+   "bar_from": 16,
+   "bar_to": 17,
+   "section": "DROP A — Somos o meccanismo (30–34 s)",
+   "description": "Arranjo completo: kick, clap, hats, bass, sub, arp, pad e bell. Cutoff 6000, ganho 1,0. Impact + sub-drop em 30,0. No audio.py (PROG[b % 4]) o compasso de índice 15 cai no acorde C; se possível, usar PROG[(b + 1) % 4] para o drop cair em Ré menor."
+  },
+  {
+   "bar_from": 18,
+   "bar_to": 21,
+   "section": "POR DENTRO (34–42 s)",
+   "description": "Camadas kick-half, sub, bass, pad e ticks. Cutoff 1600→2200. Groove contido para os cliques de montagem. O motor liga em 38,0."
+  },
+  {
+   "bar_from": 22,
+   "bar_to": 27,
+   "section": "GROOVE — plano de voo (42–54 s)",
+   "description": "Camadas kick, hats, bass, sub, pad e ticks. Cutoff 1800→3000. Os ticks funcionam como relógio dos 4 tempos."
+  },
+  {
+   "bar_from": 28,
+   "bar_to": 35,
+   "section": "DROP B — sete engrenagens (54–70 s)",
+   "description": "Camadas kick, clap, hats, bass, sub, arp e pad. Cutoff 3200→5000, ganho 1,0. Um clique forte por compasso (56–68)."
+  },
+  {
+   "bar_from": 36,
+   "bar_to": 38,
+   "section": "DROP B' — um só mecanismo (70–76 s)",
+   "description": "Mesmas camadas mais bell. Cutoff 6000. Pico em 72,0, quando tudo engrena."
+  },
+  {
+   "bar_from": 39,
+   "bar_to": 41,
+   "section": "BREAKDOWN — noite / rotinas (76–82 s)",
+   "description": "Camadas pad, arp, ticks, sub e bell. Cutoff 1600→1000, ganho .75. Enquanto você dorme."
+  },
+  {
+   "bar_from": 42,
+   "bar_to": 46,
+   "section": "BUILD 3 — diferenciais (82–92 s)",
+   "description": "Camadas kick-half, bass, sub, pad e hats, com arp a partir de 88. Cutoff 1200→3500, ganho .9. Riser com pico em 92,0."
+  },
+  {
+   "bar_from": 47,
+   "bar_to": 48,
+   "section": "DROP FINAL — não para mais (92–96 s)",
+   "description": "Arranjo completo: kick, clap, hats, bass, sub, arp, pad e bell. Cutoff 6000, ganho 1,05. Reverse + impact em 96,5 (convergência para o lockup)."
+  },
+  {
+   "bar_from": 49,
+   "bar_to": 50,
+   "section": "OUTRO — assinatura (96–100 s)",
+   "description": "Camadas pad, bell e sub. Cutoff 2400→700. Clique + chime do encaixe final em 99,0. fade_out de 1,5 s."
+  }
+ ]
+}

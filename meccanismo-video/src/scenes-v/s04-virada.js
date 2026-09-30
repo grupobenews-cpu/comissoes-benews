@@ -6,7 +6,8 @@
  * Mesma coreografia, tempos, easings e cues da horizontal (src/scenes/s04-virada.js); só o layout muda
  * (storyboard/vertical/VERTICAL_SPEC.md §2 S04 e §3):
  *   - negações empilhadas em x 90 (Não somos 72 · agência. 160 · Não somos 72 · consultoria. 160);
- *   - pós-drop: "Somos o" 96 · "meccanismo." 140 · ENGENHARIA DE CRESCIMENTO mono 30 no terço de cima;
+ *   - pós-drop: "Somos o" 96 · "meccanismo." 140 · ENGENHARIA DE CRESCIMENTO mono 34 .18em no terço de cima
+ *     (revisão global: 30 .32em → 34 .18em, entra inteira em 6,5);
  *   - ícone oficial de 440 px no palco, centrado em (540,1200); órbitas rx 350/308 em volta dele.
  *
  * Primeiro quadro (= último da S03, corte 24,0): sem texto, só o Ponto em (767,5, 1117,5) r 12;
@@ -161,8 +162,11 @@ ${SEL} .s4-strike-glow { position:absolute; left:0; right:0; top:-2px; bottom:-2
       return 1.04 - 0.04 * eIO(seg(t, 5.0, 5.4));
     }
 
-    // QUEDAS: chars giram ±40° e caem 700 px (power2.in)
-    function fall(chars, at, dur, seed, stagger = 0.015) {
+    // QUEDAS (= horizontal): reação seca no cue (kick: y −10, giro 4°, 0,06 s power2.out, todas as letras juntas)
+    // e depois a gravidade (y +700, giro ±14–40°, power2.in) em cascata curta. dur conta a partir do cue (kick
+    // incluso); o fade começa em 0,5×dur e termina em fadeEnd×dur → tudo some até ≈4,97 (o STOP de 5,0 cai no vazio).
+    const KICK = 0.06;
+    function fall(chars, at, dur, seed, stagger, fadeEnd = 0.85) {
       const r = h.rng(seed);
       chars.forEach((c, i) => {
         const sgn = r() < 0.5 ? -1 : 1;
@@ -170,23 +174,26 @@ ${SEL} .s4-strike-glow { position:absolute; left:0; right:0; top:-2px; bottom:-2
         const dx = (r() * 2 - 1) * 36;
         const t0 = at + i * stagger;
         gsap.set(c, { transformOrigin: '50% 60%' });
-        tl.to(c, { y: 700, x: dx, duration: dur, ease: 'power2.in' }, t0);
-        tl.to(c, { rotation: rot, duration: dur, ease: 'sine.in' }, t0);   // giro aparece antes da queda acelerar
-        tl.to(c, { opacity: 0, duration: dur * 0.3, ease: 'none' }, t0 + dur * 0.7);
+        tl.to(c, { y: -10, rotation: sgn * 4, duration: KICK, ease: 'power2.out' }, at);
+        tl.fromTo(c, { y: -10, x: 0 }, { y: 700, x: dx, duration: dur - KICK, ease: 'power2.in', immediateRender: false }, t0 + KICK);
+        // giro aparece antes da queda acelerar
+        tl.fromTo(c, { rotation: sgn * 4 }, { rotation: rot, duration: dur - KICK, ease: 'sine.in', immediateRender: false }, t0 + KICK);
+        tl.to(c, { opacity: 0, duration: dur * (fadeEnd - 0.5), ease: 'none' }, t0 + dur * 0.5);
       });
     }
     tl.set([L1b.mask, L2b.mask], { overflow: 'visible' }, 4.5);
-    fall(L1b.chars, 4.5, 0.6, 11);
-    fall(L2b.chars, 4.5, 0.6, 29);
-    const strikeFall = (K, at, rot) => {
-      tl.to(K.st, { y: 700, rotation: rot, duration: 0.6, ease: 'power2.in' }, at);
-      tl.to(K.st, { opacity: 0, duration: 0.18, ease: 'none' }, at + 0.42);
+    fall(L1b.chars, 4.5, 0.42, 11, 0.008);                // agência.     → some em ≈4,92
+    fall(L2b.chars, 4.5, 0.42, 29, 0.008);                // consultoria. → some em ≈4,95
+    const strikeFall = (K, delay, kickRot, rot) => {       // o risco reage junto (giro pequeno, como na horizontal)
+      tl.to(K.st, { y: -10, rotation: kickRot, duration: KICK, ease: 'power2.out' }, 4.5);
+      tl.fromTo(K.st, { y: -10, rotation: kickRot }, { y: 700, rotation: rot, duration: 0.42 - KICK, ease: 'power2.in', immediateRender: false }, 4.5 + KICK + delay);
+      tl.to(K.st, { opacity: 0, duration: 0.42 * 0.35, ease: 'none' }, 4.5 + delay + 0.42 * 0.5);
     };
-    strikeFall(K1, 4.53, -3.5);
-    strikeFall(K2, 4.56, 2.5);
+    strikeFall(K1, 0.015, -0.5, -3.5);
+    strikeFall(K2, 0.03, 0.4, 2.5);
     tl.set([L1s.mask, L2s.mask], { overflow: 'visible' }, 4.75);
-    fall([...L1s.txt.querySelectorAll('.s4-nao .char')], 4.75, 0.4, 53);
-    fall([...L2s.txt.querySelectorAll('.s4-nao .char')], 4.75, 0.4, 67);
+    fall([...L1s.txt.querySelectorAll('.s4-nao .char')], 4.75, 0.25, 53, 0.006);   // some em ≈4,97
+    fall([...L2s.txt.querySelectorAll('.s4-nao .char')], 4.75, 0.25, 67, 0.006);
 
     // ================================================================== PÓS-DROP (coluna em x 90, terço de cima)
     const SO_BASE = 540;
@@ -194,26 +201,47 @@ ${SEL} .s4-strike-glow { position:absolute; left:0; right:0; top:-2px; bottom:-2
       '<span class="s4-ib s4-Somos"><span class="s4-S">S</span><span class="s4-omos">omos</span></span> <span class="s4-ib s4-o">o</span>',
       { x: 90, baseline: SO_BASE, size: 96, weight: 500, color: P.lilac });
     const ME = line(postWrap, '<em>mecca</em><span class="s4-nismo">nismo.</span>', { x: 90, baseline: 700, size: 140, weight: 700, color: P.ink2 });
-    const EN = line(postWrap, 'ENGENHARIA DE CRESCIMENTO', { x: 90, baseline: 800, size: 30, cls: 't-mono', weight: 500, color: P.lavender, ls: '0.32em' });
+    // ENGENHARIA DE CRESCIMENTO (revisão global, = horizontal 28 .32em → 32 .18em): no vertical 30 .32em → 34 .18em
+    // (mesmo fator ≈1,14 sobre o corpo da spec; avanço 25 × .78 × 34 ≈ 663 px, tinta até x ≈ 747, dentro de 900)
+    const EN_LS = 0.18, EN_SIZE = 34;
+    const EN = line(postWrap, 'ENGENHARIA DE CRESCIMENTO', { x: 90, baseline: 800, size: EN_SIZE, cls: 't-mono', weight: 500, color: P.lavender, ls: EN_LS + 'em' });
 
-    // --- fusão dos dois 'somos' → 'Somos' (5,0–5,4): o 'omos' de cima casa exatamente com o 'omos' novo
+    // --- fusão dos dois 'somos' → 'Somos' (5,0–5,4). A troca 's'→'S' acontece DENTRO da palavra que viaja, no
+    // trecho rápido da convergência (5,1–5,2, crossfade 0,1 s): um 'S' embutido sobre o 's' aparece enquanto o 's'
+    // some, e o 'omos' anda w('S') − w('s') no mesmo intervalo (sem vão 'S omos'). Em 5,4 a palavra que viajou
+    // ('S'+'omos', 72 px × 96/72) coincide ao pixel com o 'Somos' novo (96 px) → troca seca. (= horizontal)
     const newS = pick(SO.txt, '.s4-S'), newOmos = pick(SO.txt, '.s4-omos'), newO = pick(SO.txt, '.s4-o');
     const omosX = h.rect(newOmos).x;
+    const newSx = h.rect(newS).x;
     const KSO = 96 / 72;
-    FUS.forEach(({ w, s, base, r, ws }, i) => {
-      const tx = omosX - ws * KSO;
+    const SW0 = 5.1, SWD = 0.1;                            // janela da troca s→S
+    FUS.forEach(({ w, s, base, r }, i) => {
+      const sC = s.querySelector('.char') || s;
+      // offsets locais medidos agora (o slam já deixou a linha em yPercent 130; r é de antes → só diferenças)
+      const rw = h.rect(w), scR = h.rect(sC);
+      const offX = scR.x - rw.x, offY = scR.y - rw.y;
+      w.style.position = 'relative';
+      const S = h.el('div', { text: 'S', style: { position: 'absolute', left: offX.toFixed(2) + 'px', top: offY.toFixed(2) + 'px' } }, w);
+      const omosC = [...w.querySelectorAll('.char')].filter((c) => !s.contains(c));
+      const omosOff = h.rect(omosC[0]).x - rw.x;
+      const sBase = (base - r.y) - offY;                  // baseline dentro da caixa do 's'/'S'
+      const tx = newSx;                                   // borda esquerda final da palavra = borda do 'S' novo
+      const dS = (omosX - tx) / KSO - omosOff;            // deslocamento local do 'omos' (≈ w('S') − w('s') a 72 px)
       gsap.set(w, { transformOrigin: `0px ${(base - r.y).toFixed(2)}px` });
+      gsap.set(S, { opacity: 0, scale: 0.8, transformOrigin: `0px ${sBase.toFixed(2)}px` });
+      gsap.set(sC, { transformOrigin: `0px ${sBase.toFixed(2)}px` });
       tl.to(w, { x: tx - r.x, y: SO_BASE - base, scale: KSO, duration: 0.4, ease: 'mecca.inOut' }, 5.0);
-      tl.to(s, { opacity: 0, duration: 0.1, ease: 'power1.in' }, 5.2);
+      // crossfade curto com leve morph de escala (o 's' cresce enquanto some, o 'S' termina de crescer)
+      tl.to(sC, { opacity: 0, scale: 1.2, duration: SWD, ease: 'sine.inOut' }, SW0);
+      tl.to(S, { opacity: 1, scale: 1, duration: SWD, ease: 'sine.inOut' }, SW0);
+      tl.to(omosC, { x: dS, duration: SWD, ease: 'sine.inOut' }, SW0);
       // a cópia de baixo (L2) se dissolve na de cima enquanto se aproxima e some antes de encostar
-      // (sem 'somos/somos' dobrado); a de cima segue inteira até casar com o 'omos' novo em 5,4 (troca seca)
+      // (sem 'somos/somos' dobrado); a de cima segue inteira até casar com o 'Somos' novo em 5,4 (troca seca)
       if (i === 1) tl.to(w, { opacity: 0, duration: 0.2, ease: 'power1.in' }, 5.02);
       else tl.set(w, { opacity: 0 }, 5.4);
     });
     gsap.set([newS, newOmos, newO], { opacity: 0 });
-    gsap.set(newS, { transformOrigin: '50% 80%', scale: 0.72 });
-    tl.to(newS, { opacity: 1, scale: 1, duration: 0.14, ease: 'power2.out' }, 5.28);
-    tl.set(newOmos, { opacity: 1 }, 5.4);
+    tl.set([newS, newOmos], { opacity: 1 }, 5.4);
     tl.fromTo(newO, { opacity: 0, y: 8 }, { opacity: 1, y: 0, duration: 0.2, ease: 'power2.out', immediateRender: false }, 5.5);
 
     // centro do '.' de 'meccanismo.' (medido pela caixa do glifo; spec: 909,4, 688,5)
@@ -236,27 +264,45 @@ ${SEL} .s4-strike-glow { position:absolute; left:0; right:0; top:-2px; bottom:-2
     tl.fromTo(ME.wrap, { scale: 1.35, filter: 'blur(16px)' }, { scale: 1, filter: 'blur(0px)', duration: 0.3, ease: 'expo.out', immediateRender: false }, 6.0);
     tl.set(ME.wrap, { filter: 'none' }, 6.32);
 
-    // shimmer do gradiente de 'mecca' (8,0–9,5): banda clara correndo sobre o degradê da marca (banda × 140/180)
+    // shimmer do gradiente de 'mecca' (8,0–9,4) (= horizontal): glint estreito (≤ 1 caractere) em lilás #C4B5FD,
+    // pico α .35, correndo sobre o degradê da marca sem desfazer a divisão 'mecca' (gradiente) / 'nismo.' (ink)
     const emEl = pick(ME.txt, 'em');
     const emR = h.rect(emEl);
-    const emChars = [...emEl.querySelectorAll('.char')].map((c) => ({ c, ox: h.rect(c).x - emR.x }));
-    const BAND = 240;
+    const emChars = [...emEl.querySelectorAll('.char')].map((c) => ({ c, ox: h.rect(c).x - emR.x, w: h.rect(c).w }));
+    const BAND = Math.round(Math.min(...emChars.map((o) => o.w)));   // largura do caractere mais estreito ('c')
+    // O glint (inclinado 100deg) mora num tile de 2×BAND: a pegada horizontal visível, em qualquer altura, é BAND e
+    // fica no miolo do tile, então as duas bordas do tile (e seus cantos) têm α 0 exato — sem 'placa' de bordas duras.
+    // Perfil em sino de cosseno (inclinação 0 nas pontas e no pico): lê como realce suave, sem aresta nem crista.
+    const GANG = 100, ga = (GANG * Math.PI) / 180;
+    const GTW = 2 * BAND;
+    const chH = Math.max(...emChars.map(({ c }) => h.rect(c).h));
+    const gLen = GTW * Math.abs(Math.sin(ga)) + chH * Math.abs(Math.cos(ga));   // linha do gradiente CSS no tile
+    const gHalf = ((BAND / 2) * Math.abs(Math.sin(ga))) / gLen;               // meia banda, em fração da linha
+    const gStops = [-1, -0.75, -0.5, -0.25, 0, 0.25, 0.5, 0.75, 1].map((k) =>
+      `rgba(196,181,253,${(0.35 * (1 + Math.cos(Math.PI * k)) / 2).toFixed(3)}) ${(100 * (0.5 + k * gHalf)).toFixed(2)}%`).join(', ');
+    // deslocamento horizontal da faixa entre o meio e o topo/base da caixa do caractere (inclinação de 10°)
+    const GSL = Math.ceil((chH / 2) * Math.abs(Math.cos(ga) / Math.sin(ga)));
     emChars.forEach(({ c }) => {
-      c.style.backgroundImage = 'linear-gradient(100deg, rgba(251,248,255,0) 0%, rgba(251,248,255,0.8) 50%, rgba(251,248,255,0) 100%), linear-gradient(90deg, #C026D3, #7C3AED)';
-      c.style.backgroundSize = `${BAND}px 100%, ${emR.w.toFixed(1)}px 100%`;
+      c.style.backgroundImage = `linear-gradient(${GANG}deg, ${gStops}), linear-gradient(90deg, #C026D3, #7C3AED)`;
+      c.style.backgroundSize = `${GTW}px 100%, ${emR.w.toFixed(1)}px 100%`;
       c.style.backgroundRepeat = 'no-repeat';
     });
-    const shim = { x: -BAND };
-    tl.fromTo(shim, { x: -BAND }, { x: emR.w + BAND * 0.5, duration: 1.4, ease: 'power2.inOut' }, 8.0);
+    // shim.x = centro do glint (coordenadas de 'mecca', na meia altura); começa e termina com a faixa inteira fora
+    // das letras, inclusive a ponta inclinada (± GSL)
+    const SH0 = -BAND / 2 - GSL, SH1 = emR.w + BAND / 2 + GSL;
+    const shim = { x: SH0 };
+    tl.fromTo(shim, { x: SH0 }, { x: SH1, duration: 1.4, ease: 'sine.inOut' }, 8.0);
 
-    // --- ENGENHARIA DE CRESCIMENTO: digitado (stagger .02) + hairline 7,5–8,0 (y 820,5, x 90 → fim da tinta)
-    gsap.set(EN.chars, { autoAlpha: 0 });
-    EN.chars.forEach((c, i) => tl.set(c, { autoAlpha: 1 }, 7.0 + i * 0.02));
-    [...EN.chars].reverse().forEach((c, i) => tl.set(c, { autoAlpha: 0 }, 9.5 + i * 0.012));
+    // --- ENGENHARIA DE CRESCIMENTO (a definição de categoria, = horizontal): a linha inteira entra em 6,5 (fade +
+    // y 12→0, 0,3 s, sem digitação) + hairline 7,5–8,0 (y 820,5, x 90 → fim da tinta); saída em 9,5 (apaga da
+    // direita para a esquerda com a hairline)
     const enR = h.rect(EN.txt);
+    gsap.set(EN.wrap, { autoAlpha: 0 });
+    tl.fromTo(EN.wrap, { autoAlpha: 0, y: 12 }, { autoAlpha: 1, y: 0, duration: 0.3, ease: 'mecca.out', immediateRender: false }, 6.5);
+    [...EN.chars].reverse().forEach((c, i) => tl.set(c, { autoAlpha: 0 }, 9.5 + i * 0.012));
     const hlSvg = h.svg('svg', { class: 'fill', width: W, height: H, viewBox: `0 0 ${W} ${H}` }, postWrap);
     const hl = h.svg('line', {
-      x1: 90, y1: 820.5, x2: (enR.right - 0.32 * 30).toFixed(1), y2: 820.5,
+      x1: 90, y1: 820.5, x2: (enR.right - EN_LS * EN_SIZE).toFixed(1), y2: 820.5,
       stroke: P.lavender, 'stroke-opacity': 0.5, 'stroke-width': 1,
     }, hlSvg);
     tl.fromTo(hl, { drawSVG: '0% 0%' }, { drawSVG: '0% 100%', duration: 0.5, ease: 'mecca.out' }, 7.5);
@@ -285,6 +331,21 @@ ${SEL} .s4-strike-glow { position:absolute; left:0; right:0; top:-2px; bottom:-2
     arcsG.appendChild(icon.arcOuter);
     arcsG.appendChild(icon.arcInner);
     icon.dot.style.display = 'none';                     // o Ponto ocupa o encaixe
+
+    // mergulho (= horizontal): a pupila troca o violeta chapado por um gradiente radial centrado no V (114,70 no
+    // viewBox do ícone, userSpaceOnUse → independe da escala do ícone): #7C3AED na borda interna (paredes do V) →
+    // #4C1D95 na externa. Enquanto a escala é 1 os stops são iguais (e o fill volta a ser a cor chapada), então nada
+    // muda antes do zoom. O arco externo (a outra forma grande que passa pela câmera) ganha o mesmo sombreamento.
+    const pgDefs = h.svg('defs', {}, iconSvg);
+    function radialShade(r, hold) {
+      const id = h.uid('s4sh');
+      const g = h.svg('radialGradient', { id, gradientUnits: 'userSpaceOnUse', cx: 114, cy: 70, r }, pgDefs);
+      h.svg('stop', { offset: 0, 'stop-color': P.violet }, g);
+      h.svg('stop', { offset: hold, 'stop-color': P.violet }, g);
+      return { id, out: h.svg('stop', { offset: 1, 'stop-color': P.violet }, g) };
+    }
+    const shPupil = radialShade(84, 0.12);
+    const shArc = radialShade(170, 0.3);
 
     gsap.set([icon.arcOuter, icon.arcInner], { visibility: 'hidden' });
     // visibilidade 1/60 s depois do início do drawSVG: um traço de comprimento 0 com linecap redondo apareceria
@@ -506,6 +567,10 @@ ${SEL} .s4-strike-glow { position:absolute; left:0; right:0; top:-2px; bottom:-2
         paths[lay].lineTo(p2.x, p2.y);
         last = lay;
       }
+      // lineCap explícito (= horizontal): drawRider deixa 'round' no contexto, e herdar isso do quadro anterior
+      // tornava as pontas das órbitas dependentes da ordem dos seeks. 'butt': os trechos de trás/frente se encontram
+      // sem sobrepor (sem pontinho mais claro nas emendas)
+      cb.lineCap = cf.lineCap = 'butt';
       cb.strokeStyle = hexA(P.lavender, 0.11 * fade); cb.lineWidth = 1.5; cb.stroke(paths.b);
       cf.strokeStyle = hexA(P.lavender, 0.22 * fade); cf.lineWidth = 1.5; cf.stroke(paths.f);
     }
@@ -539,6 +604,15 @@ ${SEL} .s4-strike-glow { position:absolute; left:0; right:0; top:-2px; bottom:-2
       if (lt < 1e-4) Object.assign(bg, BG_IN);
       const s = zoomAt(cam.p), deco = cam.deco;
       zoomG.setAttribute('transform', `translate(${VPT.x.toFixed(2)} ${VPT.y.toFixed(2)}) scale(${f3(s)}) translate(${(-VPT.x).toFixed(2)} ${(-VPT.y).toFixed(2)})`);
+      // sombreamento da pupila (escala 1→3) e desfoque proporcional à escala: 0 px em 8× → 12 px × 1,1 (fator do
+      // ícone vertical, §4.7) em 40×
+      const kSh = h.smooth(1, 3, s);
+      icon.pupil.setAttribute('fill', kSh > 0.001 ? `url(#${shPupil.id})` : P.violet);
+      icon.arcOuter.setAttribute('stroke', kSh > 0.001 ? `url(#${shArc.id})` : P.violet);
+      shPupil.out.setAttribute('stop-color', mixHex(P.violet, P.violetDarker, kSh));
+      shArc.out.setAttribute('stop-color', mixHex(P.violet, P.violetDarker, kSh));
+      const zb = 12 * KI * clamp((s - 8) / 32);
+      iconSvg.style.filter = zb > 0.01 ? `blur(${zb.toFixed(2)}px)` : 'none';
 
       cb.setTransform(1, 0, 0, 1, 0, 0); cb.clearRect(0, 0, W, H);
       cf.setTransform(1, 0, 0, 1, 0, 0); cf.clearRect(0, 0, W, H);
@@ -586,7 +660,7 @@ ${SEL} .s4-strike-glow { position:absolute; left:0; right:0; top:-2px; bottom:-2
       }
 
       // --- shimmer de 'mecca'
-      for (const { c, ox } of emChars) c.style.backgroundPosition = `${(shim.x - ox).toFixed(1)}px 0px, ${(-ox).toFixed(1)}px 0px`;
+      for (const { c, ox } of emChars) c.style.backgroundPosition = `${(shim.x - BAND - ox).toFixed(1)}px 0px, ${(-ox).toFixed(1)}px 0px`;
     });
 
     // ================================================================== SOM (idêntico à horizontal)
@@ -614,7 +688,7 @@ ${SEL} .s4-strike-glow { position:absolute; left:0; right:0; top:-2px; bottom:-2
     root.dataset.s4 = JSON.stringify({
       agRight: r1(h.rect(L1b.txt).right), coRight: r1(h.rect(L2b.txt).right), somos: somosR,
       meRight: r1(h.rect(ME.txt).right), meDot: [r1(dotR.cx), r1(dotR.cy)], emW: r1(emR.w),
-      enRight: r1(enR.right), hlEnd: r1(enR.right - 0.32 * 30), ebRight: r1(h.rect(ebLbl).right),
+      enRight: r1(enR.right), hlEnd: r1(enR.right - EN_LS * EN_SIZE), ebRight: r1(h.rect(ebLbl).right),
       sock: [r1(SOCK.x), r1(SOCK.y)], vpt: [r1(VPT.x), r1(VPT.y)],
     });
   },

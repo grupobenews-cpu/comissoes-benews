@@ -726,12 +726,12 @@ ${SEL} .s9-lab > span { display:inline-block; }
       machine.setAttribute('transform', machineTf(ms));
       gearRot.setAttribute('transform', `rotate(${th.toFixed(3)})`);
       gearG.setAttribute('transform', `translate(1400 560) scale(${(0.31 * (1 - cS)).toFixed(4)})`);
-      gearG.setAttribute('opacity', (1 - smooth(0.6, 1, cS)).toFixed(3));
+      gearG.setAttribute('opacity', (1 - P1I(clamp((t - 3.6) / 0.3))).toFixed(3));   // fade em power1.in (escala segue mecca.in)
       for (const p of PL) {
         const rr = 198 * (1 - cP);
         const x = 1400 + rr * Math.cos(p.ang * DEG), y = 560 + rr * Math.sin(p.ang * DEG);
         p.g.setAttribute('transform', `translate(${x.toFixed(2)} ${y.toFixed(2)}) scale(${(1 - 0.75 * cP).toFixed(4)})`);
-        p.g.setAttribute('opacity', (1 - smooth(0.55, 1, cP)).toFixed(3));
+        p.g.setAttribute('opacity', (1 - P1I(clamp((t - 3.5) / 0.3))).toFixed(3));   // fade em power1.in (raio/escala seguem mecca.in)
         const rotB = p.ang + 180 + 180 / 16 - (28 / 16) * (th - p.ang);
         p.rot.setAttribute('transform', `rotate(${rotB.toFixed(3)})`);
       }

@@ -7,12 +7,15 @@
  * rx 120, ry 360) e, em 2,5–3,0, se LEVANTA e vira a linha do tempo vertical x 250, y 580→1440.
  * O Ponto é a sonda que desce pelos 4 tempos (nós em y 580 / 820 / 1060 / 1300): números à
  * esquerda da linha (saem de trás dela para a esquerda), nomes e descrições à direita (x 290).
- * No fim o Ponto gira sozinho num círculo r 22 em (250,1418) e a linha se enrola num círculo
- * (540,1100) r 300, sentido horário, pela metade de cima — que a S07 transforma em engrenagem.
+ * No fim o Ponto gira sozinho num círculo (r 22 → 34 no chime de 8,5) apoiado na ponta de baixo
+ * da linha (250,1440), e a linha se enrola num círculo (540,1100) r 300, sentido horário, pela
+ * metade de cima — que a S07 transforma em engrenagem.
  *
  * Tudo o que é canvas (órbita, linha, nós, Ponto, riders) é função analítica de lt;
- * o texto é DOM animado na timeline local. Um "push" de câmera lento (1 → 1,025 → 1, origem
- * (540,960)) é aplicado igualmente ao DOM (CSS scale) e aos canvases (setTransform).
+ * o texto é DOM animado na timeline local. Um "push" de câmera lento (1 → 1,006 em 0–8,0,
+ * → ≈1,024 em 8,0–11,4, → 1 no fim) com origem na margem esquerda (90,960) é aplicado
+ * igualmente ao grupo da linha do tempo (DOM, CSS scale) e aos canvases (setTransform);
+ * o eyebrow fica fora do push (preso em (90,270)).
  */
 MECCA.scene({
   id: 's06-plano-de-voo',
@@ -23,7 +26,7 @@ MECCA.scene({
     const TAU = Math.PI * 2;
     const EIO = gsap.parseEase('mecca.inOut');
     const EOUT = gsap.parseEase('mecca.out');
-    const EIN = gsap.parseEase('mecca.in');
+    const EP2IN = gsap.parseEase('power2.in');
     const EBACK = gsap.parseEase('mecca.back');
     const EP3 = gsap.parseEase('power3.inOut');
     const ESIO = gsap.parseEase('sine.inOut');
@@ -53,7 +56,7 @@ MECCA.scene({
     const T_SZ = 150, T_BL = [470, 620];              // "Quatro" / "tempos" antes do FLIP
     const HDR_SZ = 72, HDR_BL = 380;                  // header depois do FLIP
     const SUB_SZ = 56, SUB_BL = 710, SUB_SZ2 = 40, SUB_BL2 = 436;
-    const CAM_O = { x: 540, y: 960 };                 // origem do push de câmera
+    const CAM_O = { x: MX, y: 960 };                  // origem do push: margem esquerda fixa (x 90)
 
     // ------------------------------------------------------------------ CSS local
     h.el('style', {
@@ -91,7 +94,9 @@ MECCA.scene({
     }
 
     // ------------------------------------------------------------------ header
-    const ebWrap = layer(wrap);
+    // eyebrow FORA do wrapper do push (fica preso na margem, em (90,270)); abaixo do canvas do Ponto
+    const ebWrap = h.el('div', { cls: 's06-layer' }, root);
+    root.insertBefore(ebWrap, front.canvas);
     const eb = h.eyebrow('O PLANO DE VOO', { x: MX, y: EB_Y, anchor: 'cl', size: 26, parent: ebWrap });
     const ebDash = eb.querySelector('.dash');
     const ebLbl = eb.querySelector('.lbl');
@@ -203,7 +208,7 @@ MECCA.scene({
       tl.fromTo(c.name, { clipPath: clipA }, { clipPath: clipB, duration: 0.35, ease: 'power2.inOut' }, c.T);
       tl.fromTo(scan, { x: 0 }, { x: 1.12 * w, duration: 0.35, ease: 'power2.inOut', immediateRender: false }, c.T);
       tl.fromTo(scan, { opacity: 0 }, { opacity: 1, duration: 0.06, ease: 'none', immediateRender: false }, c.T);
-      tl.to(scan, { opacity: 0, duration: 0.2, ease: 'mecca.in' }, c.T + 0.35);
+      tl.to(scan, { opacity: 0, duration: 0.2, ease: 'power1.in' }, c.T + 0.35);   // fade: nunca mecca.in em opacidade
     }
 
     // 02 — Engenharia: chars caem + marcas de corte em L (16 px, folga 12)
@@ -266,7 +271,7 @@ MECCA.scene({
     tl.fromTo(subEm, { filter: glowOn }, { filter: glowOff, duration: 0.9, ease: 'sine.inOut', immediateRender: false }, 8.75);
 
     // nomes anteriores vão para α .7
-    for (let i = 0; i < 3; i++) tl.to(cols[i].name, { opacity: 0.7, duration: 0.3, ease: 'mecca.inOut' }, TT[i + 1]);
+    for (let i = 0; i < 3; i++) tl.to(cols[i].name, { opacity: 0.7, duration: 0.3, ease: 'sine.inOut' }, TT[i + 1]);
 
     // ------------------------------------------------------------------ saída (11,40–11,72)
     // A linha começa a enrolar em 11,4 (power3.inOut).
@@ -296,13 +301,31 @@ MECCA.scene({
     });
 
     // ------------------------------------------------------------------ push de câmera
+    // Origem na margem esquerda (90,960): a coluna x 90 não sai do lugar. Mesmo perfil da horizontal (uma
+    // curva só, sem quinas de velocidade): 0–8,0 quase imperceptível (1 → 1,006, linear); 8,0–11,4 o push
+    // do groove, acelerando suavemente a partir da mesma velocidade; 11,4–fim volta a 1 (mecca.inOut)
+    // escondido no enrolar da linha, para o último quadro casar com a S07.
+    // ADAPTAÇÃO: o ganho do groove é +0,02 como na horizontal, limitado para que a linha de texto mais
+    // longa (descrição 01, até x ≈ 969) fique ≤ 900 px a partir da margem com o push (spec §1.2, x ≤ 990).
+    const TXT_R = Math.max(...cols.map(c => Math.max(h.rect(c.desc).right, c.nr.right)));
+    const PUSH_T0 = 8.0, PUSH_T1 = 11.4, PUSH_A = 0.006;
+    const PUSH_B = Math.min(0.02, 900 / (TXT_R - MX) - 1 - PUSH_A), PUSH_PEAK = 1 + PUSH_A + PUSH_B;
+    const pushK = (PUSH_A / PUSH_T0) * (PUSH_T1 - PUSH_T0) / PUSH_B;          // inclinação inicial normalizada do 2º trecho
+    function pushScale(t) {
+      if (t <= PUSH_T0) return 1 + PUSH_A * t / PUSH_T0;
+      const x = clamp((t - PUSH_T0) / (PUSH_T1 - PUSH_T0));
+      return 1 + PUSH_A + PUSH_B * (pushK * x + (1 - pushK) * x * x);
+    }
     gsap.set(wrap, { transformOrigin: `${CAM_O.x}px ${CAM_O.y}px` });
-    tl.fromTo(wrap, { scale: 1 }, { scale: 1.025, duration: 11.3, ease: 'none' }, 0);
-    tl.fromTo(wrap, { scale: 1.025 }, { scale: 1, duration: END - 11.3, ease: 'mecca.inOut', immediateRender: false }, 11.3);
+    tl.fromTo(wrap, { scale: 1 }, { scale: PUSH_PEAK, duration: PUSH_T1, ease: (q) => (pushScale(q * PUSH_T1) - 1) / (PUSH_PEAK - 1) }, 0);
+    tl.fromTo(wrap, { scale: PUSH_PEAK }, { scale: 1, duration: END - PUSH_T1, ease: 'mecca.inOut', immediateRender: false }, PUSH_T1);
 
     // ------------------------------------------------------------------ fundo
     const BG_IN = { glowA: 1, glowB: 1, glowC: 1, grid: 0, particles: 1, driftX: 0, driftY: 0, speed: 1, warp: 0, vignette: 0.55, dim: 0, hue: 0, grain: 1 };
     tl.set(bg, Object.assign({}, BG_IN), 0);
+    // pulso da malha no impacto de abertura (0 → 1 → .15), depois a entrada combinada 0,5–1,5 até .35
+    tl.to(bg, { grid: 1, duration: 0.1, ease: 'power2.out' }, 0);
+    tl.to(bg, { grid: 0.15, duration: 0.4, ease: 'sine.out' }, 0.1);
     tl.to(bg, { grid: 0.35, duration: 1.0, ease: 'sine.inOut' }, 0.5);
     tl.to(bg, { grid: 0.2, duration: END - 11.5, ease: 'mecca.inOut' }, 11.5);
 
@@ -329,13 +352,14 @@ MECCA.scene({
       const k = seg(t, 2.5, 3.0, EIO);
       return { cx: LINE_X, cy: 1110 - 100 * k, rx: 120 * (1 - k), ry: 360 + 70 * k, k };
     }
-    // ângulo percorrido pelo Ponto na elipse: acelera 0–0,5, cruzeiro 180°/s (período 2 s), freia 2,0–2,5 → 1 volta
+    // ângulo percorrido pelo Ponto na elipse: já sai a 180°/s em t = 0 (período 2 s, sem rampa — o impacto
+    // de abertura cai num quadro em movimento), cruzeiro até 1,5 e freia 1,5–2,5 (ω·(1 − smoothstep)) → 1 volta
+    const ORB_C = 1.5, ORB_D = 1.0;
     function orbitAngle(t) {
       const w = Math.PI;
       if (t <= 0) return 0;
-      if (t <= 0.5) return w * 0.5 * S(t / 0.5);
-      if (t <= 2.0) return w * (0.25 + (t - 0.5));
-      if (t <= 2.5) { const u = (t - 2.0) / 0.5; return w * (1.75 + 0.5 * (u - S(u))); }
+      if (t <= ORB_C) return w * t;
+      if (t <= ORB_C + ORB_D) { const u = (t - ORB_C) / ORB_D; return w * (ORB_C + ORB_D * (u - S(u))); }
       return TAU;
     }
     const TOP = -Math.PI / 2;   // começa no topo da elipse, sentido horário (ângulo crescente)
@@ -350,17 +374,33 @@ MECCA.scene({
       }
       return y;
     }
-    // Ponto girando sozinho: círculo r 22 em (250,1418); ≈1 volta/s, com rampa de 0,2 s; parte da ponta
-    // de baixo da linha (250,1440) (ângulo π/2), sentido horário, e volta a ela em 11,4
-    const CC = { x: LINE_X, y: 1418 }, CR = 22, C0 = 8.5, RAMP = 0.2, A0 = Math.PI / 2;
+    // Ponto girando sozinho: nasce no círculo r 22 com centro (250,1418) (spec), apoiado na ponta de baixo da
+    // linha (250,1440), e no chime de 8,5 abre para r 34 (8,5–9,1, mecca.out), como na horizontal. ≈1 volta/s,
+    // sentido horário, rampa de 0,2 s; entra na ponta da linha (8,5) e sai dela para o enrolar (11,4).
+    // ADAPTAÇÃO: a descrição 04 começa em x 290, 40 px à direita do eixo. Com o centro no eixo, r 34 levaria
+    // o Ponto a ~4 px do "o" de "o crescimento" (com r 22 são ~12 px). Por isso o círculo cresce para o lado
+    // livre (esquerda): a borda direita fica em x 272 (a mesma do r 22) e o círculo continua passando pela
+    // ponta da linha — centro (250 − (r − 22), 1440 − √(r² − (r − 22)²)): (250,1418) → (238, 1408,2).
+    const CR0 = 22, CR1 = 34, C0 = 8.5, RAMP = 0.2;
     const OMEGA = TAU * 3 / (11.4 - C0 - RAMP / 2);
+    const circR = t => lerp(CR0, CR1, seg(t, C0, C0 + 0.6, EOUT));
+    const circC = t => { const r = circR(t), dx = r - CR0; return { x: LINE_X - dx, y: LY1 - Math.sqrt(r * r - dx * dx) }; };
+    const circA0 = t => { const c = circC(t); return Math.atan2(LY1 - c.y, LINE_X - c.x); };   // ângulo da ponta da linha (π/2 com r 22)
     function circAngle(t) {
       const tau = t - C0;
       if (tau <= 0) return 0;
       if (tau <= RAMP) return OMEGA * RAMP * S(tau / RAMP);
       return OMEGA * (tau - RAMP / 2);
     }
+    function circPos(t) {
+      const a = circA0(t) + circAngle(t), c = circC(t), r = circR(t);
+      return { x: c.x + r * Math.cos(a), y: c.y + r * Math.sin(a) };
+    }
     // polyline linha → círculo (i ∈ [0,63]): (250, 580 + i·860/63) → (540 + 300·cos(π + i·2π/63), 1100 + 300·sin(π + i·2π/63))
+    // Lerp cartesiano, como na spec. A correção da horizontal (lerp POLAR, contra o laço na ponta direita)
+    // não se aplica aqui: com a linha vertical à esquerda do centro (540,1100) e o enrolar horário, este
+    // morph não se cruza em nenhum p (conferido a cada .01), e o lerp polar é que dobraria a curva, porque
+    // a linha, vista do centro, corre no sentido anti-horário e o círculo de chegada no horário.
     const RC = { x: 540, y: 1100 }, RR = 300;
     const morphP = t => seg(t, 11.4, END, EP3);
     function linePt(s, p) {
@@ -375,8 +415,7 @@ MECCA.scene({
       }
       if (t < 3.0) { const e = ellipseAt(t); return { x: e.cx, y: e.cy - e.ry }; }
       if (t < C0) return { x: LINE_X, y: lineY(t) };
-      const a = A0 + circAngle(t);
-      const c = { x: CC.x + CR * Math.cos(a), y: CC.y + CR * Math.sin(a) };
+      const c = circPos(t);
       if (t < 11.4) return c;
       const tip = linePt(63, morphP(t));
       const w = smooth(11.4, 11.52, t);
@@ -459,55 +498,68 @@ MECCA.scene({
       c.restore();
     }
 
-    // brilho que percorre a linha de cima para baixo (9,5–10,5), sincronizado com os pulsos dos nós
-    const SW_V = (NY[1] - NY[0]) / 0.25;   // 960 px/s: passa em cada nó no instante do pulso
-    const SW_T = 120, SW_A = 12;
+    // halo que expande (mesmo desenho dos nós): r 10 → rMax, α a0 → 0, com u ∈ [0,1]
+    function drawHalo(c, x, y, u, rMax = 48, a0 = 0.6) {
+      if (u <= 0 || u >= 1) return;
+      const hr = 10 + (rMax - 10) * EOUT(u);
+      const ha = a0 * (1 - u);
+      const rg = c.createRadialGradient(x, y, 0, x, y, hr);
+      rg.addColorStop(0, hexA(P.violet, 0)); rg.addColorStop(0.7, hexA(P.violet, 0.18 * ha)); rg.addColorStop(1, hexA(P.lavender, 0.3 * ha));
+      c.fillStyle = rg; c.beginPath(); c.arc(x, y, hr, 0, TAU); c.fill();
+      c.strokeStyle = hexA(P.lavender, ha); c.lineWidth = 2;
+      c.beginPath(); c.arc(x, y, hr, 0, TAU); c.stroke();
+    }
+
+    // Groove 8,5–11,4: acentos só onde há cue. 9,5 e 10,0 (ticks): os 4 nós pulsam juntos (scale 1 → 2 → 1,
+    // anel r 10 → 40, α .6 → 0). Entre os dois ticks um brilho corre a linha inteira de cima para baixo
+    // (580 → 1440, 9,5–10,0) e chega ao Ponto girando no segundo tick: o plano alimenta a máquina que gira sozinha.
+    const PULSES = [9.5, 10.0];
+    const SW0 = 9.5, SW1 = 10.0, SW_TAIL = 160, SW_HEAD = 12;   // cauda ∝ comprimento da linha (280 × 860/1536)
+    // 0 → 1 (power2.out) de T − 1/30 a T + 0,06 (o quadro do tick já mostra o ataque), 1 → 0 em 0,3 s (sine.inOut)
+    const PB0 = 1 / 30, PB1 = 0.06, PB2 = 0.3;
+    function pulseBump(t, T) {
+      if (t <= T - PB0 || t >= T + PB1 + PB2) return 0;
+      if (t < T + PB1) { const u = (t - T + PB0) / (PB0 + PB1); return 1 - (1 - u) * (1 - u); }
+      return 1 - ESIO((t - T - PB1) / PB2);
+    }
     function drawSweep(c, t) {
-      if (t < 9.35 || t > 10.75) return;
-      const yh = LY0 + (t - 9.5) * SW_V;
-      const y0 = Math.max(LY0, yh - SW_T), y1 = Math.min(LY1, yh + SW_A);
+      const yh = LY0 + (t - SW0) / (SW1 - SW0) * LLEN;
+      if (yh < LY0 || yh - SW_TAIL > LY1) return;
+      const y0 = Math.max(LY0, yh - SW_TAIL), y1 = Math.min(LY1, yh + SW_HEAD);
       if (y1 <= y0) return;
+      const fade = 1 - seg(yh, LY1 - 40, LY1 + SW_TAIL);   // a cauda entra no Ponto e se apaga
       c.save();
-      const k = SW_T / (SW_T + SW_A);
-      const g = c.createLinearGradient(0, yh - SW_T, 0, yh + SW_A);
-      g.addColorStop(0, 'rgba(251,248,255,0)'); g.addColorStop(k, 'rgba(251,248,255,0.95)'); g.addColorStop(1, 'rgba(251,248,255,0)');
-      const g2 = c.createLinearGradient(0, yh - SW_T, 0, yh + SW_A);
-      g2.addColorStop(0, hexA(P.lavender, 0)); g2.addColorStop(k, hexA(P.lavender, 0.35)); g2.addColorStop(1, hexA(P.lavender, 0));
+      const g = c.createLinearGradient(0, yh - SW_TAIL, 0, yh + SW_HEAD);
+      g.addColorStop(0, 'rgba(251,248,255,0)'); g.addColorStop(0.9, `rgba(251,248,255,${0.95 * fade})`); g.addColorStop(1, 'rgba(251,248,255,0)');
+      const g2 = c.createLinearGradient(0, yh - SW_TAIL, 0, yh + SW_HEAD);
+      g2.addColorStop(0, hexA(P.lavender, 0)); g2.addColorStop(0.9, hexA(P.lavender, 0.4 * fade)); g2.addColorStop(1, hexA(P.lavender, 0));
       c.lineCap = 'butt';
-      c.strokeStyle = g2; c.lineWidth = 10; c.beginPath(); c.moveTo(LINE_X, y0); c.lineTo(LINE_X, y1); c.stroke();
+      c.strokeStyle = g2; c.lineWidth = 12; c.beginPath(); c.moveTo(LINE_X, y0); c.lineTo(LINE_X, y1); c.stroke();
       c.strokeStyle = g; c.lineWidth = 3; c.beginPath(); c.moveTo(LINE_X, y0); c.lineTo(LINE_X, y1); c.stroke();
       c.restore();
     }
 
     function drawNodes(c, t) {
       const p = morphP(t);
-      const out = 1 - seg(t, 11.45, 11.85, EIN);
+      const out = 1 - seg(t, 11.45, 11.85, EP2IN);   // power2.in: o nó chega a ~1,6 px no último quadro (sem 'pop')
       c.save();
       for (let i = 0; i < 4; i++) {
         const T = TT[i];
         if (t < T) continue;
         const pos = linePt((NY[i] - LY0) * 63 / LLEN, p);
-        // halo que expande
-        const hu = seg(t, T, T + 0.7);
-        if (hu > 0 && hu < 1) {
-          const hr = 10 + 38 * EOUT(hu);
-          const ha = 0.6 * (1 - hu);
-          const rg = c.createRadialGradient(pos.x, pos.y, 0, pos.x, pos.y, hr);
-          rg.addColorStop(0, hexA(P.violet, 0)); rg.addColorStop(0.7, hexA(P.violet, 0.18 * ha)); rg.addColorStop(1, hexA(P.lavender, 0.3 * ha));
-          c.fillStyle = rg; c.beginPath(); c.arc(pos.x, pos.y, hr, 0, TAU); c.fill();
-          c.strokeStyle = hexA(P.lavender, ha); c.lineWidth = 2;
-          c.beginPath(); c.arc(pos.x, pos.y, hr, 0, TAU); c.stroke();
-        }
-        // pulso em sequência (9,5 / 9,75 / 10,0 / 10,25)
-        const pu = seg(t, 9.5 + 0.25 * i, 9.7 + 0.25 * i);
-        const ps = 1 + 0.5 * Math.sin(Math.PI * pu);
-        if (pu > 0 && pu < 1) {
-          const pr = 10 + 26 * pu;
-          c.strokeStyle = hexA(P.lavender, 0.45 * (1 - pu)); c.lineWidth = 1.5;
-          c.beginPath(); c.arc(pos.x, pos.y, pr, 0, TAU); c.stroke();
+        drawHalo(c, pos.x, pos.y, seg(t, T, T + 0.7));                    // halo de chegada
+        let ps = 1;
+        for (const PT of PULSES) {                                         // pulsos 9,5 e 10,0
+          ps += pulseBump(t, PT);
+          const u = seg(t, PT - PB0, PT + 0.5);
+          if (u > 0 && u < 1) {
+            c.strokeStyle = hexA(P.lavender, 0.6 * (1 - u)); c.lineWidth = 2;
+            c.beginPath(); c.arc(pos.x, pos.y, 10 + 30 * EOUT(u), 0, TAU); c.stroke();
+          }
         }
         const r = 10 * EBACK(seg(t, T, T + 0.3)) * ps * out;
         if (r <= 0.05) continue;
+        if (ps > 1.01) h.glowDot(c, pos.x, pos.y, r, P.lavender, 0.5 * (ps - 1));   // brilho do pulso
         c.fillStyle = P.violet;
         c.beginPath(); c.arc(pos.x, pos.y, r, 0, TAU); c.fill();
         c.strokeStyle = P.lavender; c.lineWidth = 2 * Math.min(1, r / 10);
@@ -516,57 +568,99 @@ MECCA.scene({
       c.restore();
     }
 
-    // riders da órbita (0–2,8), a +120° e +240° do Ponto
+    // riders da órbita (0–2,8), a +120° e +240° do Ponto: entram no impacto de abertura já nos seus lugares,
+    // com pop de escala mecca.back (0,0–0,45) e um anel pequeno cada. α nasce em 0 (1º quadro = último da S05).
     function drawRiders(c, t) {
-      const a = seg(t, 0.12, 0.4) * (1 - seg(t, 2.45, 2.8));
+      const a = seg(t, 0, 0.08) * (1 - seg(t, 2.45, 2.8));
       if (a <= 0.001) return;
-      const e = ellipseAt(t), th = TOP + orbitAngle(t), sp = seg(t, 0.1, 1.2, EOUT);
+      const e = ellipseAt(t), th = TOP + orbitAngle(t);
+      const pop = EBACK(seg(t, 0, 0.45)), ru = seg(t, 0.02, 0.5);
       [[TAU / 3, P.magenta, 5], [-TAU / 3, P.lavender, 4]].forEach(([off, col, r]) => {
-        const ang = th + off * sp;
+        const ang = th + off;
         const x = e.cx + e.rx * Math.cos(ang), y = e.cy + e.ry * Math.sin(ang);
-        const depth = 0.75 + 0.25 * Math.cos(ang);        // metade de trás (esquerda) com α ×.5
-        h.glowDot(c, x, y, r, col, a * depth);
+        const ga = a * (0.75 + 0.25 * Math.cos(ang));      // metade de trás (esquerda) com α ×.5
+        if (pop > 0.01) h.glowDot(c, x, y, r * pop, col, ga);
+        if (ru > 0 && ru < 1) {
+          c.strokeStyle = hexA(col, 0.5 * (1 - ru) * ga); c.lineWidth = 1.5;
+          c.beginPath(); c.arc(x, y, r + 22 * EOUT(ru), 0, TAU); c.stroke();
+        }
       });
     }
 
-    // órbita pequena do Ponto no fim da linha
+    // órbita pequena do Ponto no fim da linha (r 22 → 34 a partir do chime de 8,5) + esteira do giro
     function drawCircleTrack(c, t) {
       if (t < C0) return;
       const a = 0.32 * seg(t, C0, C0 + 0.3) * (1 - seg(t, 11.3, 11.5));
       if (a <= 0.001) return;
-      const ca = circAngle(t);
+      const ca = circAngle(t), cc = circC(t), cr = circR(t), A0 = circA0(t);
       const ang = Math.min(TAU, ca);
       c.save();
       c.strokeStyle = hexA(P.lavender, a); c.lineWidth = 1.2;
-      c.beginPath(); c.arc(CC.x, CC.y, CR, A0, A0 + Math.max(0.001, ang)); c.stroke();
-      // esteira do giro: arco de até 210° atrás do Ponto, afinando e apagando (magenta → violeta)
-      const span = Math.min(ca, (210 / 360) * TAU);
+      c.beginPath(); c.arc(cc.x, cc.y, cr, A0, A0 + Math.max(0.001, ang)); c.stroke();
+      // esteira do giro: fita de até 250° atrás do Ponto, afinando (7 → 1 px) e apagando (magenta → violeta)
+      const span = Math.min(ca, (250 / 360) * TAU);
       const wa = (a / 0.32);
       if (span > 0.01) {
-        const N = 28;
-        c.lineCap = 'round';
-        for (let j = 0; j < N; j++) {
-          const f0 = j / N, f1 = (j + 1) / N;
-          c.strokeStyle = mixA(f0, 0.75 * (1 - f0) * wa);
-          c.lineWidth = lerp(3.5, 1, f0);
-          c.beginPath(); c.arc(CC.x, CC.y, CR, A0 + ca - span * f1, A0 + ca - span * f0); c.stroke();
+        const N = 40;
+        c.lineCap = 'butt';
+        for (let pass = 0; pass < 2; pass++) {          // 0: halo largo e fraco · 1: fita
+          for (let j = 0; j < N; j++) {
+            const f0 = j / N, f1 = (j + 1) / N, fall = Math.pow(1 - f0, 1.4);
+            c.strokeStyle = mixA(f0, (pass ? 0.85 : 0.16) * fall * wa);
+            c.lineWidth = lerp(7, 1, f0) * (pass ? 1 : 2.6);
+            c.beginPath(); c.arc(cc.x, cc.y, cr, A0 + ca - span * f1, A0 + ca - span * f0 + 0.004); c.stroke();
+          }
         }
+      }
+      // 10,0: o brilho que correu a linha chega ao Ponto — anel em volta do giro.
+      // ADAPTAÇÃO: a coluna de texto (descrição 04) começa em x 290, a 40 px do eixo; o anel (r 40 → 74)
+      // apaga na horizontal a partir de x 262 (α → 0 em x 286), como se passasse por trás da coluna.
+      const u = seg(t, SW1, SW1 + 0.45);
+      if (u > 0 && u < 1) {
+        const ra = 0.55 * (1 - u);
+        const rg = c.createLinearGradient(262, 0, 286, 0);
+        rg.addColorStop(0, hexA(P.lavender, ra)); rg.addColorStop(1, hexA(P.lavender, 0));
+        c.strokeStyle = rg; c.lineWidth = 2;
+        c.beginPath(); c.arc(cc.x, cc.y, cr + 6 + 34 * EOUT(u), 0, TAU); c.stroke();
       }
       c.restore();
     }
 
-    // anel do impacto de abertura (nasce com α 0 para o 1º quadro casar com a S05)
+    // Acentos do Ponto: impacto de abertura (t = 0) e chime 'gira sozinha' (8,5).
+    // Abertura: halo r 10 → 48, α .6 → 0 em 0,3 s + anel fino de choque, presos no ponto do impacto
+    // (250,750) (topo da elipse, onde o Ponto está no corte de 42,0).
+    // O α sobe em 1 quadro (smooth 0 → 1/30) para o quadro t = 0 continuar idêntico ao último da S05.
+    const IMP = { x: LINE_X, y: 1110 - 360 };
     function drawImpact(c, t) {
-      if (t <= 0 || t > 0.8) return;
-      const u = seg(t, 0, 0.8);
-      const r = 10 + 70 * EOUT(u);
-      const a = 0.5 * (1 - u) * smooth(0, 0.06, t);
-      const p = pontoPos(t);
-      c.save();
-      c.strokeStyle = hexA(P.lavender, a); c.lineWidth = 1.5;
-      c.beginPath(); c.arc(p.x, p.y, r, 0, TAU); c.stroke();
-      c.restore();
+      if (t > 0 && t < 0.6) {
+        const k = smooth(0, 1 / 30, t);
+        c.save();
+        c.globalAlpha = k;
+        drawHalo(c, IMP.x, IMP.y, seg(t, 0, 0.3));
+        const u = seg(t, 0, 0.55);
+        c.strokeStyle = hexA(P.lavender, 0.35 * (1 - u)); c.lineWidth = 1.5;
+        c.beginPath(); c.arc(IMP.x, IMP.y, 10 + 86 * EOUT(u), 0, TAU); c.stroke();
+        c.restore();
+      }
+      // ADAPTAÇÃO (chime 8,5): o halo (r 10 → 48, centro (250,1440)) chegaria a x 298 e riscaria a perna
+      // esquerda do "o" de "o crescimento" (descrição 04, x ≥ 293). Recebe o mesmo apagamento horizontal do
+      // anel de 10,0: α inteiro até x 262, → 0 em x 286, como se passasse por trás da coluna. O apagamento
+      // (destination-out, preso ao retângulo do halo) só atinge o halo: é o 1º desenho do canvas da frente
+      // neste quadro (o impacto de abertura acaba em 0,6 e o Ponto é desenhado depois).
+      if (t > C0 && t < C0 + 0.5) {
+        const HR = 48 + 2;
+        c.save();
+        c.beginPath(); c.rect(LINE_X - HR, LY1 - HR, 2 * HR, 2 * HR); c.clip();
+        drawHalo(c, LINE_X, LY1, seg(t, C0, C0 + 0.5));
+        c.globalCompositeOperation = 'destination-out';
+        const fg = c.createLinearGradient(262, 0, 286, 0);
+        fg.addColorStop(0, 'rgba(0,0,0,0)'); fg.addColorStop(1, 'rgba(0,0,0,1)');
+        c.fillStyle = fg;
+        c.fillRect(262, LY1 - HR, LINE_X + HR - 262, 2 * HR);
+        c.restore();
+      }
     }
+    const pontoR = t => 10 * (1 + 0.5 * pulseBump(t, C0));      // pulso do núcleo no chime (10 → 15 → 10)
 
     // Na saída (linha → círculo) a ponta chega a milhares de px/s: 8 quadros de rastro virariam uma
     // barra enorme. Ali o rastro é limitado a 180 px de arco e recolhe até o Ponto em 11,70–11,90.
@@ -617,9 +711,10 @@ MECCA.scene({
         }
       }
       // mesmo desenho do Ponto das outras cenas: glowDot lavanda (α .6) + núcleo #FBF8FF r 10
-      h.glowDot(c, p.x, p.y, 10, P.lavender, 0.6);
+      const pr = pontoR(t);
+      h.glowDot(c, p.x, p.y, pr, P.lavender, 0.6);
       c.fillStyle = P.ink;
-      c.beginPath(); c.arc(p.x, p.y, 10, 0, TAU); c.fill();
+      c.beginPath(); c.arc(p.x, p.y, pr, 0, TAU); c.fill();
     }
 
     // Na saída a borda direita da máscara dos números acompanha a linha (que começa a enrolar em 11,4):

@@ -8,7 +8,7 @@
  * 0,0–1,5   o círculo da S06 (540,1100) r300 viaja para a direita e cresce: vira a engrenagem gigante
  *           recortada pela DIREITA, centro (1320,1100), raio primitivo 579,3 (gs 1,4446); o Ponto estaciona em (676,1100).
  * 2–14      7 estações: a engrenagem gira 51,43° e empurra a coluna de texto 520 px para cima (cremalheira vertical);
- *           o bloco ativo tem topo em y 963 e o anterior fica em 443 (α .4); os chips saem do Ponto.
+ *           o bloco ativo tem topo em y 963 e o anterior fica em 443 (α .55); os chips saem do Ponto.
  * 16–18     recuo: a engrenagem vira o SOL do planetário (máquina-base m 1,1 em (540,1150)).
  * 18–21,5   tudo engrena; o Ponto orbita r 429. "Uma máquina. / Sete engrenagens. / Um só mecanismo." no topo.
  * 21,5–22   a máquina vai para (540,1180) m .6 e o Ponto volta ao cubo (match cut com a S08).
@@ -28,6 +28,12 @@ MECCA.scene({
     const STEP = 360 / 7;                 // 51,43° por estação
     const TS = [2, 4, 6, 8, 10, 12, 14];  // downbeats das estações
     const EIO = gsap.parseEase('mecca.inOut');
+    // cremalheira/escape (T−0,5→T+0,2) — MESMA curva da horizontal: cruza o alvo em T−0,03, o overshoot de ~1,4%
+    // tem o ápice exatamente no downbeat T e assenta até T+0,13. Com o passo de 520 px: pico ≈64 px/quadro (antes ≈199).
+    const RACK = CustomEase.create('s07v.rack', 'M0,0 C0.3,0 0.38,1.035 0.7,1.016 0.82,1.0 0.9,1 1,1');
+    // viagem do círculo (0→1 s): parte do repouso (continua a S06) mas já anda desde o 1º quadro — sem o
+    // "hold" de ~0,4 s do mecca.inOut. Mesma curva da horizontal; pico ≈55 px/quadro no centro (780 px de viagem).
+    const LAUNCH = CustomEase.create('s07v.launch', 'M0,0 C0.25,0 0.3,1 1,1');
     const P2O = gsap.parseEase('power2.out');
     const { clamp, lerp, hexA } = h;
 
@@ -45,6 +51,7 @@ MECCA.scene({
     const PC = { x: M0.x, y: M0.y };                  // centro da órbita do Ponto no fechamento
     const ORB_R = 390 * M0.s;                         // 429
     const Y_A = 963, PITCH = 520;                     // topo do bloco ativo · passo da cremalheira
+    const COUNT_BL = 70;                              // baseline do contador "0k / 07" (relativa a y_A; spec: +40)
     const COLX = 90;                                  // margem esquerda do texto
     const CLIP_B = 1480;                              // base do recorte da coluna (polygon)
     // topo do recorte (y 320) com máscara suave até y 400: o bloco que sai pela cremalheira se dissolve em vez de
@@ -58,9 +65,9 @@ MECCA.scene({
       { name: 'Vendas', ape: 'Engrenagem do fechamento', chips: ['PLAYBOOK DE VENDAS', 'PROSPECÇÃO ATIVA (SDR)', 'CRM OPERADO'] },
       { name: 'Marketing', ape: 'Engrenagem da demanda', chips: ['TRÁFEGO PAGO', 'CONTEÚDO & SOCIAL', 'SEO'] },
       { name: 'Comercial', ape: 'Engrenagem das<br>regras do jogo', chips: ['PRICING & MARGEM', 'CANAIS & PARCERIAS', 'RETENÇÃO & CS'] },
-      { name: 'Fiscal', ape: 'Engrenagem da<br>conformidade eficiente', chips: ['PLANEJAMENTO TRIBUTÁRIO', 'COMPLIANCE FISCAL', 'EMISSÃO DE NF-E'] },
+      { name: 'Fiscal', ape: 'Engrenagem da<br>conformidade eficiente', chips: ['PLANEJAMENTO TRIBUTÁRIO', 'COMPLIANCE FISCAL', 'EMISSÃO DE <span style="text-transform:none">NF-e</span>'] },
       { name: 'Logística', ape: 'Engrenagem da entrega', chips: ['ESTOQUE & COMPRAS', 'FRETES', 'FULFILLMENT & EXPEDIÇÃO'] },
-      { name: 'Sistemas', ape: 'Engrenagem do<br>sistema nervoso', chips: ['PROCESSOS & SOPS', 'ERP / CRM', 'BI & DASHBOARDS'] },
+      { name: 'Sistemas', ape: 'Engrenagem do<br>sistema nervoso', chips: ['PROCESSOS & <span style="text-transform:none">SOPs</span>', 'ERP / CRM', 'BI & DASHBOARDS'] },
       { name: 'Tecnologia', ape: 'Engrenagem digital', chips: ['SOFTWARE SOB MEDIDA', 'SITES & E-COMMERCE', 'IA APLICADA'] },
     ];
 
@@ -76,9 +83,10 @@ ${SEL} .s7-count { position:absolute; left:${COLX}px; top:0; font-family:var(--f
   letter-spacing:.14em; color:var(--lavender); white-space:nowrap; line-height:1.2; }
 ${SEL} .s7-ape { position:absolute; left:${COLX}px; top:0; font-family:var(--f-body); font-weight:500; font-size:40px;
   color:var(--lilac); white-space:nowrap; line-height:1.25; letter-spacing:-0.01em; }
-${SEL} .s7-blk .chip { height:56px; padding:0 18px 0 22px; gap:13px; font-size:26px; font-weight:500; letter-spacing:.14em;
-  text-transform:uppercase; border-radius:13px; line-height:1; border-color:rgba(167,139,250,.34); background:rgba(26,11,46,.86); }
-${SEL} .s7-blk .chip .pip { width:9px; height:9px; flex:none; background:var(--lavender); box-shadow:0 0 10px rgba(167,139,250,.9); }
+${SEL} .s7-blk .chip { height:56px; padding:0 14px 0 15px; gap:10px; font-size:28px; font-weight:500; letter-spacing:.06em;
+  text-transform:uppercase; border-radius:13px; line-height:1; color:#C4B5FD; border-color:rgba(196,181,253,.58); background:rgba(26,11,46,.86); }
+${SEL} .s7-blk .chip .lb { margin-right:-.06em; }  /* sem o tracking depois do último glifo */
+${SEL} .s7-blk .chip .pip { width:8px; height:8px; flex:none; background:var(--lavender); box-shadow:0 0 10px rgba(167,139,250,.9); }
 ${SEL} .s7-num { font-family:var(--f-bricolage); font-weight:800; font-size:${(80 / M0.s).toFixed(3)}px; letter-spacing:-0.03em; fill:#A78BFA; }
 ${SEL} .s7-pl { font-family:var(--f-display); font-weight:600; font-size:${(26 / M0.s).toFixed(3)}px; letter-spacing:-0.03em; fill:#FBF8FF; }
 ${SEL} .s7-close { position:absolute; left:0; top:0; width:${W}px; height:${H}px; }
@@ -119,8 +127,8 @@ ${SEL} .s7-close em { background-repeat:no-repeat; }
 
     // giro contínuo a partir de 18,0 (rampa de 0,3 s até 36°/s no sol)
     const spinAt = (t) => { const u = t - 18; return u <= 0 ? 0 : u < 0.3 ? (36 * u * u) / 0.6 : 36 * (u - 0.15); };
-    // fase escolhida para que, no ÚLTIMO quadro, sol (mod 1 dente), planetas e carcaça estejam nos ângulos canônicos (0°)
-    // — a S08 parte desse estado sem salto
+    // fase escolhida para que, no ÚLTIMO quadro, sol (mod 1 dente) e planetas estejam nos ângulos canônicos (0°)
+    // — a S08 parte desse estado sem salto. A carcaça segue a função global carcAngle(gt) (ver abaixo).
     const SPIN_END = spinAt(D - 1 / 30);
     const SUN_OFF = -(SPIN_END % (360 / 28));
 
@@ -133,6 +141,7 @@ ${SEL} .s7-close em { background-repeat:no-repeat; }
       hubS: 0, hubK: GM_ST.s,                 // pop do cubo-ícone (288,9 px no quadro) e redução para a pupila
       mx: M0.x, my: M0.y, ms: M0.s,           // transformação da máquina inteira (saída)
       shim: 0, orbA: 0, shock: 0,
+      wave: 0,                                // onda de choque do DROP B (0,0–0,6)
     };
     const S = Object.assign({}, S0);
     tl.set(S, Object.assign({}, S0), 0);
@@ -228,13 +237,13 @@ ${SEL} .s7-close em { background-repeat:no-repeat; }
       // o bloco i fica em top 520·i; o conteúdo é posicionado em relação a y_A (coordenadas do bloco ativo)
       const blk = h.el('div', { cls: 's7-blk', style: { top: (PITCH * i) + 'px' } }, rack);
       const count = h.el('div', { cls: 's7-count', text: `0${i + 1} / 07` }, blk);
-      atBaseline(count, Y_A + 40);
+      atBaseline(count, Y_A + COUNT_BL);   // desceu de +40: agrupa com o próprio nome, longe dos chips escurecidos acima
       const name = h.text(st.name, { x: COLX, y: 0, size: 104, nowrap: true, parent: blk });
       atBaseline(name, Y_A + 175);
       const ape = h.el('div', { cls: 's7-ape', html: st.ape }, blk);
       atBaseline(ape, Y_A + 232);
       const chips = st.chips.map((label, j) => {
-        const c = h.chip(label.replace(/&/g, '&amp;'), { x: 0, y: 0, parent: blk });
+        const c = h.chip(`<span class="lb">${label.replace(/&/g, '&amp;')}</span>`, { x: 0, y: 0, parent: blk });
         const w = h.rect(c).w;
         const top = Y_A + 310 + j * 66;          // um por linha: tops +310 / +376 / +442
         c.style.left = COLX + 'px';
@@ -255,7 +264,7 @@ ${SEL} .s7-close em { background-repeat:no-repeat; }
     const close = h.el('div', { cls: 's7-close' }, root);
     const L1 = h.text('Uma máquina.', { x: COLX, y: 0, size: 96, nowrap: true, parent: close });
     const L2 = h.text('Sete engrenagens.', { x: COLX, y: 0, size: 96, nowrap: true, parent: close });
-    const L3 = h.text('Um só <em>mecanismo.</em>', { x: COLX, y: 0, size: 96, nowrap: true, parent: close });
+    const L3 = h.text('<em>Um só</em> mecanismo.', { x: COLX, y: 0, size: 96, nowrap: true, parent: close });
     atBaseline(L1, 420); atBaseline(L2, 530); atBaseline(L3, 640);
     const sp1 = h.split(L1, { type: 'lines', mask: 'lines' });
     const sp2 = h.split(L2, { type: 'lines', mask: 'lines' });
@@ -306,9 +315,15 @@ ${SEL} .s7-close em { background-repeat:no-repeat; }
     init(ebDash, { scaleX: 0, transformOrigin: '0% 50%' });
     init(eb, { x: 0 });
 
-    // 0,0–1,0 — o círculo viaja (540,1100) r300 → (1320,1100) r579,3 (pr 300→401 e gs 1→1,4446, mecca.inOut)
-    tl.to(S, { gx: GM_ST.x, gy: GM_ST.y, gs: GM_ST.s, pr: 401, duration: 1, ease: 'mecca.inOut' }, 0);
+    // 0,0–1,0 — o círculo viaja (540,1100) r300 → (1320,1100) r579,3 (pr 300→401 e gs 1→1,4446, LAUNCH: sem hold)
+    tl.to(S, { gx: GM_ST.x, gy: GM_ST.y, gs: GM_ST.s, pr: 401, duration: 1, ease: LAUNCH }, 0);
     tl.to(body, { attr: { 'fill-opacity': 0.8 }, duration: 0.9, ease: 'power1.inOut' }, 0.4);
+    // DROP B (54,0): onda de choque r 300→700 (lavanda 2 px, α .5→0, 0,6 s) e o traço engrossa 3→5 px e volta a 3 até 0,4.
+    // O quadro t = 0 continua idêntico ao último da S06 (match cut): tudo isso aparece a partir do quadro seguinte.
+    tl.to(S, { wave: 1, duration: 0.6, ease: 'none' }, 0);
+    // (começa em 0,002 porque o motor faz seek em t + 1e-4: o quadro 0 fica com os 3 px exatos da S06)
+    tl.to(gradP, { attr: { 'stroke-width': 5 }, duration: 1 / 30 - 0.002, ease: 'none' }, 0.002);
+    tl.to(gradP, { attr: { 'stroke-width': 3 }, duration: 0.4 - 1 / 30, ease: 'power1.inOut' }, 1 / 30);
     cue(0, 'whoosh', 'círculo viaja', 0.4);
 
     // 1,0–1,5 — nascem os dentes; gradiente → lavanda; números; cubo
@@ -335,9 +350,9 @@ ${SEL} .s7-close em { background-repeat:no-repeat; }
     // ciclo de estações
     TS.forEach((T, i) => {
       const k = i + 1, B = blocks[i];
-      tl.to(S, { th: STEP * k, duration: 0.5, ease: 'mecca.gear' }, T - 0.35);
-      tl.to(rack, { y: -PITCH * i, duration: 0.5, ease: 'mecca.gear' }, T - 0.35);
-      tl.to(B.blk, { opacity: 1, duration: 0.3, ease: 'power1.out' }, T - 0.35);
+      tl.to(S, { th: STEP * k, duration: 0.7, ease: RACK }, T - 0.5);
+      tl.to(rack, { y: -PITCH * i, duration: 0.7, ease: RACK }, T - 0.5);
+      tl.to(B.blk, { opacity: 1, duration: 0.35, ease: 'power1.out' }, T - 0.5);
       tl.to(B.cs.chars, { rotationX: 0, opacity: 1, duration: 0.25, ease: 'mecca.snap', stagger: 0.02 }, T - 0.1);
       tl.to(B.name, { scale: 1.03, duration: k < 7 ? 4 : 2.25, ease: 'none' }, T);
       B.chips.forEach((c, j) => {
@@ -349,22 +364,25 @@ ${SEL} .s7-close em { background-repeat:no-repeat; }
       tl.to(nums[i].t, { fill: P.ink, opacity: 1, scale: 1.15, duration: 0.3, ease: 'mecca.back' }, T);
       if (i > 0) tl.to(nums[i - 1].t, { fill: P.lavender, opacity: 0.6, scale: 1, duration: 0.3, ease: 'power2.out' }, T);
       if (k < 7) {
-        // dim desacoplado do início da cremalheira (T+1,65): fica α 1 até T+2,0 para ganhar leitura
-        tl.to(B.blk, { opacity: 0.4, duration: 0.4, ease: 'power1.inOut' }, T + 2);
-        tl.to(B.count, { opacity: 0, duration: 0.3, ease: 'mecca.in' }, T + 2 - 0.35);
+        // dim desacoplado do início da cremalheira (T+1,5): fica α 1 até T+2,0 para ganhar leitura; α .55 (chips legíveis)
+        tl.to(B.blk, { opacity: 0.55, duration: 0.4, ease: 'power1.inOut' }, T + 2);
+        tl.to(B.count, { opacity: 0, duration: 0.3, ease: 'power1.in' }, T + 2 - 0.5);
       }
-      if (k < 6) tl.to(B.blk, { opacity: 0, duration: 0.5, ease: 'power1.in' }, T + 4 - 0.35);
+      if (k < 6) tl.to(B.blk, { opacity: 0, duration: 0.6, ease: 'power1.in' }, T + 4 - 0.5);
       cue(T, 'click', STATIONS[i].name, 1.0);
     });
     cue(2, 'impact', 'Vendas', 0.35);
     cue(14, 'impact', 'Tecnologia', 0.6);
 
     // 16,0–17,0 — RECUO: a engrenagem vai para (540,1150), gs 1,4446 → .341 (= .31 no espaço da máquina)
-    tl.to(blocks[5].blk, { y: -60, opacity: 0, duration: 0.3, ease: 'mecca.in' }, 16);
-    tl.to(blocks[6].blk, { y: -60, opacity: 0, duration: 0.25, ease: 'mecca.in' }, 16.25);
-    tl.to(nums.map((n) => n.t), { opacity: 0, duration: 0.3, ease: 'mecca.in' }, 16);
-    tl.to([ringIn, ringHub, spokesG, win], { opacity: 0, duration: 0.3, ease: 'mecca.in' }, 16);
-    tl.to(hubArcs, { opacity: 0, duration: 0.4, ease: 'mecca.in' }, 16);
+    // mecca.in só no y; opacidade em power1.in (sem o "pop" de ~55%→0 no fim do fade)
+    tl.to(blocks[5].blk, { y: -60, duration: 0.3, ease: 'mecca.in' }, 16);
+    tl.to(blocks[5].blk, { opacity: 0, duration: 0.3, ease: 'power1.in' }, 16);
+    tl.to(blocks[6].blk, { y: -60, duration: 0.25, ease: 'mecca.in' }, 16.25);
+    tl.to(blocks[6].blk, { opacity: 0, duration: 0.25, ease: 'power1.in' }, 16.25);
+    tl.to(nums.map((n) => n.t), { opacity: 0, duration: 0.3, ease: 'power1.in' }, 16);
+    tl.to([ringIn, ringHub, spokesG, win], { opacity: 0, duration: 0.3, ease: 'power1.in' }, 16);
+    tl.to(hubArcs, { opacity: 0, duration: 0.4, ease: 'power1.in' }, 16);
     tl.to(S, { gx: 1400, gy: 560, gs: 0.31, duration: 1, ease: 'mecca.inOut' }, 16);
     tl.to(S, { hubK: HUBK_END, duration: 1, ease: 'mecca.inOut' }, 16);
     tl.to(S, { th: 360 + SUN_OFF, duration: 1, ease: 'mecca.inOut' }, 16);
@@ -413,7 +431,7 @@ ${SEL} .s7-close em { background-repeat:no-repeat; }
     // 21,5–22,0 — saída: a máquina vai para (540,1180) m .6 (termina exatamente no último quadro)
     const OUT = LAST - 21.5;
     tl.to([...sp1.lines, ...sp2.lines, ...sp3.lines], { yPercent: -125, duration: 0.21, ease: 'mecca.in', stagger: 0.02 }, 21.5);
-    tl.to(PL.map((p) => p.label), { opacity: 0, duration: 0.3, ease: 'mecca.in' }, 21.5);
+    tl.to(PL.map((p) => p.label), { opacity: 0, duration: 0.3, ease: 'power1.in' }, 21.5);
     tl.to(S, { mx: M1.x, my: M1.y, ms: M1.s, duration: OUT, ease: 'mecca.inOut' }, 21.5);
     tl.to(S, { orbA: 0, duration: OUT, ease: 'power1.in' }, 21.5);
     tl.to(body, { attr: { 'stroke-opacity': 0.5 }, duration: OUT, ease: 'mecca.inOut' }, 21.5);
@@ -443,7 +461,7 @@ ${SEL} .s7-close em { background-repeat:no-repeat; }
     }
     function pontoPos(t) {
       if (t <= 0) return { x: leftmost(0), y: 1100 };
-      if (t < 1) return { x: leftmost(EIO(t)), y: 1100 };
+      if (t < 1) return { x: leftmost(LAUNCH(t)), y: 1100 };   // mesmo easing do círculo (ponto mais à esquerda)
       if (t < 1.5) return { x: lerp(ARRIVE_X, PARK.x, EIO((t - 1) / 0.5)), y: PARK.y };
       if (t < 16) return { x: PARK.x, y: PARK.y };
       const o = orbitPos(t);
@@ -455,11 +473,30 @@ ${SEL} .s7-close em { background-repeat:no-repeat; }
       if (u < 0 || u > 0.45) return 0;
       return u < 0.1 ? P2O(u / 0.1) : 1 - EIO((u - 0.1) / 0.35);
     }
-    function pontoR(t) {
-      let p = 0;
-      for (const T of TS) p = Math.max(p, pulse(t - T));
-      return 10 + 6 * p;
+    // micro-acento entre estações: r 10→13→10 em 0,2 s (em T+0,5, T+1,0 e T+1,5)
+    function blip(u) {
+      if (u < 0 || u > 0.2) return 0;
+      return u < 0.06 ? P2O(u / 0.06) : 1 - EIO((u - 0.06) / 0.14);
     }
+    function pontoR(t) {
+      let p = 0, q = 0;
+      for (const T of TS) {
+        p = Math.max(p, pulse(t - T));
+        q = Math.max(q, blip(t - T - 0.5), blip(t - T - 1), blip(t - T - 1.5));
+      }
+      return 10 + Math.max(6 * p, 3 * q);
+    }
+    // tick de catraca da engrenagem gigante em T+1,0: ±1,5° em 0,12 s (volta a 0 — o passo de 51,43° não muda)
+    function ratchet(t) {
+      for (const T of TS) {
+        const u = t - T - 1;
+        if (u > 0 && u < 0.12) return 1.5 * Math.sin((2 * Math.PI * u) / 0.12);
+      }
+      return 0;
+    }
+    // CARCAÇA — função COMPARTILHADA S07/S08/S09 (nota global 5), no tempo GLOBAL gt:
+    // 0 antes de 72 s; depois 18°·sin(2π(gt−72)/4)·smooth(72, 72.6, gt) → 0° exatos nos cortes 76,0 e 82,0
+    const carcAngle = (gt) => (gt < 72 ? 0 : 18 * Math.sin((2 * Math.PI * (gt - 72)) / 4) * h.smooth(72, 72.6, gt));
     // desenho PADRÃO do Ponto (idêntico ao da S06): h.glowDot lavanda α .6 + núcleo #FBF8FF.
     // Respiração leve do alfa (±.08, período 2 s) só entre 0,5 e 21,5 — volta a exatamente .6 nos cortes.
     function drawPonto(x, y, r, lt) {
@@ -471,7 +508,7 @@ ${SEL} .s7-close em { background-repeat:no-repeat; }
 
     // ================================================================== onFrame
     let lastKey = '';
-    onFrame((lt) => {
+    onFrame((lt, gt) => {
       // no quadro exato t = 0 a tl local ainda não renderizou o set do fundo: garante o estado do corte (54,0)
       if (lt < 1 / 60) Object.assign(bg, BG_IN);
       // perfil da engrenagem (círculo → dentes)
@@ -481,7 +518,7 @@ ${SEL} .s7-close em { background-repeat:no-repeat; }
 
       // rotação contínua a partir de 18,0 (rampa de 0,3 s até 36°/s)
       const spin = spinAt(lt);
-      const th = S.th + spin;
+      const th = S.th + spin + ratchet(lt);
 
       machine.setAttribute('transform', `translate(${S.mx.toFixed(2)} ${S.my.toFixed(2)}) scale(${S.ms.toFixed(4)}) translate(-1400 -560)`);
       gearG.setAttribute('transform', `translate(${S.gx.toFixed(2)} ${S.gy.toFixed(2)}) scale(${S.gs.toFixed(5)})`);
@@ -503,7 +540,7 @@ ${SEL} .s7-close em { background-repeat:no-repeat; }
         const rotB = p.ang + 180 + 180 / 16 - (28 / 16) * (th - p.ang) + 90 * (1 - d / 198);
         p.rot.setAttribute('transform', `rotate(${rotB.toFixed(3)})`);
       }
-      carc.g.setAttribute('transform', `rotate(${(-(spin - SPIN_END) / 3).toFixed(3)} 114 114)`);
+      carc.g.setAttribute('transform', `rotate(${carcAngle(gt).toFixed(3)} 114 114)`);
       const bpos = `${((1 - S.shim) * 100).toFixed(2)}% 0, 0 0`;
       for (const em of ems) em.style.backgroundPosition = bpos;
 
@@ -515,6 +552,15 @@ ${SEL} .s7-close em { background-repeat:no-repeat; }
         ctx.strokeStyle = hexA(P.lavender, S.orbA);
         ctx.lineWidth = 1.25;
         ctx.beginPath(); ctx.arc(mc.x, mc.y, 390 * S.ms, 0, Math.PI * 2); ctx.stroke();
+        ctx.restore();
+      }
+      // onda de choque do DROP B, centrada no ponto de partida do círculo (540,1100); α 0 no quadro t = 0 (match cut)
+      if (S.wave > 0 && S.wave < 1) {
+        const w = S.wave;
+        ctx.save();
+        ctx.strokeStyle = hexA(P.lavender, 0.5 * (1 - w) * h.smooth(0, 1 / 30, lt));
+        ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.arc(G_IN.x, G_IN.y, 300 + 400 * P2O(w), 0, Math.PI * 2); ctx.stroke();
         ctx.restore();
       }
       if (S.shock > 0 && S.shock < 1) {

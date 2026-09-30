@@ -120,14 +120,20 @@ MECCA.scene({
     // 2ª revisão: com centro no bbox e ry 100 o arco de cima (baixado à esquerda pela rotação de −6°) passava a 5–7 px do
     // pingo do 'i' (≈1,83–1,90: 'gïram'). Centro 8 px acima e ry +8: o ponto mais baixo da elipse não muda (folga de
     // 'range' e das descendentes igual), o arco de cima sobe 16 px → ≥ 18 px de folga (borda a borda) do pingo do 'i'.
-    const ORB_RY = 108, ORB_DY = 8;
-    let ORB = { cx: 1002, cy: 391 - ORB_DY, rx: 209, ry: ORB_RY };
+    // 3ª revisão: com 18–21 px o Ponto passava EMPILHADO sobre o pingo do 'i' (≈1,83–1,93: 'i' de pingo duplo).
+    // A metade de trás ganha uma cúpula: y = ry·sen φ − ORB_DT·sen²φ (sen φ < 0). O termo extra é zero nas pontas, com
+    // derivada zero → posição, tangente, curvatura e velocidade nas pontas iguais às da metade da frente, e as passagens
+    // por trás da linha de texto ('Algumas' / ';') não mudam; no alto ele vale ORB_DT e, na coluna do pingo do 'i', ergue o
+    // arco ≈ 35 px → ≥ 54 px de folga (borda a borda, > 2× o diâmetro do pingo): lê-se órbita, nunca um segundo pingo.
+    // A metade da frente (elipse com ry) fica idêntica.
+    const ORB_RY = 108, ORB_DY = 8, ORB_DT = 48;
+    let ORB = { cx: 1002, cy: 391 - ORB_DY, rx: 209, ry: ORB_RY, dT: ORB_DT };
     try {
       const u = union(giramChars);
       mc.font = '700 150px "Space Grotesk"';
       const m = mc.measureText('giram');
       const cy = 430 + (m.actualBoundingBoxDescent - m.actualBoundingBoxAscent) / 2;
-      if (isFinite(u.x) && u.w > 100 && isFinite(cy)) ORB = { cx: u.x + u.w / 2, cy: cy - ORB_DY, rx: u.w / 2 + 16, ry: ORB_RY };
+      if (isFinite(u.x) && u.w > 100 && isFinite(cy)) ORB = { cx: u.x + u.w / 2, cy: cy - ORB_DY, rx: u.w / 2 + 16, ry: ORB_RY, dT: ORB_DT };
     } catch (e) { /* fallback */ }
     const ROT = -6 * DEG;
     // Oclusor = a linha 'Algumas giram;' como uma placa: caixas de TINTA de cada glifo (+ o vão entre palavras, na
@@ -517,7 +523,17 @@ MECCA.scene({
     const orbitAt = (lt) => {
       const s = pushA(Math.min(lt, T_FALL));
       const k = 1 - p3In(seg(lt, T_FALL, T_FALL + T_COL));
-      return { cx: PUSHA_O.x + (ORB.cx - PUSHA_O.x) * s, cy: PUSHA_O.y + (ORB.cy - PUSHA_O.y) * s, rx: ORB.rx * s * k, ry: ORB.ry * s * k, s };
+      return { cx: PUSHA_O.x + (ORB.cx - PUSHA_O.x) * s, cy: PUSHA_O.y + (ORB.cy - PUSHA_O.y) * s, rx: ORB.rx * s * k, ry: ORB.ry * s * k, dT: ORB.dT * s * k * (1 - sm(T_FALL + 0.1, T_FALL + 0.2, lt)), s };
+    };
+    // (a cúpula recolhe em 3,6–3,7, no mergulho: o Ponto atravessa a linha 1 que desaba no mesmo quadro de antes, 3,70,
+    //  por dentro da tinta do 'a', e no quadro anterior fica mais longe do topo das letras)
+    // ponto da órbita: metade da frente = elipse (rx, ry, ROT); metade de trás = a mesma elipse + a cúpula (ver ORB_DT)
+    const ROT_C = Math.cos(ROT), ROT_S = Math.sin(ROT);
+    const orbPt = (o, a) => {
+      const sa = Math.sin(a);
+      if (sa >= 0) return h.ellipsePt(o.cx, o.cy, o.rx, o.ry, ROT, a);
+      const x = Math.cos(a) * o.rx, y = sa * o.ry - o.dT * sa * sa;
+      return { x: o.cx + x * ROT_C - y * ROT_S, y: o.cy + x * ROT_S + y * ROT_C };
     };
     const orbAng = (lt) => { const th = TH0 + OMEGA * lt; return th + 0.5 * ORB_K * Math.sin(2 * th); };
     // distância da borda de um disco (x, y, r) — em coordenadas do palco, com o push s em torno de PUSHA_O — ao oclusor
@@ -551,7 +567,7 @@ MECCA.scene({
       lt = Math.max(0, lt);
       if (lt < T_FALL + T_DEP) {
         const o = orbitAt(lt), a = orbAng(lt);
-        const q = h.ellipsePt(o.cx, o.cy, o.rx, o.ry, ROT, a);
+        const q = orbPt(o, a);
         const d = Math.sin(a);
         if (lt < T_ENTER) { const e = p2InOut(lt / T_ENTER); return { x: lerp(START.x, q.x, e), y: lerp(START.y, q.y, e), depth: d * e }; }
         if (lt < T_FALL) return { x: q.x, y: q.y, depth: d };
@@ -674,8 +690,9 @@ MECCA.scene({
 
     // órbita (hairline α .3): arco da frente no canvas da frente SÓ onde passa livre da linha de texto; o resto
     // (inclusive os trechos das pontas que cruzam 'g'/';') no canvas de trás, abaixo do texto. Metade de trás com
-    // α ×.5 (transição suave pela profundidade). Desenhada em trechos contíguos agrupados por (canvas, α).
-    const ORB_SEG = 144;
+    // α ×.5 (transição suave pela profundidade). Desenhada em trechos contíguos agrupados por (canvas, α, metade): a metade
+    // da frente com o arco de elipse de h.orbit; a de trás (cúpula, não é elipse) como polilinha fina (passo de 0,25°).
+    const ORB_SEG = 144, ORB_STEP = TAU / 1440;
     function drawOrbit(lt) {
       if (lt >= T_FALL + T_COL) return;
       const o = orbitAt(lt);
@@ -687,15 +704,27 @@ MECCA.scene({
       for (let k = 0; k < ORB_SEG; k++) {
         const a0 = TAU * k / ORB_SEG, a1 = TAU * (k + 1) / ORB_SEG, am = 0.5 * (a0 + a1);
         const d = Math.sin(am);
-        const pm = h.ellipsePt(o.cx, o.cy, o.rx, o.ry, ROT, am);
+        const pm = orbPt(o, am);
+        const top = k >= ORB_SEG / 2;
         const clear = w <= 0 || occGap(pm.x, pm.y, 1.5, o.s) > 2;
         const fr = d > 0 && clear;
         const al = Math.round(a * (d >= 0 ? 1 : lerp(1, 0.5, sm(0, 0.3, -d))) * 400) / 400;
         const last = runs[runs.length - 1];
-        if (last && last.fr === fr && last.al === al) last.a1 = a1;
-        else runs.push({ fr, al, a0, a1 });
+        if (last && last.fr === fr && last.al === al && last.top === top) last.a1 = a1;
+        else runs.push({ fr, al, top, a0, a1 });
       }
-      for (const R of runs) h.orbit(R.fr ? cf : cb, { cx: o.cx, cy: o.cy, rx: o.rx, ry: o.ry, rot: ROT, color: P.lavender, alpha: R.al, lineWidth: 1.5, from: R.a0, to: R.a1 });
+      for (const R of runs) {
+        const c = R.fr ? cf : cb;
+        if (!R.top) { h.orbit(c, { cx: o.cx, cy: o.cy, rx: o.rx, ry: o.ry, rot: ROT, color: P.lavender, alpha: R.al, lineWidth: 1.5, from: R.a0, to: R.a1 }); continue; }
+        const n = Math.max(2, Math.ceil((R.a1 - R.a0) / ORB_STEP));
+        c.save();
+        c.strokeStyle = hexA(P.lavender, R.al);
+        c.lineWidth = 1.5;
+        c.beginPath();
+        for (let j = 0; j <= n; j++) { const q = orbPt(o, R.a0 + (R.a1 - R.a0) * j / n); if (j) c.lineTo(q.x, q.y); else c.moveTo(q.x, q.y); }
+        c.stroke();
+        c.restore();
+      }
     }
 
     // ponta da "caneta técnica" nos círculos primitivos enquanto desenham

@@ -8,7 +8,8 @@
  * (storyboard/vertical/VERTICAL_SPEC.md §2 S05 e §3):
  *   - eyebrow ENGENHARIA DE CRESCIMENTO em (90,270), 26 px, fora do push;
  *   - texto SG 700 80 em x 90, 7 linhas (ADAPTAÇÃO: as 6 da horizontal viram 7), baselines 380…960;
- *   - chip TIME EMBARCADO · OS MECCA (26 px) com tl em (90,1000);
+ *   - linha "Time embarcado: os mecca." (SG 600 56 px, x 90, bl 1055 — no lugar do antigo chip) em 5,0, que apresenta
+ *     o termo (revisão global, item 1; equivale ao SG 600 44 px / bl 790 da horizontal);
  *   - máquina do cliente no palco: geometria horizontal com p' = (540,1280) + 1,1·(p − (1447,520)), raios × 1,1
  *     (fases e ω idênticas: a transformação preserva ângulos).
  *
@@ -44,10 +45,10 @@ MECCA.scene({
       text: `
 ${SEL} .s5-layer { position:absolute; left:0; top:0; width:${W}px; height:${H}px; }
 ${SEL} .s5-abs { position:absolute; white-space:nowrap; }
-${SEL} .s5-mask { overflow:hidden; padding:.14em .12em .16em; margin:-.14em -.12em -.16em; }
+${SEL} .s5-mask { overflow:hidden; padding:.12em .12em .28em; margin:-.12em -.12em -.28em; }
 ${SEL} .s5-txt { line-height:1.2; white-space:nowrap; }
 ${SEL} .s5-probe { display:inline-block; width:0; height:0; vertical-align:baseline; }
-${SEL} .s5-txt em { background:linear-gradient(90deg,#C026D3,#7C3AED); -webkit-background-clip:text; background-clip:text; color:transparent; }
+${SEL} .s5-txt em { --g0:#C026D3; --g1:#7C3AED; background:linear-gradient(90deg,var(--g0),var(--g1)); -webkit-background-clip:text; background-clip:text; color:transparent; }
 `,
     }, root);
 
@@ -62,13 +63,14 @@ ${SEL} .s5-txt em { background:linear-gradient(90deg,#C026D3,#7C3AED); -webkit-b
     // ================================================================== TEXTO
     const pushW = h.el('div', { cls: 's5-layer' }, textL);   // push lento 1 → 1,02
     const titleW = h.el('div', { cls: 's5-layer' }, pushW);  // saída x −40 + fade
-    const blocks = [0, 1, 2].map(() => h.el('div', { cls: 's5-layer' }, titleW));
+    const blocks = [0, 1, 2, 3].map(() => h.el('div', { cls: 's5-layer' }, titleW));
 
-    function line(parent, html, baseline) {
+    function line(parent, html, baseline, size = 80, weight = 700) {
       const wrap = h.el('div', { cls: 's5-abs' }, parent);
-      wrap.style.left = MX + 'px'; wrap.style.top = '0px'; wrap.style.fontSize = '80px';
+      wrap.style.left = MX + 'px'; wrap.style.top = '0px'; wrap.style.fontSize = size + 'px';
       const mask = h.el('div', { cls: 's5-mask' }, wrap);
       const txt = h.el('div', { cls: 't-display s5-txt', html }, mask);
+      txt.style.fontWeight = String(weight);
       const probe = h.el('span', { cls: 's5-probe' }, txt);
       const off = h.rect(probe).y - h.rect(wrap).y;
       probe.remove();
@@ -82,22 +84,25 @@ ${SEL} .s5-txt em { background:linear-gradient(90deg,#C026D3,#7C3AED); -webkit-b
       [2, 'e <em>fica operando</em>', 870], [2, 'o motor com você.', 960],
     ].map(([b, html, base]) => Object.assign(line(blocks[b], html, base), { b, base }));
 
+    // máscara ampliada (.12em em cima, .28em embaixo): o texto parte de 1,2em + .28em = 123 % abaixo → 130 % (nada aparece antes da entrada)
+    const MASK_Y0 = 130;
     const BT = [0.5, 2.0, 4.0];
     const inBlock = [0, 0, 0];
     LINES.forEach((L) => {
       const k = inBlock[L.b]++;
-      tl.fromTo(L.txt, { yPercent: 110 }, { yPercent: 0, duration: 0.6, ease: 'mecca.out' }, BT[L.b] + k * 0.08);
+      tl.fromTo(L.txt, { yPercent: MASK_Y0 }, { yPercent: 0, duration: 0.6, ease: 'mecca.out' }, BT[L.b] + k * 0.08);
     });
-    tl.to(blocks[0], { opacity: 0.5, duration: 0.3, ease: 'power2.out' }, 2.0);
-    tl.to(blocks[1], { opacity: 0.5, duration: 0.3, ease: 'power2.out' }, 4.0);
+    // escurecimento das linhas lidas: α .7 (não .5) e os <em> trocam o gradiente por #C4B5FD (0,3 s) — ver onFrame
+    const DIM = [[blocks[0], 2.0], [blocks[1], 4.0]];
+    DIM.forEach(([b, t0]) => tl.to(b, { opacity: 0.7, duration: 0.3, ease: 'power2.out' }, t0));
+    const DIM_EM = DIM.map(([b, t0]) => ({ ems: [...b.querySelectorAll('em')], t0 }));
 
-    // chip (pop em 5,0) · .chip padrão (tracking .02em) a 26 px, tl (90,1000)
-    const chip = h.chip('TIME EMBARCADO · OS MECCA', { x: MX, y: 1000, size: 26, parent: titleW });
-    const pip = chip.querySelector('.pip');
-    const chipR0 = h.rect(chip);                         // medida antes de qualquer transform
-    gsap.set(chip, { transformOrigin: '50% 50%', opacity: 0, scale: 0.85 });
-    tl.to(chip, { opacity: 1, duration: 0.3, ease: 'power2.out' }, 5.0);
-    tl.fromTo(chip, { scale: 0.85 }, { scale: 1, duration: 0.3, ease: 'mecca.back', immediateRender: false }, 5.0);
+    // 'Time embarcado: os mecca.' — apresenta o termo (substitui o chip): SG 600 56 px (apoio em display da spec; 44/60 da
+    //   horizontal ≈ 56/80), x 90, bl 1055 — tinta y ≈ 1016–1055, dentro da faixa do antigo chip (y 1000–1060), com o mesmo
+    //   respiro de um salto de bloco; sem descendentes. Máscara 0,4 s mecca.out em 5,0; sai com o bloco em 7,5
+    const TEAM = line(blocks[3], 'Time embarcado: <em>os mecca</em>.', 1055, 56, 600);
+    const teamR0 = h.rect(TEAM.txt);                     // medida antes da máscara (yPercent)
+    tl.fromTo(TEAM.txt, { yPercent: MASK_Y0 }, { yPercent: 0, duration: 0.4, ease: 'mecca.out' }, 5.0);
 
     // eyebrow digitado (0,025 s/char) e apagado de trás para frente · (90,270) 26 px, classe padrão (.26em), fora do push
     const eb = h.eyebrow('ENGENHARIA DE CRESCIMENTO', { x: MX, y: 270, anchor: 'cl', size: 26, parent: textL });
@@ -119,7 +124,7 @@ ${SEL} .s5-txt em { background:linear-gradient(90deg,#C026D3,#7C3AED); -webkit-b
     gsap.set(pushW, { transformOrigin: `${MX}px 670px` });
     tl.fromTo(pushW, { scale: 1 }, { scale: 1.02, duration: 6.5, ease: 'none', immediateRender: false }, 1.0);
     tl.to(titleW, { x: -40, duration: 0.3, ease: 'mecca.in' }, 7.5);
-    tl.to(titleW, { opacity: 0, duration: 0.2, ease: 'power1.out' }, 7.5);   // 7,5–7,7: some antes de os mecca subirem pela coluna
+    tl.to(titleW, { opacity: 0, duration: 0.2, ease: 'sine.inOut' }, 7.5);   // 7,5–7,7: some antes de os mecca subirem pela coluna; sem salto no início nem no fim
 
     // ================================================================== MÁQUINA (geometria)
     const DEPTH = 18 * K;                                // altura de dente comum (19,8)
@@ -315,7 +320,7 @@ ${SEL} .s5-txt em { background:linear-gradient(90deg,#C026D3,#7C3AED); -webkit-b
     const MX0 = 7.45, MX1 = 7.9;                        // recuo de saída
     function machineT(t) {
       const u = seg(t, MX0, MX1);
-      const ks = eIO(u), ka = u * u * u;                 // escala 1 → .5 (mecca.inOut) · alfa 1 → 0
+      const ks = eIO(u), ka = u * u;                     // escala 1 → .5 (mecca.inOut) · alfa 1 → 0 (power1.in: sem salto no fim)
       let dx = 0, dy = 0;
       if (t >= 4.0 && t < 4.45) {
         const w = t - 4.0, env = Math.exp(-w * 10) * (1 - seg(t, 4.3, 4.45));
@@ -362,6 +367,7 @@ ${SEL} .s5-txt em { background:linear-gradient(90deg,#C026D3,#7C3AED); -webkit-b
       const c = t < TL ? meccaRaw(MK[key], t) : seat(key);
       return { x: c.x, y: c.y, s: Math.max(0.001, e), o: clamp(e * 6), ang: G.th - 90 * (1 - e) + KW[key] * A };
     }
+    const EM_DIM = P.lilac;                           // #C4B5FD
     const hex2rgb = (hex) => { const n = parseInt(hex.slice(1), 16); return [(n >> 16) & 255, (n >> 8) & 255, n & 255]; };
     const mixHex = (a, b, k) => {
       const A = hex2rgb(a), B = hex2rgb(b);
@@ -728,13 +734,12 @@ ${SEL} .s5-txt em { background:linear-gradient(90deg,#C026D3,#7C3AED); -webkit-b
       drawPonto(lt);
       drawMeccas(lt);
 
-      // pip do chip pulsa na batida
-      if (lt >= 5.0) {
-        const ph = ((lt - 5.0) % 0.5) / 0.5;
-        const k = Math.exp(-ph * 5);
-        pip.style.transform = `scale(${(1 + 0.4 * k).toFixed(3)})`;
-        pip.style.boxShadow = `0 0 ${(6 + 10 * k).toFixed(1)}px rgba(167,139,250,${(0.35 + 0.5 * k).toFixed(3)})`;
-      } else { pip.style.transform = 'scale(1)'; pip.style.boxShadow = 'none'; }
+      // <em> das linhas escurecidas: gradiente #C026D3→#7C3AED → #C4B5FD sólido (0,3 s, power2.out)
+      for (const D of DIM_EM) {
+        const k = eP2o(seg(lt, D.t0, D.t0 + 0.3));
+        const g0 = mixHex(P.magenta, EM_DIM, k), g1 = mixHex(P.violet, EM_DIM, k);
+        for (const e of D.ems) { e.style.setProperty('--g0', g0); e.style.setProperty('--g1', g1); }
+      }
     });
 
     // ================================================================== SOM (idêntico à horizontal)
@@ -748,14 +753,14 @@ ${SEL} .s5-txt em { background:linear-gradient(90deg,#C026D3,#7C3AED); -webkit-b
     cue(3.5, 'click', 'engrenagem montada', 0.7);
     cue(4, 'impact', 'motor liga', 0.8);
     cue(4, 'sub-drop', 'motor liga', 0.4);
-    cue(5, 'click', 'chip', 0.4);
+    cue(5, 'click', 'chip', 0.4);   // entrada de 'Time embarcado: os mecca.' (nota igual à da horizontal)
     cue(7.75, 'whoosh', 'máquina recua, órbita vira plano de voo', 0.5);
 
     // medidas para revisão (conferência com a spec vertical)
     const r1 = (v) => Math.round(v * 10) / 10;
     root.dataset.s5 = JSON.stringify({
       lines: lineW.map((r) => [r1(r.x), r1(r.right), r1(r.w)]),
-      chip: [r1(chipR0.x), r1(chipR0.y), r1(chipR0.w), r1(chipR0.h)],
+      team: [r1(teamR0.x), r1(teamR0.y), r1(teamR0.right), r1(teamR0.bottom)],
       ebRight: r1(ebRight),
       gd: CHAIN.map((k) => [r1(GD[k].x), r1(GD[k].y), r1(GD[k].r)]),
       phases: CHAIN.map((k) => r1(GD[k].th)),

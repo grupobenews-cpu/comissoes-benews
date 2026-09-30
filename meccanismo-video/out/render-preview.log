@@ -1,1 +1,9 @@
 render 3000 quadros (0s→100s @30fps) com 3 workers
+  60/3000 quadros · 9.8 fps · ETA 299s
+  120/3000 quadros · 10.7 fps · ETA 269s
+  180/3000 quadros · 11.1 fps · ETA 255s
+  240/3000 quadros · 11.7 fps · ETA 237s
+  300/3000 quadros · 12.0 fps · ETA 225s
+  360/3000 quadros · 12.2 fps · ETA 217s
+  420/3000 quadros · 12.4 fps · ETA 209s
+  480/3000 quadros · 12.3 fps · ETA 205s

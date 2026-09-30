@@ -209,17 +209,17 @@
    "scene": "s03-duas-caixas"
   },
   {
-   "t": 15,
-   "kind": "click",
-   "note": "caixa 1",
-   "gain": 0.5,
+   "t": 14.935,
+   "kind": "whoosh",
+   "note": "caixa 1 (FLIP do header)",
+   "gain": 0.35,
    "scene": "s03-duas-caixas"
   },
   {
    "t": 15,
-   "kind": "whoosh",
-   "note": "caixa 1 (FLIP do header)",
-   "gain": 0.35,
+   "kind": "click",
+   "note": "caixa 1",
+   "gain": 0.5,
    "scene": "s03-duas-caixas"
   },
   {
@@ -668,6 +668,13 @@
    "kind": "impact",
    "note": "Tecnologia",
    "gain": 0.6,
+   "scene": "s07-sete-engrenagens"
+  },
+  {
+   "t": 70,
+   "kind": "whoosh",
+   "note": "recuo",
+   "gain": 0.45,
    "scene": "s07-sete-engrenagens"
   },
   {

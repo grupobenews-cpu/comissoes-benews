@@ -479,6 +479,7 @@ MECCA.scene({
       }
     }
 
+    window.__s03dbg = { pontoPos, O0, O1, PH, P0, GF, B };
     // ================================================================== onFrame
     const f4 = (v) => v.toFixed(3);
     function applyCard(C, lt, t0) {

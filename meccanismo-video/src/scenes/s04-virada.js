@@ -253,13 +253,28 @@ ${SEL} .eyebrow { letter-spacing:.22em; }
     const emR = h.rect(emEl);
     const emChars = [...emEl.querySelectorAll('.char')].map((c) => ({ c, ox: h.rect(c).x - emR.x, w: h.rect(c).w }));
     const BAND = Math.round(Math.min(...emChars.map((o) => o.w)));   // largura do caractere mais estreito ('c')
+    // O glint (inclinado 100deg) mora num tile de 2×BAND: a pegada horizontal visível, em qualquer altura, é BAND e
+    // fica no miolo do tile, então as duas bordas do tile (e seus cantos) têm α 0 exato — sem 'placa' de bordas duras.
+    // Perfil em sino de cosseno (inclinação 0 nas pontas e no pico): lê como realce suave, sem aresta nem crista.
+    const GANG = 100, ga = (GANG * Math.PI) / 180;
+    const GTW = 2 * BAND;
+    const chH = Math.max(...emChars.map(({ c }) => h.rect(c).h));
+    const gLen = GTW * Math.abs(Math.sin(ga)) + chH * Math.abs(Math.cos(ga));   // linha do gradiente CSS no tile
+    const gHalf = ((BAND / 2) * Math.abs(Math.sin(ga))) / gLen;               // meia banda, em fração da linha
+    const gStops = [-1, -0.75, -0.5, -0.25, 0, 0.25, 0.5, 0.75, 1].map((k) =>
+      `rgba(196,181,253,${(0.35 * (1 + Math.cos(Math.PI * k)) / 2).toFixed(3)}) ${(100 * (0.5 + k * gHalf)).toFixed(2)}%`).join(', ');
+    // deslocamento horizontal da faixa entre o meio e o topo/base da caixa do caractere (inclinação de 10°)
+    const GSL = Math.ceil((chH / 2) * Math.abs(Math.cos(ga) / Math.sin(ga)));
     emChars.forEach(({ c }) => {
-      c.style.backgroundImage = 'linear-gradient(100deg, rgba(196,181,253,0) 0%, rgba(196,181,253,0.35) 50%, rgba(196,181,253,0) 100%), linear-gradient(90deg, #C026D3, #7C3AED)';
-      c.style.backgroundSize = `${BAND}px 100%, ${emR.w.toFixed(1)}px 100%`;
+      c.style.backgroundImage = `linear-gradient(${GANG}deg, ${gStops}), linear-gradient(90deg, #C026D3, #7C3AED)`;
+      c.style.backgroundSize = `${GTW}px 100%, ${emR.w.toFixed(1)}px 100%`;
       c.style.backgroundRepeat = 'no-repeat';
     });
-    const shim = { x: -BAND };
-    tl.fromTo(shim, { x: -BAND }, { x: emR.w, duration: 1.4, ease: 'sine.inOut' }, 8.0);
+    // shim.x = centro do glint (coordenadas de 'mecca', na meia altura); começa e termina com a faixa inteira fora
+    // das letras, inclusive a ponta inclinada (± GSL)
+    const SH0 = -BAND / 2 - GSL, SH1 = emR.w + BAND / 2 + GSL;
+    const shim = { x: SH0 };
+    tl.fromTo(shim, { x: SH0 }, { x: SH1, duration: 1.4, ease: 'sine.inOut' }, 8.0);
 
     // --- ENGENHARIA DE CRESCIMENTO (a definição de categoria): a linha inteira entra em 6,5 (fade + y 12→0,
     // 0,3 s, sem digitação) + hairline 7,5–8,0; saída em 9,5 (apaga da direita para a esquerda com a hairline)
@@ -546,6 +561,10 @@ ${SEL} .eyebrow { letter-spacing:.22em; }
         paths[lay].lineTo(p2.x, p2.y);
         last = lay;
       }
+      // lineCap explícito: drawRider deixa 'round' no contexto, e herdar isso do quadro anterior tornava as pontas
+      // das órbitas dependentes da ordem dos seeks. 'butt': os trechos de trás/frente se encontram sem sobrepor
+      // (sem pontinho mais claro nas emendas)
+      cb.lineCap = cf.lineCap = 'butt';
       cb.strokeStyle = xGrad(cb, P.lavender, 0.11 * fade); cb.lineWidth = 1.5; cb.stroke(paths.b);
       cf.strokeStyle = xGrad(cf, P.lavender, 0.22 * fade); cf.lineWidth = 1.5; cf.stroke(paths.f);
     }
@@ -634,7 +653,7 @@ ${SEL} .eyebrow { letter-spacing:.22em; }
       }
 
       // --- shimmer de 'mecca'
-      for (const { c, ox } of emChars) c.style.backgroundPosition = `${(shim.x - ox).toFixed(1)}px 0px, ${(-ox).toFixed(1)}px 0px`;
+      for (const { c, ox } of emChars) c.style.backgroundPosition = `${(shim.x - BAND - ox).toFixed(1)}px 0px, ${(-ox).toFixed(1)}px 0px`;
     });
 
     // ================================================================== SOM

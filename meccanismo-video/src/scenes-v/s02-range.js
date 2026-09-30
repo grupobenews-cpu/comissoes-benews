@@ -131,18 +131,22 @@ MECCA.scene({
     // do 'i'. Metade de trás com cúpula: y = ry·sen φ − ORB_DT·sen²φ (sen φ < 0), zero e de derivada zero nas pontas →
     // nas passagens por trás da linha de texto a curva é a mesma elipse; no alto ergue o arco sobre o pingo do 'i'.
     // ADAPTAÇÃO vertical: aqui a linha 2 fica a 1,167em (140 px) da linha 1 (na horizontal 1,2em) e o Ponto não escala
-    // (r 10). Só com ×0,8 (centro 6,4 px acima) a passada de baixo ficaria a 20 px de 'range' e a 15 px quando 'range'
-    // treme (< 24 px da spec §1.2). Com o centro 14 px acima, a passada de baixo corre no meio do vão entre as linhas
-    // (tinta da linha 1 termina em ≈641, a da linha 2 começa em ≈719): ≥ 26 px das duas linhas com o Ponto parado,
-    // 22,5 px no pico de um rangido. Pingo do 'i' a ≥ 50 px. Forma (rx, ry, cúpula) = horizontal ×0,8.
-    const ORB_RY = 86.4, ORB_DY = 14, ORB_DT = 38.4, ORB_PAD = 12.8;
-    let ORB = { cx: 737.3, cy: 609 - ORB_DY, rx: 154.3 + ORB_PAD, ry: ORB_RY, dT: ORB_DT };
+    // (r 10). O vão entre a tinta das linhas (a linha 1 termina em ≈641, a linha 2 começa em ≈719, e em ≈713 quando o 'a'
+    // de 'range' sobe no rangido de 2,5) mal comporta o Ponto com 24 px de cada lado (spec §1.2). A elipse a −6° não
+    // cabe nele: a passada de baixo desce à esquerda (sobre o 'a' de 'range', 20 px no rangido de 2,5) e sobe à direita
+    // (sob o 'a' de 'giram'). Por isso a metade da FRENTE é NIVELADA: y = ry·sen φ + ORB_DL·cos φ·sen²φ (sen φ ≥ 0), termo
+    // zero e de derivada zero nas pontas (como a cúpula de trás). Pontas, inclinação −6° e metade de trás ficam como na
+    // horizontal ×0,8. Embaixo o termo equivale a girar só a passada da frente ≈ 4,5° de volta à horizontal: a esquerda
+    // sobe ≈ 4,5 px e a direita desce ≈ 3 px. O centro fica 16 px acima (ORB_DY). Resultado, medido pela tinta a 120 qps:
+    // com o Ponto visível (α ≥ .8) fica a ≥ 25 px das duas linhas, inclusive no rangido de 2,5. Pingo do 'i' a ≥ 50 px.
+    const ORB_RY = 86.4, ORB_DY = 16, ORB_DT = 38.4, ORB_PAD = 12.8, ORB_DL = 13;
+    let ORB = { cx: 737.3, cy: 609 - ORB_DY, rx: 154.3 + ORB_PAD, ry: ORB_RY, dT: ORB_DT, dL: ORB_DL };
     try {
       const u = union(giramChars);
       mc.font = '700 120px "Space Grotesk"';
       const m = mc.measureText('giram');
       const cy = 640 + (m.actualBoundingBoxDescent - m.actualBoundingBoxAscent) / 2;
-      if (isFinite(u.x) && u.w > 80 && isFinite(cy)) ORB = { cx: u.x + u.w / 2, cy: cy - ORB_DY, rx: u.w / 2 + ORB_PAD, ry: ORB_RY, dT: ORB_DT };
+      if (isFinite(u.x) && u.w > 80 && isFinite(cy)) ORB = { cx: u.x + u.w / 2, cy: cy - ORB_DY, rx: u.w / 2 + ORB_PAD, ry: ORB_RY, dT: ORB_DT, dL: ORB_DL };
     } catch (e) { /* fallback */ }
     const ROT = -6 * DEG;
     // Oclusor = a linha 'Algumas giram;' como uma placa: caixas de TINTA de cada glifo (+ os vãos, na altura-x).
@@ -532,21 +536,27 @@ MECCA.scene({
     // pela frente, embaixo (φ ≈ 1,75), já andando para a direita sob 'giram'.
     const ORB_K = 0.35, TH0 = 3.7246, OMEGA = -Math.PI;
     const T_ENTER = 0.6, T_COL = 0.32, T_DEP = 0.45;
+    // Entrada (0–0,6): lerp de START até o ponto da órbita (p2InOut) + uma BARRIGA vertical ENTRY_SAG·b(u), u = lt/0,6,
+    // b = u⁶(1−u)² normalizado (pico 1 em u = 0,75; zero e de derivada zero em u = 1, então o Ponto chega à órbita com a
+    // velocidade dela). ADAPTAÇÃO vertical: sem ela o Ponto subia rente à descendente do 'g' de 'giram' (≈ 20 px em
+    // 0,44–0,48, α ≥ .86). Com 24 px ele passa por baixo da descendente a ≥ 30 px e entra na órbita pela frente, embaixo,
+    // como antes. O começo (até ~0,2 s) não muda.
+    const ENTRY_SAG = 24, SAG_N = 1 / (Math.pow(0.75, 6) * 0.25 * 0.25);
+    const sagAt = (u) => ENTRY_SAG * SAG_N * Math.pow(u, 6) * (1 - u) * (1 - u);
     const R_LAND = 12, R_END = 10;
     const orbitAt = (lt) => {
       const s = pushA(Math.min(lt, T_FALL));
       const k = 1 - p3In(seg(lt, T_FALL, T_FALL + T_COL));
-      return { cx: PUSHA_O.x + (ORB.cx - PUSHA_O.x) * s, cy: PUSHA_O.y + (ORB.cy - PUSHA_O.y) * s, rx: ORB.rx * s * k, ry: ORB.ry * s * k, dT: ORB.dT * s * k * (1 - sm(T_FALL + 0.15, T_FALL + 0.25, lt)), s };
+      return { cx: PUSHA_O.x + (ORB.cx - PUSHA_O.x) * s, cy: PUSHA_O.y + (ORB.cy - PUSHA_O.y) * s, rx: ORB.rx * s * k, ry: ORB.ry * s * k, dT: ORB.dT * s * k * (1 - sm(T_FALL + 0.15, T_FALL + 0.25, lt)), dL: ORB.dL * s * k, s };
     };
     // A cúpula recolhe no mergulho. ADAPTAÇÃO: 3,65–3,75 (na horizontal 3,6–3,7). Aqui HOVER fica logo abaixo e o
     // mergulho é mais curto: com 3,6–3,7 o Ponto chegava a 5 px do topo do 'a' que desaba em 3,667. Com 3,65–3,75
     // fica a ≈25 px nesse quadro e atravessa a linha 1 no mesmo quadro de antes, 3,70, por dentro da tinta do 'a'.
-    // ponto da órbita: metade da frente = elipse (rx, ry, ROT); metade de trás = a mesma elipse + a cúpula (ver ORB_DT)
+    // ponto da órbita: elipse (rx, ry, ROT) + na metade da frente o nivelamento (ORB_DL), na de trás a cúpula (ORB_DT)
     const ROT_C = Math.cos(ROT), ROT_S = Math.sin(ROT);
     const orbPt = (o, a) => {
-      const sa = Math.sin(a);
-      if (sa >= 0) return h.ellipsePt(o.cx, o.cy, o.rx, o.ry, ROT, a);
-      const x = Math.cos(a) * o.rx, y = sa * o.ry - o.dT * sa * sa;
+      const sa = Math.sin(a), ca = Math.cos(a);
+      const x = ca * o.rx, y = sa >= 0 ? sa * o.ry + o.dL * ca * sa * sa : sa * o.ry - o.dT * sa * sa;
       return { x: o.cx + x * ROT_C - y * ROT_S, y: o.cy + x * ROT_S + y * ROT_C };
     };
     const orbAng = (lt) => { const th = TH0 + OMEGA * lt; return th + 0.5 * ORB_K * Math.sin(2 * th); };
@@ -563,10 +573,12 @@ MECCA.scene({
       return Math.max(0, best) * s;
     }
     // px (o Ponto tem o mesmo r da horizontal): o Ponto some ao encostar na linha de texto. À esquerda (entrada sob o
-    // 'g', vão depois de 'Algumas') fade 0–22 px. À direita o vizinho é o ';': o fade começa mais longe e zera 6 px antes
-    // de encostar (6–30 px), para não sobrar um quadro de Ponto semitransparente colado sob a perna do 'm'. A mistura
-    // esquerda→direita (por x, em volta do centro da órbita; −40/+60 da horizontal ×0,8) só acontece longe da linha de texto.
-    const OCC_FADE = 22, OCC_FADE_R = 30, OCC_DEAD_R = 6, OCC_MIX0 = 32, OCC_MIX1 = 48;
+    // 'g', vão depois de 'Algumas') fade 0–28 px (a horizontal usa 0–22). Com a passada nivelada, o Ponto sai de trás do
+    // 'g' mais perto da descendente; com 0–28 ele só chega a α ≥ .8 quando já está a ≥ 24 px da tinta. À direita o vizinho
+    // é o ';': o fade começa mais longe e zera 6 px antes de encostar (6–30 px), para não sobrar um quadro de Ponto
+    // semitransparente colado sob a perna do 'm'. A mistura esquerda→direita (por x, em volta do centro da órbita; −40/+60
+    // da horizontal ×0,8) só acontece longe da linha de texto.
+    const OCC_FADE = 28, OCC_FADE_R = 30, OCC_DEAD_R = 6, OCC_MIX0 = 32, OCC_MIX1 = 48;
     const occW = (lt) => 1 - sm(T_FALL, T_FALL + 0.2, lt);          // o oclusor deixa de valer quando as letras desabam
     const dotAt = (lt) => { const s = pushB(lt); return { x: PUSHB_O.x + s * (DOT.x - PUSHB_O.x), y: PUSHB_O.y + s * (DOT.y - PUSHB_O.y) }; };
     const quad = (a, c, b, u) => ({ x: (1 - u) * (1 - u) * a.x + 2 * (1 - u) * u * c.x + u * u * b.x, y: (1 - u) * (1 - u) * a.y + 2 * (1 - u) * u * c.y + u * u * b.y });
@@ -586,7 +598,7 @@ MECCA.scene({
         const o = orbitAt(lt), a = orbAng(lt);
         const q = orbPt(o, a);
         const d = Math.sin(a);
-        if (lt < T_ENTER) { const e = p2InOut(lt / T_ENTER); return { x: lerp(START.x, q.x, e), y: lerp(START.y, q.y, e), depth: d * e }; }
+        if (lt < T_ENTER) { const u = lt / T_ENTER, e = p2InOut(u); return { x: lerp(START.x, q.x, e), y: lerp(START.y, q.y, e) + sagAt(u), depth: d * e }; }
         if (lt < T_FALL) return { x: q.x, y: q.y, depth: d };
         const e = mInOut(seg(lt, T_FALL, T_FALL + T_DEP));
         return { x: lerp(q.x, HOVER.x, e), y: lerp(q.y, HOVER.y, e), depth: d * (1 - e) };
@@ -706,8 +718,8 @@ MECCA.scene({
 
     // órbita (hairline α .3): arco da frente no canvas da frente SÓ onde passa livre da linha de texto; o resto
     // (inclusive os trechos das pontas que cruzam 'g'/';') no canvas de trás, abaixo do texto. Metade de trás com
-    // α ×.5 (transição suave pela profundidade). Desenhada em trechos contíguos agrupados por (canvas, α, metade): a metade
-    // da frente com o arco de elipse de h.orbit; a de trás (cúpula, não é elipse) como polilinha fina (passo de 0,25°).
+    // α ×.5 (transição suave pela profundidade). Desenhada em trechos contíguos agrupados por (canvas, α), como polilinha
+    // fina (passo de 0,25°) sobre orbPt: nenhuma das metades é elipse (frente nivelada, trás com cúpula).
     const ORB_SEG = 144, ORB_STEP = TAU / 1440;
     function drawOrbit(lt) {
       if (lt >= T_FALL + T_COL) return;
@@ -721,17 +733,15 @@ MECCA.scene({
         const a0 = TAU * k / ORB_SEG, a1 = TAU * (k + 1) / ORB_SEG, am = 0.5 * (a0 + a1);
         const d = Math.sin(am);
         const pm = orbPt(o, am);
-        const top = k >= ORB_SEG / 2;
         const clear = w <= 0 || occGap(pm.x, pm.y, 1.5, o.s) > 2;
         const fr = d > 0 && clear;
         const al = Math.round(a * (d >= 0 ? 1 : lerp(1, 0.5, sm(0, 0.3, -d))) * 400) / 400;
         const last = runs[runs.length - 1];
-        if (last && last.fr === fr && last.al === al && last.top === top) last.a1 = a1;
-        else runs.push({ fr, al, top, a0, a1 });
+        if (last && last.fr === fr && last.al === al) last.a1 = a1;
+        else runs.push({ fr, al, a0, a1 });
       }
       for (const R of runs) {
         const c = R.fr ? cf : cb;
-        if (!R.top) { h.orbit(c, { cx: o.cx, cy: o.cy, rx: o.rx, ry: o.ry, rot: ROT, color: P.lavender, alpha: R.al, lineWidth: 1.5, from: R.a0, to: R.a1 }); continue; }
         const n = Math.max(2, Math.ceil((R.a1 - R.a0) / ORB_STEP));
         c.save();
         c.strokeStyle = hexA(P.lavender, R.al);

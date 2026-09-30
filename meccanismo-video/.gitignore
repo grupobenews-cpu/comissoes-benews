@@ -12,3 +12,5 @@ out/snaps-v/
 out/*.mjs
 out/*.png
 out/review/
+out/preview.mp4
+out/voice.wav

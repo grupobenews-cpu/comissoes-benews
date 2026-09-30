@@ -11,6 +11,7 @@ ap.add_argument('--video', default=os.path.join(ROOT, 'out', 'meccanismo-video-o
 ap.add_argument('--cues', default=os.path.join(ROOT, 'out', 'cues.json'))
 ap.add_argument('--out', default=os.path.join(ROOT, 'out', 'meccanismo.mp4'))
 ap.add_argument('--lufs', type=float, default=-14.0)
+ap.add_argument('--voice', default=os.path.join(ROOT, 'out', 'voice.wav'), help='locução posicionada; "" para desativar')
 a = ap.parse_args()
 
 import imageio_ffmpeg
@@ -18,8 +19,11 @@ FF = imageio_ffmpeg.get_ffmpeg_exe()
 raw = os.path.join(ROOT, 'out', 'soundtrack-raw.wav')
 master = os.path.join(ROOT, 'out', 'soundtrack.wav')
 
+if a.voice and not os.path.exists(a.voice) and os.path.exists(os.path.join(ROOT, 'audio', 'vo', 'plan.json')):
+    subprocess.run([sys.executable, os.path.join(ROOT, 'tools', 'voice.py'), '--out', a.voice], check=True)
+extra = ['--voice', a.voice] if a.voice and os.path.exists(a.voice) else []
 subprocess.run([sys.executable, os.path.join(ROOT, 'tools', 'audio.py'), '--cues', a.cues,
-                '--arrangement', os.path.join(ROOT, 'tools', 'arrangement.json'), '--out', raw], check=True)
+                '--arrangement', os.path.join(ROOT, 'tools', 'arrangement.json'), '--out', raw, *extra], check=True)
 
 # loudnorm em duas passadas (modo linear)
 p = subprocess.run([FF, '-hide_banner', '-i', raw, '-af', f'loudnorm=I={a.lufs}:TP=-1.5:LRA=11:print_format=json', '-f', 'null', '-'],

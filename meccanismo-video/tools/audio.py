@@ -376,6 +376,7 @@ def main():
     ap.add_argument('--cues', default='out/cues.json')
     ap.add_argument('--arrangement', default='tools/arrangement.json')
     ap.add_argument('--out', default='out/soundtrack.wav')
+    ap.add_argument('--voice', default='', help='wav mono 48 kHz com a locução já posicionada (tools/voice.py)')
     a = ap.parse_args()
     cj = json.load(open(a.cues))
     arr = json.load(open(a.arrangement))
@@ -412,9 +413,50 @@ def main():
     gain = signal.filtfilt(*signal.butter(1, 12 / (SR / 2)), gain)  # suaviza as rampas
     music *= gain
     send *= gain
+    # locução: envelope da voz controla o ducking da música, dos efeitos e da reverb
+    voice = None
+    if a.voice:
+        from scipy.io import wavfile as _wf
+        vsr, vv = _wf.read(a.voice)
+        assert vsr == SR, 'a locução precisa estar em 48 kHz'
+        vv = vv.astype(np.float64) / 32768.0
+        voice = np.zeros(n)
+        voice[:min(n, len(vv))] = vv[:n]
+        # envelope com ataque rápido (~25 ms) e soltura lenta (~400 ms), antecipado em 60 ms
+        rect = np.abs(voice)
+        env = np.zeros(n)
+        att, rel = np.exp(-1 / (0.025 * SR)), np.exp(-1 / (0.40 * SR))
+        e = 0.0
+        blk = 64
+        for i in range(0, n, blk):
+            v = rect[i:i + blk].max() if i < n else 0
+            c = att if v > e else rel
+            e = c ** blk * e + (1 - c ** blk) * v
+            env[i:i + blk] = e
+        env = np.clip(env / (np.percentile(env[env > 1e-4], 90) + 1e-9), 0, 1) if np.any(env > 1e-4) else env
+        lead = int(0.06 * SR)
+        env = np.concatenate([env[lead:], np.zeros(lead)])
+        env = np.maximum(env, 0)
+        duck_m = 1 - arr.get('duck_music', 0.62) * env
+        duck_s = 1 - arr.get('duck_sfx', 0.35) * env
+        music *= duck_m
+        send *= duck_m
+        sfx *= duck_s
+        sfx_send *= duck_s
     ir = make_ir()
     wet = reverb(send + sfx_send, ir)
     mix = music * arr.get('music_gain', 0.8) + sfx * arr.get('sfx_gain', 0.85) + wet * arr.get('reverb_gain', 0.55)
+    if voice is not None:
+        # nível da voz: ~9 dB acima do bed nos trechos em que ela fala
+        speaking = np.abs(signal.lfilter([1 - 0.999], [1, -0.999], voice ** 2)) > 1e-5
+        bed_rms = np.sqrt(np.mean(np.sum(mix ** 2, axis=0)[speaking] / 2) + 1e-12)
+        vo_rms = np.sqrt(np.mean(voice[speaking] ** 2) + 1e-12)
+        vg = bed_rms * 10 ** (arr.get('voice_over_bed_db', 9) / 20) / vo_rms
+        # saturação suave só no bed (a voz fica limpa) e depois soma a voz
+        mix = np.tanh(mix * 1.15) / np.tanh(1.15)
+        vroom = reverb(np.stack([voice, voice]) * 0.5, make_ir(dur=0.9, decay=0.45, seed=11))
+        mix = mix + np.stack([voice, voice]) * vg + vroom * vg * arr.get('voice_room', 0.05)
+        print(f'locução: ganho {20 * np.log10(vg):+.1f} dB · ducking música {arr.get("duck_music", 0.62)} · efeitos {arr.get("duck_sfx", 0.35)}')
     # final: corta 1 s após o fim do vídeo com fade
     end = int((duration) * SR)
     mix = mix[:, :end]
@@ -424,7 +466,8 @@ def main():
     mix[:, :fin] *= np.linspace(0, 1, fin)
     # master: HP de limpeza, saturação suave, normalização
     mix = np.stack([hp(mix[0], 28), hp(mix[1], 28)])
-    mix = np.tanh(mix * 1.15) / np.tanh(1.15)
+    if voice is None:
+        mix = np.tanh(mix * 1.15) / np.tanh(1.15)
     peak = np.max(np.abs(mix))
     mix = mix / peak * 10 ** (-1.0 / 20)
     rms = np.sqrt(np.mean(mix ** 2))

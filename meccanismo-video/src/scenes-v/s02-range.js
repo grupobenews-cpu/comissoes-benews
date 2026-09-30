@@ -387,11 +387,12 @@ MECCA.scene({
       for (let k = 0; k < NM; k++) th.push(phi + TAU * k / NM);
       return { th, hw, hh, bcx, bcy, state: 'gear' };
     });
-    // Progresso do morph: et — dentes recolhem (0,2 s, power3.out); w — alarga (fase 1, power2.inOut: a forma só
-    // fica larga quando os dentes já quase sumiram, sem ondulação nas bordas retas); g — sobe/cresce (fase 2, mecca.inOut).
+    // Progresso do morph: et — dentes recolhem (0,2 s, power3.out); w — alarga (fase 1, sine.inOut: desacelera pouco
+    // no fim, então a passagem para a fase 2 não "estaciona" por quadros; os dentes somem antes de a forma ficar
+    // larga — em 7,55 w = 0,5 e o resíduo é ±1,5 px); g — sobe/cresce (fase 2, mecca.inOut).
     function morphE(lt) {
       const u = seg(lt, T_M0, T_M1);
-      return { u, et: p3Out(seg(lt, T_M0, T_M0 + 0.2)), w: p2InOut(seg(lt, T_M0, T_MW)), g: mInOut(seg(lt, T_MW, T_M1)) };
+      return { u, et: p3Out(seg(lt, T_M0, T_M0 + 0.2)), w: sineIO(seg(lt, T_M0, T_MW)), g: mInOut(seg(lt, T_MW, T_M1)) };
     }
     // forma no instante: retângulo arredondado (hw, hh, rc) centrado em (ox, oy) relativo à engrenagem
     function morphShape(M, e) {
@@ -493,7 +494,10 @@ MECCA.scene({
     const LAND = dotAt(T_LAND);
     const C1 = { x: lerp(HOVER.x, LAND.x, 0.45), y: Math.min(HOVER.y, LAND.y) - 110 };   // arco com controle 110 px acima
     const OUT0 = dotAt(T_OUT);
-    const C2 = { x: lerp(OUT0.x, END.x, 0.5), y: Math.min(OUT0.y, END.y) - 120 };
+    // saída em arco pela direita (controle ao lado, na altura do END): chega a END sem passar do ponto nem "quicar".
+    // Pico x ≈ 971 em y ≈ 805 (~7,67; fora da faixa x > 960 / y 1000–1700); a caixa 1 (borda x 970) só alcança essa altura
+    // depois que o Ponto já voltou para x < 925.
+    const C2 = { x: OUT0.x + 60, y: END.y };
     const T_OUT1 = 7.9;
 
     function pontoPos(lt) {

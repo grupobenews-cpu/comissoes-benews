@@ -173,6 +173,8 @@ ${SEL} .s8-dia { display:inline-block; width:12px; height:12px; margin:0 22px 0 
     const tR = h.rect(title);
     const PUSH_TO = `${(PUSH_O.x - tR.x).toFixed(2)}px ${(PUSH_O.y - tR.y).toFixed(2)}px`;
 
+    // legenda em x 90, baselines 760/806/852/898. Largura medida da linha mais longa ("◆ VERIFICAÇÕES & CONFERÊNCIAS"):
+    // 596,6 px (x 90–686,6) sem a deriva; 606,6 px com a deriva de +10 px (a spec §2 S08 cita 608 / x 90–698).
     const LEG = [
       { label: 'DIÁRIAS', color: '#C4B5FD', y: 760, t: 1.5, dia: false },
       { label: 'SEMANAIS', color: '#A78BFA', y: 806, t: 2.0, dia: false },
@@ -214,7 +216,8 @@ ${SEL} .s8-dia { display:inline-block; width:12px; height:12px; margin:0 22px 0 
     tl.to(tSp.lines[1], { yPercent: 0, duration: 0.6, ease: 'mecca.out' }, 0.58);
     tl.to(tSp.lines[2], { yPercent: 0, duration: 0.6, ease: 'mecca.out' }, 1.0);
     tl.to(title, { scale: 1.025, duration: 5, ease: 'none' }, 0.5);
-    tl.to(tSp.lines, { yPercent: -150, duration: 0.27, ease: 'mecca.in', stagger: 0.03 }, 5.5);
+    // 3 linhas no vertical: stagger total .03 (amount) para a última sair em 5,80 como na horizontal (2 linhas × .03)
+    tl.to(tSp.lines, { yPercent: -150, duration: 0.27, ease: 'mecca.in', stagger: { amount: 0.03 } }, 5.5);
 
     // legenda — cada linha desliza 20 px com fade junto com o seu anel
     LEG.forEach((L, i) => {

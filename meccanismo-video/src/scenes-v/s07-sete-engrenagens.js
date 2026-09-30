@@ -47,6 +47,10 @@ MECCA.scene({
     const Y_A = 963, PITCH = 520;                     // topo do bloco ativo · passo da cremalheira
     const COLX = 90;                                  // margem esquerda do texto
     const CLIP_B = 1480;                              // base do recorte da coluna (polygon)
+    // topo do recorte (y 320) com máscara suave até y 400: o bloco que sai pela cremalheira se dissolve em vez de
+    // ser fatiado por uma aresta dura logo abaixo do eyebrow (270). O bloco anterior parado (topo 443, contador
+    // apagado, nome com cap em ~y 545) fica inteiro abaixo de 400 — nada muda no estado estável.
+    const MASK_T = 320, MASK_B = 400;
     const NUM_R = 330;                                // raio dos números (espaço da engrenagem)
     const HUBK_END = 110 / (156 * 200 / 228);        // pupila de 110 px (espaço da máquina) → 121 px no quadro
 
@@ -64,7 +68,9 @@ MECCA.scene({
     h.el('style', {
       html: `
 ${SEL} .s7-col { position:absolute; left:0; top:0; width:${W}px; height:${H}px;
-  clip-path: polygon(60px 320px, 700px 320px, 700px 1000px, 960px 1000px, 960px 1480px, 60px 1480px); }
+  clip-path: polygon(60px 320px, 700px 320px, 700px 1000px, 960px 1000px, 960px 1480px, 60px 1480px);
+  -webkit-mask-image: linear-gradient(to bottom, transparent ${MASK_T}px, #000 ${MASK_B}px);
+  mask-image: linear-gradient(to bottom, transparent ${MASK_T}px, #000 ${MASK_B}px); }
 ${SEL} .s7-rack, ${SEL} .s7-blk { position:absolute; left:0; top:0; width:${W}px; height:${H}px; }
 ${SEL} .s7-count { position:absolute; left:${COLX}px; top:0; font-family:var(--f-mono); font-weight:500; font-size:28px;
   letter-spacing:.14em; color:var(--lavender); white-space:nowrap; line-height:1.2; }
@@ -74,7 +80,7 @@ ${SEL} .s7-blk .chip { height:56px; padding:0 18px 0 22px; gap:13px; font-size:2
   text-transform:uppercase; border-radius:13px; line-height:1; border-color:rgba(167,139,250,.34); background:rgba(26,11,46,.86); }
 ${SEL} .s7-blk .chip .pip { width:9px; height:9px; flex:none; background:var(--lavender); box-shadow:0 0 10px rgba(167,139,250,.9); }
 ${SEL} .s7-num { font-family:var(--f-bricolage); font-weight:800; font-size:${(80 / M0.s).toFixed(3)}px; letter-spacing:-0.03em; fill:#A78BFA; }
-${SEL} .s7-pl { font-family:var(--f-display); font-weight:600; font-size:${(26 / M0.s).toFixed(3)}px; letter-spacing:-0.01em; fill:#FBF8FF; }
+${SEL} .s7-pl { font-family:var(--f-display); font-weight:600; font-size:${(26 / M0.s).toFixed(3)}px; letter-spacing:-0.03em; fill:#FBF8FF; }
 ${SEL} .s7-close { position:absolute; left:0; top:0; width:${W}px; height:${H}px; }
 ${SEL} .s7-close .line-mask { padding-bottom:.14em; margin-bottom:-.14em; }
 ${SEL} .s7-close em { background-repeat:no-repeat; }
@@ -205,11 +211,11 @@ ${SEL} .s7-close em { background-repeat:no-repeat; }
       const rot = h.svg('g', {}, g);
       const d = h.gearPath({ teeth: 16, r: 78, depth: 0.13, hole: 0 });
       h.svg('path', { d, fill: i % 2 ? P.surface2 : P.surface, stroke: P.lavender, 'stroke-width': 1.5, 'stroke-linejoin': 'round', 'vector-effect': NS }, rot);
-      h.svg('circle', { r: 50, fill: 'none', stroke: P.lavender, 'stroke-opacity': 0.18, 'stroke-width': 1, 'vector-effect': NS }, rot);
+      const ring = h.svg('circle', { r: 50, fill: 'none', stroke: P.lavender, 'stroke-opacity': 0.18, 'stroke-width': 1, 'vector-effect': NS }, rot);
       const hl = h.svg('path', { d, fill: 'none', stroke: P.magenta, 'stroke-width': 3, 'stroke-linejoin': 'round', opacity: 0, 'vector-effect': NS }, rot);
       const label = h.svg('text', { class: 's7-pl', 'text-anchor': 'middle', 'dominant-baseline': 'central', y: 1 }, g);
       label.textContent = st.name;
-      return { g, rot, hl, label, ang, prox: { d: 0 } };
+      return { g, rot, ring, hl, label, ang, prox: { d: 0 } };
     });
 
     // ------------------------------------------------------------------ canvas (Ponto, rastro, onda, órbita)
@@ -285,7 +291,7 @@ ${SEL} .s7-close em { background-repeat:no-repeat; }
     init(hubArcs, { opacity: 1 });
     init(carc.svg, { autoAlpha: 0 });
     init([carc.arcOuter, carc.arcInner], { drawSVG: '0%' });
-    PL.forEach((p) => { init(p.g, { autoAlpha: 0 }); init(p.prox, { d: 0 }); init(p.label, { opacity: 0 }); init(p.hl, { opacity: 0 }); });
+    PL.forEach((p) => { init(p.g, { autoAlpha: 0 }); init(p.prox, { d: 0 }); init(p.label, { opacity: 0 }); init(p.hl, { opacity: 0 }); init(p.ring, { opacity: 1 }); });
     init(rack, { y: PITCH });
     blocks.forEach((B) => {
       init(B.blk, { opacity: 0, y: 0 });
@@ -364,6 +370,7 @@ ${SEL} .s7-close em { background-repeat:no-repeat; }
     tl.to(S, { th: 360 + SUN_OFF, duration: 1, ease: 'mecca.inOut' }, 16);
     tl.to(body, { attr: { 'fill-opacity': 1 }, duration: 0.4, ease: 'power1.out' }, 16);
     tl.to(bg, { grid: 0, duration: 1, ease: 'mecca.inOut' }, 16);
+    cue(16, 'whoosh', 'recuo', 0.45);
 
     // 16,5–17,25 — 7 PLANETAS
     PL.forEach((p, i) => {
@@ -372,6 +379,10 @@ ${SEL} .s7-close em { background-repeat:no-repeat; }
       // pousam dentro da janela 16,5–17,25 (último: 16,86 + 0,39 = 17,25)
       tl.to(p.prox, { d: 198, duration: 0.39, ease: 'mecca.back' }, t0);
       tl.to(p.label, { opacity: 1, duration: 0.3, ease: 'power1.out' }, t0 + 0.25);
+      // o nome (SG 600 26 px, até 129 px) é mais largo que o anel r 50 (Ø 110 no quadro): o anel apaga enquanto
+      // o nome está visível e volta junto com a saída dos nomes (21,5–21,8), a tempo do corte 76,0
+      tl.to(p.ring, { opacity: 0, duration: 0.3, ease: 'power1.out' }, t0 + 0.25);
+      tl.to(p.ring, { opacity: 1, duration: 0.3, ease: 'power1.inOut' }, 21.5);
     });
     cue(16.5, 'whoosh', 'planetas', 0.6);
 

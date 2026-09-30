@@ -34,7 +34,7 @@ MECCA.scene({
     const pe = (n) => gsap.parseEase(n);
     const EOUT = pe('mecca.out'), EIN = pe('mecca.in'), EIO = pe('mecca.inOut'), EBACK = pe('mecca.back');
     const P3I = pe('power3.in'), P2I = pe('power2.in'), P2O = pe('power2.out'), P2IO = pe('power2.inOut');
-    const P1IO = pe('power1.inOut'), P3IO = pe('power3.inOut');
+    const P1IO = pe('power1.inOut'), P3IO = pe('power3.inOut'), P1I = pe('power1.in');
 
     const rgb = (hex) => { const n = parseInt(hex.slice(1), 16); return [(n >> 16) & 255, (n >> 8) & 255, n & 255]; };
     const lerpRGB = (A, B, k) => [lerp(A[0], B[0], k), lerp(A[1], B[1], k), lerp(A[2], B[2], k)];
@@ -69,6 +69,9 @@ MECCA.scene({
     // brilho do Ponto: continuação exata do br(t) da S08 (lá: 1 − .12·(.5 − .5·cos(tπ)), t local da S08 = 6 + t aqui)
     const BR = (t) => 1 - 0.12 * (0.5 - 0.5 * Math.cos((6 + t) * Math.PI));
     const GLOW = (t) => 0.82 + 0.18 * Math.sin((T8 + t + 22) * Math.PI * 0.5);  // glow do cubo
+    // carcaça (arcos do ícone): regra COMPARTILHADA S07/S08/S09, função do tempo GLOBAL gt —
+    // 0° até 72 s; depois oscila ±18° com período de 4 s (0° exatos nos cortes de 76,0 e 82,0), sem nunca virar o logo
+    const carcAngle = (gt) => (gt < 72 ? 0 : 18 * Math.sin(TAU * (gt - 72) / 4) * smooth(72, 72.6, gt));
 
     // sol: 36°/s → 90°/s (1,0–1,3, power2.out) → 72°/s (1,3–2,0)
     const W1 = (s) => 36 + 54 * P2O(clamp((s - 1) / 0.3));
@@ -93,8 +96,8 @@ ${SEL} .s9-pj { position:relative; }
 ${SEL} .s9-gl { position:absolute; left:0; top:0; color:transparent; white-space:nowrap; }
 ${SEL} .s9-ul { position:absolute; left:0; height:3px; border-radius:3px; background:linear-gradient(90deg, #C026D3, #7C3AED);
   transform-origin:0 50%; box-shadow:0 0 10px rgba(192,38,211,.55); }
-${SEL} .s9-lab { position:absolute; left:0; top:0; font-family:var(--f-mono); font-weight:500; font-size:16px; letter-spacing:.22em;
-  padding-left:.22em; text-transform:uppercase; white-space:nowrap; line-height:1; }
+${SEL} .s9-lab { position:absolute; left:0; top:0; font-family:var(--f-mono); font-weight:500; font-size:22px; letter-spacing:.12em;
+  padding-left:.12em; text-transform:uppercase; white-space:nowrap; line-height:1; }
 ${SEL} .s9-lab > span { display:inline-block; }
 `,
     }, root);
@@ -251,9 +254,12 @@ ${SEL} .s9-lab > span { display:inline-block; }
     // rótulos do binário (posicionados a cada quadro)
     const labA = h.el('div', { cls: 's9-lab', html: '<span>SUA EMPRESA</span>' }, root);
     const labB = h.el('div', { cls: 's9-lab', html: '<span>OS MECCA</span>' }, root);
-    labA.style.color = P.lilac; labB.style.color = P.pink;
-    labB.style.textShadow = '0 0 12px rgba(226,73,176,.45)';
+    labA.style.color = P.lilac; labB.style.color = P.pink;                  // OS MECCA em #E249B0 a 100%
+    // halo escuro (cor da base) sob as letras: as hairlines das órbitas não atravessam a leitura
+    labA.style.textShadow = '0 0 4px rgba(22,10,39,.9), 0 0 10px rgba(22,10,39,.6)';
+    labB.style.textShadow = '0 0 4px rgba(22,10,39,.9), 0 0 12px rgba(226,73,176,.4)';
     const labAi = labA.firstChild, labBi = labB.firstChild;
+    const LAB_A = h.rect(labA), LAB_B = h.rect(labB);            // caixas dos rótulos (antes de qualquer transform)
 
     // ================================================================== TIMELINE (DOM + fundo)
     const BG0 = { glowA: 1, glowB: 1, glowC: 1, grid: 0, particles: 1, driftX: 0, driftY: 0, speed: 1, warp: 0, vignette: 0.55, dim: 0, hue: 0, grain: 1 };
@@ -280,7 +286,6 @@ ${SEL} .s9-lab > span { display:inline-block; }
     const NCH = ebSp.chars.length;
     tl.to(ebDash, { scaleX: 1, duration: 0.3, ease: 'mecca.out' }, 0.5);
     tl.to(ebSp.chars, { autoAlpha: 1, duration: 0.01, ease: 'none', stagger: 0.025 }, 0.62);
-    tl.to(eb, { x: 4, duration: 9, ease: 'none' }, 0.5);   // micro-deriva (≤ 4 px)
     tl.to(ebSp.chars, { autoAlpha: 0, duration: 0.01, ease: 'none', stagger: { each: 0.011, from: 'end' } }, 9.5);
     tl.to(ebDash, { scaleX: 0, duration: 0.12, ease: 'mecca.in' }, 9.5 + NCH * 0.011);
 
@@ -293,17 +298,20 @@ ${SEL} .s9-lab > span { display:inline-block; }
     // bloco 1 — ASSUME
     reveal(L1a, 0.5, 0.5); hit(v1, 0.5);    // a linha sobe na batida (máscara 0,5 s) e o verbo bate em cima dela
     reveal(L1b, 1.0);
-    tl.to([ag1, L1b.inner], { opacity: 0.45, duration: 0.4, ease: 'power2.out' }, 2.0);
+    // o bloco cai para α .6 ('assume,' em .7); a linha secundária riscada tem piso de .65 (contraste do diferencial)
+    tl.to(ag1, { opacity: 0.6, duration: 0.4, ease: 'power2.out' }, 2.0);
+    tl.to(L1b.inner, { opacity: 0.65, duration: 0.4, ease: 'power2.out' }, 2.0);
     tl.to(v1, { opacity: 0.7, duration: 0.4, ease: 'power2.out' }, 2.0);
     tl.to(B1, { scale: 1.02, duration: 5.5, ease: 'none' }, 0.5);
     // bloco 2 — FICA
     reveal(L2a, 2.0, 0.5); hit(v2, 2.0);
     reveal(L2b, 2.5);
-    tl.to([ag2, L2b.inner], { opacity: 0.45, duration: 0.4, ease: 'power2.out' }, 3.5);
+    tl.to(ag2, { opacity: 0.6, duration: 0.4, ease: 'power2.out' }, 3.5);          // 'fica,' continua em α 1
+    tl.to(L2b.inner, { opacity: 0.65, duration: 0.4, ease: 'power2.out' }, 3.5);
     tl.to(B2, { scale: 1.02, duration: 4.0, ease: 'none' }, 2.0);
-    // saída dos blocos 1 e 2 (6,0–6,3)
-    tl.to(B1, { x: -60, opacity: 0, duration: 0.3, ease: 'mecca.in' }, 6.0);
-    tl.to(B2, { x: -60, opacity: 0, duration: 0.3, ease: 'mecca.in' }, 6.0);
+    // saída dos blocos 1 e 2 (6,0–6,3): mecca.in só no x; a opacidade em power1.in (sem "pop" no último quadro)
+    tl.to([B1, B2], { x: -60, duration: 0.3, ease: 'mecca.in' }, 6.0);
+    tl.to([B1, B2], { opacity: 0, duration: 0.3, ease: 'power1.in' }, 6.0);
     // bloco 3 — PELE NO JOGO
     reveal(L3a, 3.5, 0.5); reveal(L3b, 3.5, 0.5); hit(v3, 3.5);   // 'pele no jogo —' também por máscara
     reveal(L3c, 4.0);
@@ -316,12 +324,14 @@ ${SEL} .s9-lab > span { display:inline-block; }
     tl.to(B4, { scale: 1.02, duration: 3.0, ease: 'none' }, 6.5);
     // saída (9,5–9,8): cada bloco sobe 20 px com fade (sem mexer nas máscaras → as linhas nunca se encostam);
     // o sublinhado de 'sócio de resultado' some primeiro (9,5–9,65)
-    tl.to(ul, { opacity: 0, duration: 0.15, ease: 'mecca.in' }, 9.5);
-    tl.to(B4, { y: -20, opacity: 0, duration: 0.28, ease: 'mecca.in' }, 9.5);
-    tl.to(B3, { y: -20, opacity: 0, duration: 0.28, ease: 'mecca.in' }, 9.52);
+    tl.to(ul, { opacity: 0, duration: 0.15, ease: 'power1.in' }, 9.5);
+    tl.to(B4, { y: -20, duration: 0.28, ease: 'mecca.in' }, 9.5);
+    tl.to(B4, { opacity: 0, duration: 0.28, ease: 'power1.in' }, 9.5);
+    tl.to(B3, { y: -20, duration: 0.28, ease: 'mecca.in' }, 9.52);
+    tl.to(B3, { opacity: 0, duration: 0.28, ease: 'power1.in' }, 9.52);
     // rótulos
     tl.to([labAi, labBi], { opacity: 1, y: 0, duration: 0.45, ease: 'mecca.out', stagger: 0.06 }, 4.0);
-    tl.to([labAi, labBi], { opacity: 0, duration: 0.2, ease: 'mecca.in' }, 9.5);
+    tl.to([labAi, labBi], { opacity: 0, duration: 0.2, ease: 'power1.in' }, 9.5);
     // pupila → esfera A
     tl.to(hub.pupil, { morphSVG: CIRCLE_D, duration: 0.5, ease: 'mecca.inOut' }, 3.5);
 
@@ -619,19 +629,35 @@ ${SEL} .s9-lab > span { display:inline-block; }
       ribbon(pts, W, COL, AL, () => L, cB);
       if (core > 0) ribbon(pts, W2, COL2, AL2, () => L, cB);
     }
+    // caixa-fantasma = o card 'post' da S03 em miniatura: contorno tracejado slate (quase sem fill) e, dentro,
+    // o mesmo line art (moldura da imagem, montanha, sol e duas linhas de legenda) em slate α .6.
+    // Coordenadas da S03 (card 240..500 × 372..560, centro (370,466)) → caixa 120×80 (sx .44, sy .425)
+    const PX = (x) => (x - 370) * 0.44, PY = (y) => (y - 466) * 0.425;
+    const POST_IMG = { x: PX(256), y: PY(388), w: 228 * 0.44, h: 112 * 0.425 };
+    const POST_MTN = [[257, 486], [316, 434], [350, 466], [394, 422], [483, 492]].map(([x, y]) => [PX(x), PY(y)]);
+    const POST_SUN = { x: PX(446), y: PY(414), r: 5 };
+    const POST_TXT = [[PX(256), PX(436), PY(524)], [PX(256), PX(376), PY(544)]];
     function drawBox(c, x, y, a, col, t) {
       c.save();
       c.translate(x, y); c.rotate(BOXROT);
       c.beginPath(); c.roundRect(-60, -40, 120, 80, 10);
-      c.fillStyle = hexA(P.slate, 0.16 * a); c.fill();
+      c.fillStyle = hexA(P.slate, 0.08 * a); c.fill();
       c.setLineDash([6, 6]); c.lineDashOffset = -t * 24;
       c.strokeStyle = hexA(col, a); c.lineWidth = 1.5; c.stroke();
+      c.setLineDash([]);
+      c.lineJoin = 'round'; c.lineCap = 'round';
+      c.strokeStyle = hexA(col, 0.6 * a); c.lineWidth = 1.25;
+      c.beginPath(); c.roundRect(POST_IMG.x, POST_IMG.y, POST_IMG.w, POST_IMG.h, 4); c.stroke();
+      c.beginPath(); POST_MTN.forEach(([px, py], i) => (i ? c.lineTo(px, py) : c.moveTo(px, py))); c.stroke();
+      c.beginPath(); c.arc(POST_SUN.x, POST_SUN.y, POST_SUN.r, 0, TAU); c.stroke();
+      c.lineWidth = 1;
+      c.beginPath(); for (const [x0, x1, ly] of POST_TXT) { c.moveTo(x0, ly); c.lineTo(x1, ly); } c.stroke();
       c.restore();
     }
     const env = (x) => (x < 0 ? 0 : x < 0.06 ? P2O(x / 0.06) : Math.exp(-(x - 0.06) / 0.14));
 
     // ================================================================== onFrame
-    onFrame((lt) => {
+    onFrame((lt, gt) => {
       const t = lt;
 
       // ---------------- fundo: padrão → (9,5 → último quadro) warp .5, speed 2
@@ -657,9 +683,9 @@ ${SEL} .s9-lab > span { display:inline-block; }
         const rotB = p.ang + 180 + 180 / 16 - (28 / 16) * (th - p.ang);
         p.rot.setAttribute('transform', `rotate(${rotB.toFixed(3)})`);
       }
-      carc.g.setAttribute('transform', `rotate(${(-sp / 3).toFixed(3)} 114 114)`);
+      carc.g.setAttribute('transform', `rotate(${carcAngle(gt).toFixed(3)} 114 114)`);
       carcG.setAttribute('transform', `translate(1400 560) scale(${(1 + 0.12 * cC).toFixed(4)}) translate(-355 -355)`);
-      carcG.setAttribute('opacity', (1 - cC).toFixed(3));
+      carcG.setAttribute('opacity', (1 - P1I(clamp((t - 3.5) / 0.35))).toFixed(3));   // fade em power1.in (escala segue mecca.in)
       glow.setAttribute('opacity', GLOW(t).toFixed(3));
 
       // pupila: pisca no encaixe; vira a esfera A (#C4B5FD → #6D28D9)
@@ -873,16 +899,34 @@ ${SEL} .s9-lab > span { display:inline-block; }
         ctx.beginPath(); ctx.arc(pn.x, pn.y, 22 + 70 * P2O(u), 0, TAU); ctx.stroke();
       }
 
-      // ---------------- rótulos: SUA EMPRESA (abaixo de A) / OS MECCA (acima de B)
-      // quando B passa por baixo de A, os dois trocam de lado (com fade) para nunca se sobreporem
+      // ---------------- rótulos: sempre RADIALMENTE PARA FORA do fio (nunca trocam de lado, opacidade constante)
+      // OS MECCA: B + û·(rB + 22); SUA EMPRESA: A − û·(rA + 26), û = normalize(B − A). O ponto calculado é a borda
+      // interna do rótulo: o centro anda mais o "raio" da caixa na direção û (suporte elíptico → movimento suave).
+      // O fio vai de A a B, então os rótulos ficam no prolongamento dele, do lado de fora dos corpos.
       if (t >= 3.9 && t < 9.8) {
-        const f = (1 - smooth(120, 200, Math.abs(B.x - A.x))) * smooth(10, 40, B.y - A.y);
-        const up = f > 0.5, sw = Math.abs(1 - 2 * f);
-        const ay = up ? A.y - (rA + 18) : A.y + (rA + 18);
-        const by = up ? B.y + (B.r + 19) : B.y - (B.r + 17);
-        labA.style.transform = `translate(${A.x.toFixed(2)}px, ${ay.toFixed(2)}px) translate(-50%, -50%)`;
-        labB.style.transform = `translate(${B.x.toFixed(2)}px, ${by.toFixed(2)}px) translate(-50%, -50%)`;
-        labA.style.opacity = sw.toFixed(3); labB.style.opacity = sw.toFixed(3);
+        const dx = B.x - A.x, dy = B.y - A.y, L = Math.hypot(dx, dy) || 1;
+        const ux = dx / L, uy = dy / L;
+        const labAt = (px, py, r, gap, vx, vy, L) => {
+          const d = r + gap + Math.hypot(vx * L.w * 0.5, vy * L.h * 0.5);
+          return { x: px + vx * d, y: py + vy * d };
+        };
+        let lb = labAt(B.x, B.y, B.r, 22, ux, uy, LAB_B);
+        // área segura à direita (x ≤ 1824): com B na ponta direita da órbita (≈8,8–9,5) o rótulo radial passaria da
+        // margem. Em vez de espremê-lo contra B, a direção desliza suavemente para CIMA (peso contínuo pelo excesso)
+        // — continua do lado oposto ao fio; o min() final é só rede de segurança.
+        const exc = lb.x + LAB_B.w * 0.5 - 1824;
+        const kUp = smooth(-24, 30, exc);
+        if (kUp > 0) {
+          let vx = lerp(ux, 0, kUp), vy = lerp(uy, -1, kUp);
+          const vl = Math.hypot(vx, vy) || 1; vx /= vl; vy /= vl;
+          lb = labAt(B.x, B.y, B.r, 22, vx, vy, LAB_B);
+          lb.x = Math.min(lb.x, 1824 - LAB_B.w * 0.5);
+        }
+        const la = labAt(A.x, A.y, rA, 26, -ux, -uy, LAB_A);
+        const bx = lb.x, by = lb.y, ax = la.x, ay = la.y;
+        labA.style.transform = `translate(${ax.toFixed(2)}px, ${ay.toFixed(2)}px) translate(-50%, -50%)`;
+        labB.style.transform = `translate(${bx.toFixed(2)}px, ${by.toFixed(2)}px) translate(-50%, -50%)`;
+        labA.style.opacity = '1'; labB.style.opacity = '1';
       } else { labA.style.opacity = '0'; labB.style.opacity = '0'; }
     });
   },

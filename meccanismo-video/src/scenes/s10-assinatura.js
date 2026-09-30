@@ -38,7 +38,7 @@ ${SEL} .s10-abs { position:absolute; }
 ${SEL} .s10-line { position:absolute; left:0; top:0; white-space:nowrap; line-height:1.2; }
 ${SEL} .s10-probe { display:inline-block; width:0; height:0; vertical-align:baseline; }
 ${SEL} .s10-mono { font-family:var(--f-mono); font-weight:500; text-transform:none; white-space:nowrap; }
-${SEL} .s10-verbs { letter-spacing:.3em; color:rgba(167,139,250,.35); }
+${SEL} .s10-verbs { letter-spacing:.3em; color:rgba(167,139,250,.6); }
 ${SEL} .s10-verbs .c { display:inline-block; }
 ${SEL} .s10-caret { position:absolute; left:0; top:0; width:3px; height:26px; border-radius:1px; background:#A78BFA; opacity:0; }
 ${SEL} .s10-cta { position:absolute; left:700px; top:694px; width:520px; height:92px; border-radius:46px;
@@ -50,13 +50,17 @@ ${SEL} .s10-cta .arr { display:inline-block; width:34px; height:34px; position:r
 ${SEL} .s10-cta .arr svg { display:block; }
 ${SEL} .s10-shine { position:absolute; top:-30px; left:0; width:120px; height:152px;
   background:linear-gradient(90deg, rgba(255,255,255,0), rgba(255,255,255,.25) 50%, rgba(255,255,255,0)); }
-${SEL} .s10-flash { position:absolute; left:0; top:0; width:1920px; height:1080px; background:#C4B5FD;
-  mix-blend-mode:screen; opacity:0; pointer-events:none; }
+${SEL} .s10-url { font-family:var(--f-body); font-weight:600; letter-spacing:.005em; white-space:nowrap; }
 ${SEL} .t-display em { background-image:var(--grad); }
 `,
     }, root);
 
     // ------------------------------------------------------------------ camadas (de trás para frente)
+    // partículas ambientes do fundo (réplica exata das do motor) — assumem no lugar de bg.particles a partir de 6,5
+    // para poderem ser apagadas sob o lockup (thumbnail limpo); ficam abaixo de tudo da cena
+    const partC = h.canvas(root);
+    root.insertBefore(partC.canvas, root.firstChild);
+    const cp = partC.ctx;
     const back = h.canvas(root);                          // glow do lockup, metades de trás, Ponto atrás da frase
     const cb = back.ctx;
     const machSvg = h.svg('svg', { class: 'fill', width: 1920, height: 1080, viewBox: '0 0 1920 1080', fill: 'none' }, root);
@@ -67,7 +71,6 @@ ${SEL} .t-display em { background-image:var(--grad); }
     const lockPulse = h.el('div', { cls: 's10-layer' }, lockL); // ícone + wordmark (pulso no clique final)
     const front = h.canvas(root);                         // metades da frente, riders, ondas, Ponto
     const cf = front.ctx;
-    const flashEl = h.el('div', { cls: 's10-flash' }, root);
 
     // ------------------------------------------------------------------ helpers de texto (posiciona pela baseline)
     function line(parent, html, o) {
@@ -134,6 +137,14 @@ ${SEL} .t-display em { background-image:var(--grad); }
     const exitOff = (chars) => chars.map((c) => { const r = h.rect(c); return { dx: (CE.x - r.cx) * 0.4, dy: (CE.y - r.cy) * 0.4 }; });
     const ex1 = exitOff(S1.chars), ex2 = exitOff(S2.chars);
     const t1r = h.rect(T1), t2r = h.rect(T2);
+    // faixa de tinta da linha 2 (sem transform): onde a metade da FRENTE da órbita do Ponto cruza as letras
+    // ('ela' e 'mais.'), Ponto e rastro passam para o canvas de trás — atravessam POR TRÁS das letras, nunca por cima.
+    // A descendente do 'p' ganha caixa própria (a elipse, com ry 176, já passa abaixo dela).
+    const mm2 = mctx.measureText('ela não para mais.');
+    const OCC = { x0: t2r.x - 8, x1: t2r.right + 8, y0: base2 - mm2.actualBoundingBoxAscent - 8, y1: base2 + 10 };
+    const pCh = S2.chars.find((c) => c.textContent === 'p');
+    const pcr = h.rect(pCh);
+    const OCC_P = { x0: pcr.x - 6, x1: pcr.right + 6, y0: base2, y1: base2 + mm2.actualBoundingBoxDescent + 6 };
 
     // entradas: palavras escalam 1,25→1 com fade (0,5 s, power4.out); 'mais.' cresce A PARTIR do Ponto.
     // Para as palavras não se sobreporem enquanto ainda estão grandes, cada uma escala a partir de uma origem
@@ -184,7 +195,7 @@ ${SEL} .t-display em { background-image:var(--grad); }
       tl.fromTo(st, { a: 0 }, { a: 1, duration: 0.25, ease: 'power2.out' }, i * 0.04);
       // COLAPSO em (960,560)
       tl.to(st, { R: 0, s: 0.2, duration: 0.4, ease: 'mecca.in' }, 4.0);
-      tl.to(st, { a: 0, duration: 0.4, ease: 'power2.in' }, 4.0);
+      tl.to(st, { a: 0, duration: 0.4, ease: 'sine.in' }, 4.0);
     }
     // ícone central sem ponto (180 px, α .25)
     const cIcon = h.icon({ size: 180 });
@@ -198,7 +209,8 @@ ${SEL} .t-display em { background-image:var(--grad); }
     cIcon.dot.style.display = 'none';
     const mi = { a: 0, s: 0.7 };
     tl.fromTo(mi, { a: 0, s: 0.7 }, { a: 0.25, s: 1, duration: 0.6, ease: 'mecca.out' }, 0);
-    tl.to(mi, { a: 0, s: 0.15, duration: 0.4, ease: 'mecca.in' }, 4.0);
+    tl.to(mi, { s: 0.15, duration: 0.4, ease: 'mecca.in' }, 4.0);
+    tl.to(mi, { a: 0, duration: 0.4, ease: 'sine.in' }, 4.0);
     // ângulo das engrenagens (graus): 30°/s até 1,0; 30→300°/s (power2.in) até 4,0; 300°/s no colapso
     function gearAng(t) {
       if (t < 1) return 30 * t;
@@ -225,6 +237,8 @@ ${SEL} .t-display em { background-image:var(--grad); }
       return 7 + 4 * (t - 4);
     }
     const collapseK = (t) => 1 - eMIn(seg(t, 4.0, 4.4));
+    const eSinIn = E('sine.in');
+    const collapseA = (t) => 1 - eSinIn(seg(t, 4.0, 4.4));   // alpha: sem o salto final do mecca.in
 
     // ================================================================== LOCKUP (4,5+)
     const IC = { x: 592, y: 420 };                        // centro do ícone (bbox 497–687 × 325–515)
@@ -238,23 +252,29 @@ ${SEL} .t-display em { background-image:var(--grad); }
     const logo = h.logo({ width: 700, parent: lgWrap });
     logo.svg.style.display = 'block';
 
+    // O lockup CHEGA no golpe (reverse + impact em 4,5): arcos 4,40–4,55, pupila 4,45–4,55, wordmark 4,45–4,70.
     gsap.set([icon.arcOuter, icon.arcInner], { visibility: 'hidden' });
-    // o arco nasce em 4,5 com drawSVG 0%: com linecap redondo isso seria um ponto violeta ao lado do encaixe
+    // o arco nasce com drawSVG 0%: com linecap redondo isso seria um ponto violeta ao lado do encaixe
     // (parece o ponto do ícone chegando cedo). Ele só fica visível no quadro seguinte, já com traço.
-    tl.set(icon.arcOuter, { visibility: 'inherit' }, 4.5 + 1 / 60);
-    tl.fromTo(icon.arcOuter, { drawSVG: '0%' }, { drawSVG: '100%', duration: 0.5, ease: 'mecca.out' }, 4.5);
-    tl.set(icon.arcInner, { visibility: 'inherit' }, 4.55);
-    tl.fromTo(icon.arcInner, { drawSVG: '0%' }, { drawSVG: '100%', duration: 0.5, ease: 'mecca.out' }, 4.55);
+    const ARC_T = 4.40, ARC_D = 0.15;
+    tl.set([icon.arcOuter, icon.arcInner], { visibility: 'inherit' }, ARC_T + 1 / 60);
+    tl.fromTo(icon.arcOuter, { drawSVG: '0%' }, { drawSVG: '100%', duration: ARC_D, ease: 'mecca.out' }, ARC_T);
+    tl.fromTo(icon.arcInner, { drawSVG: '0%' }, { drawSVG: '100%', duration: ARC_D, ease: 'mecca.out' }, ARC_T);
     gsap.set(icon.pupil, { svgOrigin: '114 114', scale: 0 });
-    tl.to(icon.pupil, { scale: 1, duration: 0.5, ease: 'mecca.back' }, 4.55);
+    tl.to(icon.pupil, { scale: 1, duration: 0.10, ease: 'mecca.back' }, 4.45);
     // o ponto do ícone fica oculto até o clique final (7,0)
     gsap.set(icon.dot, { visibility: 'hidden', attr: { fill: P.ink } });
     tl.set(icon.dot, { visibility: 'inherit' }, 7.0);
     tl.to(icon.dot, { attr: { fill: P.violet }, duration: 0.18, ease: 'power1.out' }, 7.0);
-    // wordmark: clip-path inset(0 100% 0 0) → inset(0), 0,6 s, mecca.out, a partir de 4,6
-    gsap.set(lgWrap, { clipPath: 'inset(0% 100% 0% 0%)' });
-    tl.to(lgWrap, { clipPath: 'inset(0% 0% 0% 0%)', duration: 0.6, ease: 'mecca.out' }, 4.6);
-    const wipeAt = (t) => eMOut(seg(t, 4.6, 5.2));
+    // wordmark: clip-path inset(0 100% 0 0) → inset(0) em 4,45–4,70 (expo.out) + assenta de 1,06 → 1
+    // (origem no centro do lockup: a borda esquerda nunca invade o ícone)
+    const WM_T = 4.45, WM_D = 0.25, WM_S0 = 1.06;
+    const eExpo = E('expo.out');
+    gsap.set(lgWrap, { clipPath: 'inset(0% 100% 0% 0%)', transformOrigin: `${LC.x - 723}px ${LC.y - 346}px` });
+    tl.to(lgWrap, { clipPath: 'inset(0% 0% 0% 0%)', duration: WM_D, ease: 'expo.out' }, WM_T);
+    tl.fromTo(lgWrap, { scale: WM_S0 }, { scale: 1, duration: WM_D, ease: 'expo.out' }, WM_T);
+    const wipeAt = (t) => eExpo(seg(t, WM_T, WM_T + WM_D));
+    const wmScaleAt = (t) => lerp(WM_S0, 1, eExpo(seg(t, WM_T, WM_T + WM_D)));
     // pulso do lockup no clique (1→1,02→1)
     gsap.set(lockPulse, { transformOrigin: `${LC.x}px ${LC.y}px` });
     tl.to(lockPulse, { scale: 1.02, duration: 0.12, ease: 'power2.out' }, 7.0);
@@ -263,7 +283,7 @@ ${SEL} .t-display em { background-image:var(--grad); }
     const sockAt = (t) => { const k = kPulse(t); return { x: LC.x + k * (SOCK.x - LC.x), y: LC.y + k * (SOCK.y - LC.y) }; };
     // glow radial violeta atrás do lockup
     const lg = { a: 0 };
-    tl.to(lg, { a: 0.35, duration: 0.6, ease: 'power2.out' }, 4.45);
+    tl.to(lg, { a: 0.35, duration: 0.6, ease: 'power2.out' }, 4.40);
 
     // ================================================================== VERBOS
     const VERBS = ['ENGRENAR', 'MONTAR', 'CALIBRAR', 'OPERAR', 'GIRAR'];
@@ -278,17 +298,26 @@ ${SEL} .t-display em { background-image:var(--grad); }
     const vSeps = [...vDiv.querySelectorAll('.sep')];
     const vWords = VERBS.map((_, i) => [...vDiv.querySelectorAll(`.w[data-w="${i}"] .c`)]);
     const vr = h.rect(vDiv);
-    gsap.set(vChars, { color: 'rgba(167,139,250,0.35)' });
+    // estado apagado legível (α .6); os chars entram com stagger .01 a partir de 5,0
+    gsap.set(vChars, { color: 'rgba(167,139,250,0.6)' });
     tl.fromTo(vChars, { opacity: 0, y: 8 }, { opacity: 1, y: 0, duration: 0.2, ease: 'power2.out', stagger: 0.01 }, 5.0);
-    // onda de brilho: cada verbo passa a ink com glow e fica aceso
+    // onda de brilho: cada verbo passa a ink com glow e fica aceso. A varredura começa em T − 0,12 e o ÚLTIMO
+    // caractere acende exatamente no tick (T); o glow de cada char dá um flash no instante em que ele acende.
+    // ENGRENAR (T = 5,0) acende junto com a própria entrada da linha (mesmo stagger .01).
     const V_T = [5.0, 5.5, 6.0, 6.5, 7.0];
+    const V_LEAD = 0.12, V_CD = 0.06;
+    const SH0 = '0 0 0px rgba(196,181,253,0)', SH_REST = '0 0 10px rgba(167,139,250,0.55)';
     vWords.forEach((cs, i) => {
       const T = V_T[i];
-      tl.to(cs, { color: P.ink, duration: 0.22, ease: 'power2.out', stagger: 0.025 }, T);
-      tl.fromTo(cs, { textShadow: '0 0 0px rgba(196,181,253,0)' },
-        { textShadow: `0 0 ${i === 4 ? 22 : 16}px rgba(196,181,253,0.95)`, duration: 0.14, ease: 'power2.out', stagger: 0.025 }, T);
-      tl.to(cs, { textShadow: '0 0 10px rgba(167,139,250,0.55)', duration: 0.5, ease: 'power2.inOut', stagger: 0.025 }, T + 0.14);
-      if (i) tl.to(vSeps[i - 1], { color: 'rgba(167,139,250,0.8)', duration: 0.3, ease: 'power2.out' }, T);
+      const n = cs.length;
+      const t0 = i ? T - V_LEAD : T;
+      const cd = i ? V_CD : 0.12;
+      const st = i ? (V_LEAD - V_CD) / (n - 1) : 0.01;
+      const peak = `0 0 ${i === 4 ? 22 : 16}px rgba(196,181,253,0.95)`;
+      tl.to(cs, { color: P.ink, duration: cd, ease: 'power1.out', stagger: st }, t0);
+      tl.fromTo(cs, { textShadow: SH0 }, { textShadow: peak, duration: cd, ease: 'power2.out', stagger: st }, t0);
+      tl.to(cs, { textShadow: SH_REST, duration: 0.45, ease: 'power2.inOut', stagger: st }, t0 + cd);
+      if (i) tl.to(vSeps[i - 1], { color: 'rgba(167,139,250,0.85)', duration: V_LEAD, ease: 'power1.out' }, t0);
     });
 
     // ================================================================== CTA "Abrir minha máquina →"
@@ -304,11 +333,12 @@ ${SEL} .t-display em { background-image:var(--grad); }
     [5.5, 6.0, 6.5, 7.0, 7.5].forEach((b) => tl.to(arr, { x: 8, duration: 0.25, ease: 'power2.out', yoyo: true, repeat: 1 }, b));
 
     // ================================================================== URL
-    const url = line(lockL, 'meccanismo.com.br', { cls: 's10-mono', size: 26, color: P.lilac, ls: '0.08em', baseline: 860 });
-    const urlChars = h.split(url, { type: 'chars' }).chars;
-    centerX(url, 960, 26 * 0.08);
-    gsap.set(urlChars, { autoAlpha: 0 });
-    urlChars.forEach((c, i) => tl.set(c, { autoAlpha: 1 }, 5.5 + i * 0.03));
+    // a única ação real do vídeo: Inter 600 40 px ink, centrada em y ≈ 860 (miolo das minúsculas; baseline 872),
+    // entra COM o botão em 5,0 (fade + y 10→0, sem digitação) e fica 3 s completa na tela
+    const url = line(lockL, 'meccanismo.com.br', { cls: 's10-url', size: 40, color: P.ink, baseline: 872 });
+    centerX(url, 960, 40 * 0.005);
+    const ur = h.rect(url);
+    tl.fromTo(url, { opacity: 0, y: 10 }, { opacity: 1, y: 0, duration: 0.5, ease: 'mecca.out' }, 5.0);
 
     // ================================================================== ÓRBITA FINA DO HOLD (em volta do lockup)
     const HO = { x: 960, y: 440, rx: 560, ry: 170, rot: -6 * DEG, a0: -0.35 };
@@ -331,9 +361,9 @@ ${SEL} .t-display em { background-image:var(--grad); }
     tl.fromTo(cring, { r: 30, a: 0.5 }, { r: 640, a: 0, duration: 0.7, ease: 'power2.out', immediateRender: false }, 4.5);
     const fring = { r: 0, a: 0 };
     tl.fromTo(fring, { r: 0, a: 0.8 }, { r: 90, a: 0, duration: 0.5, ease: 'power2.out', immediateRender: false }, 7.0);
-    // flash do DROP: o 1º quadro fica limpo (match cut com a S09) e o pico .5 cai no quadro seguinte
-    tl.fromTo(flashEl, { opacity: 0 }, { opacity: 0.5, duration: 1 / 30, ease: 'none', immediateRender: false }, 0);
-    tl.to(flashEl, { opacity: 0, duration: 0.35, ease: 'power2.out' }, 1 / 30);
+    // flash do DROP: brilho RADIAL em screen centrado no impacto (960,500), #C4B5FD α .5 no centro → 0 em r 900
+    // (nada de véu chapado/leitoso). O 1º quadro fica limpo (match cut com a S09): o pico cai no quadro seguinte.
+    h.flash(tl, root, 1 / 30, { color: P.lilac, peak: 0.5, dur: 0.4, cx: 960, cy: 500, r: 900 });
 
     // ================================================================== FUNDO
     const BG_IN = { glowA: 1, glowB: 1, glowC: 1, grid: 0, particles: 1, driftX: 0, driftY: 0, speed: 2, warp: 0.5, vignette: 0.55, dim: 0, hue: 0, grain: 1 };
@@ -349,12 +379,19 @@ ${SEL} .t-display em { background-image:var(--grad); }
     // ================================================================== O PONTO (função pura de lt)
     const A0 = { x: 960, y: 500 };
     const CTRL = { x: 1400, y: 420 };                     // arco do tiro até o '.' (passa entre as duas linhas)
-    // órbita da frase: storyboard 820×130 com ry aberto para 150, para a metade da frente passar ABAIXO dos pés
-    // da linha 2 (baseline 681) em vez de correr sobre ela (lia como pontuação solta: 'p.ara', 'n̩ão')
-    const ERX = 820, ERY = 150, EROT = -4 * DEG;
-    // órbita em volta do ícone: r 130 levemente vertical (116×132). A borda direita fica em x 708 (núcleo até 718),
-    // deixando folga para o 'M' do wordmark (tinta a partir de x 728); o ponto não 'encosta' no logo nas batidas.
-    const ORB_RX = 116, ORB_RY = 132;
+    // órbita da frase: storyboard 820×130 com ry aberto para 176: a metade da frente passa ABAIXO da descendente
+    // do 'p' (tinta até y ≈ 721 com o push) — o fundo da elipse fica em y ≈ 737–742 — em vez de riscar 'para'.
+    // Nas pontas, onde a frente sobe pela linha 2, o Ponto passa por trás das letras (ver OCC).
+    const ERX = 820, ERY = 176, EROT = -4 * DEG;
+    // órbita em volta do ícone: elipse 105×130. A borda direita fica em x 697 (núcleo até ~707), longe do 'M' do
+    // wordmark (tinta a partir de x 728): o ponto não 'encosta' no logo nem lê como '·Meccanismo'.
+    const ORB_RX = 105, ORB_RY = 130;
+    // o Ponto (frente da órbita) está sobre a tinta da linha 2? (coordenadas desfeitas do push de L2)
+    const inBox = (x, y, b) => x >= b.x0 && x <= b.x1 && y >= b.y0 && y <= b.y1;
+    const occAt = (x, y, t) => {
+      const s = s2At(t), ux0 = O2.x + (x - O2.x) / s, uy0 = O2.y + (y - O2.y) / s;
+      return inBox(ux0, uy0, OCC) || inBox(ux0, uy0, OCC_P);
+    };
     const M_LEFT = 728;                                    // borda esquerda da tinta do 'M' (medida no palco)
     const qb = (a, c, b, k) => { const u = 1 - k; return { x: u * u * a.x + 2 * u * k * c.x + k * k * b.x, y: u * u * a.y + 2 * u * k * c.y + k * k * b.y }; };
     const DOT = (t) => { const s = s2At(t); return { x: O2.x + s * (P0.x - O2.x), y: O2.y + s * (P0.y - O2.y) }; };
@@ -389,6 +426,7 @@ ${SEL} .t-display em { background-image:var(--grad); }
     dPhi = ((dPhi % TAU) + TAU * 1.5) % TAU - Math.PI;
     const phi = (t) => phiRaw(t) + dPhi * eP2io(seg(t, 4.5, 7.0));
 
+    const OCC_END = 4.12;                                  // a tagline já está saindo: sem mais oclusão
     function pos(t) {
       if (t <= 0) return { x: A0.x, y: A0.y, back: false, ph: 0 };
       if (t < 0.5) { const q = qb(A0, CTRL, P0, eP3o(t / 0.5)); return { x: q.x, y: q.y, back: false, ph: 0 }; }
@@ -400,12 +438,14 @@ ${SEL} .t-display em { background-image:var(--grad); }
         const f = lerp(F0, 1, eP2io(seg(t, 2.0, 2.4)));
         const fy = lerp(F0, 1, Math.pow(seg(t, 2.0, 2.6), 2));
         const q = h.ellipsePt(CE.x, CE.y, ERX * f, ERY * fy, EROT, ph);
-        return { x: q.x, y: q.y, back: Math.sin(ph) < 0, ph };
+        const back = Math.sin(ph) < 0;
+        return { x: q.x, y: q.y, back, occ: !back && occAt(q.x, q.y, t), ph };
       }
       if (t < 4.5) {
         const k = eMIO(seg(t, 4.0, 4.5));
         const q = h.ellipsePt(lerp(CE.x, IC.x, k), lerp(CE.y, IC.y, k), lerp(ERX, ORB_RX, k), lerp(ERY, ORB_RY, k), lerp(EROT, 0, k), ph);
-        return { x: q.x, y: q.y, back: t < 4.25 && Math.sin(ph) < 0, ph };
+        const back = t < 4.25 && Math.sin(ph) < 0;
+        return { x: q.x, y: q.y, back, occ: !back && t < OCC_END && occAt(q.x, q.y, t), ph };
       }
       if (t < 6.5) return { x: IC.x + ORB_RX * Math.cos(ph), y: IC.y + ORB_RY * Math.sin(ph), back: false, ph };
       if (t < 7.0) {
@@ -468,20 +508,21 @@ ${SEL} .t-display em { background-image:var(--grad); }
         L.push([pts[i].x + nx * w, pts[i].y + ny * w]);
         R.push([pts[i].x - nx * w, pts[i].y - ny * w]);
       }
-      const alphaAt = (i) => 0.78 * amt * Math.pow(1 - i / N, 1.25);
+      const alphaAt = (i) => 0.78 * amt * Math.pow(1 - i / N, 1.25) * (pts[i].back ? 0.75 : 1);
       const colAt = (i) => mixHex(P.magenta, P.violet, Math.min(1, (i / N) * 1.6));
+      const under = (q) => !!(q.back || q.occ);
       let i0 = 0;
       while (i0 < N) {
-        const bk = pts[i0].back;
+        const bk = under(pts[i0]);
         let i1 = i0;
-        while (i1 < N && pts[i1 + 1].back === bk) i1++;
+        while (i1 < N && under(pts[i1 + 1]) === bk) i1++;
         const j1 = Math.min(N, i1 + 1);
-        const c = bk ? cb : cf, k = bk ? 0.75 : 1;
+        const c = bk ? cb : cf;
         const pa = pts[i0], pb = pts[j1];
         if (Math.hypot(pa.x - pb.x, pa.y - pb.y) > 0.5) {
           const g = c.createLinearGradient(pa.x, pa.y, pb.x, pb.y);
-          g.addColorStop(0, hexA(colAt(i0), alphaAt(i0) * k));
-          g.addColorStop(1, hexA(colAt(j1), alphaAt(j1) * k));
+          g.addColorStop(0, hexA(colAt(i0), alphaAt(i0)));
+          g.addColorStop(1, hexA(colAt(j1), alphaAt(j1)));
           c.fillStyle = g;
           c.beginPath();
           c.moveTo(L[i0][0], L[i0][1]);
@@ -511,7 +552,7 @@ ${SEL} .t-display em { background-image:var(--grad); }
       }
       const p = pos(t);
       const r = radAt(t, p);
-      const c = p.back ? cb : cf;
+      const c = (p.back || p.occ) ? cb : cf;
       const k = p.back ? 0.85 : 1;
       drawTrail(t, r);
       const g = glowAt(t);
@@ -527,7 +568,7 @@ ${SEL} .t-display em { background-image:var(--grad); }
         cb.fillStyle = gr; cb.beginPath(); cb.arc(p.x, p.y, R, 0, TAU); cb.fill();
       }
       // perto do 'M' do wordmark o halo recua (o ponto passa rente ao logo sem 'manchar' a letra)
-      const nearM = t >= 4.6 ? 1 - h.smooth(6, 40, M_LEFT - (p.x + r)) : 0;
+      const nearM = t >= WM_T ? 1 - h.smooth(6, 40, M_LEFT - (p.x + r)) : 0;
       h.glowDot(c, p.x, p.y, r, P.lavender, clamp(0.6 * g * k * (1 - 0.5 * nearM), 0, 1));
       if (g > 1.02) {                                     // carga: halo extra largo
         const R = r * 5 * g;
@@ -629,7 +670,7 @@ ${SEL} .t-display em { background-image:var(--grad); }
       // --- 3 órbitas grandes + riders (0–4,4)
       const kc = collapseK(lt);
       if (kc > 0.001) {
-        const fa = Math.pow(kc, 0.6);
+        const fa = collapseA(lt);
         for (const o of ORB) {
           strokeEllipse(CE.x, CE.y, o.rx * kc, o.ry * kc, o.rot, o.a0, o.st.p * TAU, 0.3 * fa, 0.15 * fa, 1.5, P.lavender);
           drawRider(o, lt, rid.a * fa, kc);
@@ -649,31 +690,32 @@ ${SEL} .t-display em { background-image:var(--grad); }
         cf.fillStyle = bl; cf.beginPath(); cf.arc(A0.x, A0.y, rb, 0, TAU); cf.fill();
       }
 
-      // --- implosão/explosão da convergência em (960,560)
+      // --- implosão/explosão da convergência em (960,560) — atrás do lockup, que já chegou no golpe
       if (burst.a > 0.002) {
         const R = 190;
-        const g = cf.createRadialGradient(CE.x, CE.y, 0, CE.x, CE.y, R);
+        const g = cb.createRadialGradient(CE.x, CE.y, 0, CE.x, CE.y, R);
         g.addColorStop(0, hexA(P.lilac, burst.a));
         g.addColorStop(0.25, hexA(P.lavender, burst.a * 0.4));
         g.addColorStop(1, hexA(P.violet, 0));
-        cf.fillStyle = g; cf.beginPath(); cf.arc(CE.x, CE.y, R, 0, TAU); cf.fill();
+        cb.fillStyle = g; cb.beginPath(); cb.arc(CE.x, CE.y, R, 0, TAU); cb.fill();
       }
       if (cring.a > 0.002) {
-        cf.strokeStyle = hexA(P.lavender, cring.a); cf.lineWidth = 2;
-        cf.beginPath(); cf.arc(CE.x, CE.y, cring.r, 0, TAU); cf.stroke();
+        cb.strokeStyle = hexA(P.lavender, cring.a); cb.lineWidth = 2;
+        cb.beginPath(); cb.arc(CE.x, CE.y, cring.r, 0, TAU); cb.stroke();
       }
 
       // --- luz na borda da revelação do wordmark
       const wp = wipeAt(lt);
       if (wp > 0.001 && wp < 0.999) {
-        const x = 723 + 700 * wp;
+        const x = LC.x + wmScaleAt(lt) * (723 + 700 * wp - LC.x);
         const a = 0.85 * h.smooth(0, 0.04, wp) * (1 - h.smooth(0.7, 0.98, wp));
-        const gv = cf.createLinearGradient(0, 330, 0, 510);
+        const ws = wmScaleAt(lt), wy = (y) => LC.y + ws * (y - LC.y);
+        const gv = cf.createLinearGradient(0, wy(330), 0, wy(510));
         gv.addColorStop(0, hexA(P.lilac, 0)); gv.addColorStop(0.5, hexA(P.lilac, a)); gv.addColorStop(1, hexA(P.lilac, 0));
-        cf.fillStyle = gv; cf.fillRect(x - 1, 330, 2, 180);
+        cf.fillStyle = gv; cf.fillRect(x - 1, wy(330), 2, wy(510) - wy(330));
         const gh = cf.createLinearGradient(x - 26, 0, x + 6, 0);
         gh.addColorStop(0, hexA(P.violet, 0)); gh.addColorStop(1, hexA(P.lavender, a * 0.35));
-        cf.fillStyle = gh; cf.fillRect(x - 26, 346, 32, 148);
+        cf.fillStyle = gh; cf.fillRect(x - 26, wy(346), 32, wy(494) - wy(346));
       }
 
       // --- rider da órbita fina do hold

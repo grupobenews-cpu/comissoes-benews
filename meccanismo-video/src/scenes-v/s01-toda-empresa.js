@@ -324,7 +324,11 @@ MECCA.scene({
     }
 
     // ------------------------------------------------------------------ órbita + riders
-    const ORB = { cx: 500, cy: 1040, rx: 500, ry: 120, rot: -6 * Math.PI / 180 };
+    // DESVIO da spec (§2 S01 diz centro (500, 1040), rx 500): com rx 500 a elipse tangencia a borda
+    // esquerda (x ≈ 2,6) e o rider lavanda nasce cortado em 4,0. Com centro (520, 1040) e rx 470 ela
+    // fica em x 52–988 (≥ 52 px de margem), continua passando pelo "." (≈ 9 px do centro do Ponto,
+    // antes 10,5) e contorna o "m" como antes. ry, rot, α e o colapso para (540, 1238) não mudam.
+    const ORB = { cx: 520, cy: 1040, rx: 470, ry: 120, rot: -6 * Math.PI / 180 };
     const COLL = { x: 540, y: 1238 };   // ponto de engrenamento de G1/G2 na S02 vertical
     const orbitAt = (lt) => {
       const e = p3In(seg(lt, T_OUT0, T_OUT1));

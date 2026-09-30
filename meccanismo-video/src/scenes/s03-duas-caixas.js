@@ -18,7 +18,7 @@ MECCA.scene({
 
     h.el('style', {
       text: `
-      ${SEL} .mk { overflow: hidden; padding: 0.1em 0.16em 0.12em 0; }
+      ${SEL} .mk { overflow: hidden; padding: 0.12em 0.16em 0.28em 0; margin-bottom: -0.28em; }
       ${SEL} .mk > .in { display: block; }
       ${SEL} .ib { display: inline-block; }
       ${SEL} .dot { color: transparent; }
@@ -64,10 +64,18 @@ MECCA.scene({
     function setBase(L, base) { L.top = Math.round(base - L.b); L.base = L.top + L.b; L.outer.style.top = L.top + 'px'; }
     const dotCenter = (L) => { const d = L.inner.querySelector('.dot'); const ink = dotInk(L.size); return { x: h.rect(d).x + ink.cx, y: L.base + ink.cy }; };
 
+    // Máscaras: a caixa .mk tem .28em livres embaixo (descendentes/cedilhas não são cortadas enquanto a entrada
+    // desacelera) e .12em em cima (acentos). Deslocamento que esconde o texto por inteiro abaixo da máscara ampliada:
+    // (1,2 + 0,28)/1,2 = 123,3 % → 125 %. Para cima, (1,2 + 0,12)/1,2 = 110 %.
+    const Y_IN = 125, Y_OUT = -110;
+
     // ------------------------------------------------------------------ T1: "O mercado te dá / duas caixas."
+    // GF = grupo do FLIP (as duas linhas viajam JUNTAS, com a mesma transformação); GS = grupo do slam (escala em torno do Ponto)
     const P0 = { x: 1625, y: 690 };                 // Ponto herdado da S02
-    const A = line('O mercado te dá', { x: 192, base: 420, size: 96 });
-    const B = line('<span class="lil">duas</span> caixas<span class="dot">.</span>', { x: 192, base: 700, size: 260 });
+    const GF = h.el('div', { style: { position: 'absolute', inset: '0' } }, txt);
+    const GS = h.el('div', { style: { position: 'absolute', inset: '0' } }, GF);
+    const A = line('O mercado te dá', { x: 192, base: 420, size: 96, parent: GS });
+    const B = line('<span class="lil">duas</span> caixas<span class="dot">.</span>', { x: 192, base: 700, size: 260, parent: GS });
     {
       // alinha o '.' de 'caixas.' exatamente sob o Ponto (ajuste de poucos px)
       const d = dotCenter(B);
@@ -78,12 +86,18 @@ MECCA.scene({
     // header de uma linha: 44 px, centrado em x 960, baseline 196
     const HD = line('<span class="hA">O mercado te dá</span> <span class="hB"><span class="lil">duas</span> caixas<span class="dot">.</span></span>', { x: 0, base: 196, size: 44 });
     setLeft(HD, Math.round(960 - h.rect(HD.inner).w / 2));
-    const hA = h.rect(HD.inner.querySelector('.hA'));
-    const hB = h.rect(HD.inner.querySelector('.hB'));
+    const hAel = HD.inner.querySelector('.hA'), hBel = HD.inner.querySelector('.hB');
+    const hB = h.rect(hBel);
     const PH = dotCenter(HD);                         // Ponto no header (r 4)
     const HR = h.rect(HD.outer);
     const HC = { x: HR.cx, y: HR.cy };               // origem do push do header
     const PUSH_H = 0.02;
+    // FLIP em grupo: uma única semelhança (escala + translação, origem 0 0) leva 'duas caixas.' EXATAMENTE sobre o
+    // 'duas caixas.' do header (44/260). 'O mercado te dá' viaja no mesmo grupo e dissolve; o do header surge ao lado.
+    const FLIP = { t0: 0.75, t1: 1.1, s: 44 / 260 };
+    FLIP.x = hB.x - FLIP.s * B.left;
+    FLIP.y = HD.base - FLIP.s * B.base;
+    const MP = { x: FLIP.s * P0.x + FLIP.x, y: FLIP.s * P0.y + FLIP.y };   // onde o '.' de 'caixas.' pousa
 
     // ------------------------------------------------------------------ T2: "As duas somem / na hora H."
     // (sem nós de texto soltos ao lado de elementos com tween: o espaço fica DENTRO do span, como &nbsp;)
@@ -127,28 +141,44 @@ MECCA.scene({
     const C1 = makeCard(192), C2 = makeCard(972);
 
     // ------------------------------------------------------------------ ilustrações (line art lavanda 2 px)
+    // Desenho original em 260×188 / 320×180 (tl 240,372 / 1020,372), ampliado por geometria (não por transform):
+    // o traço continua com 2 px (1,5 px nas hairlines) e o DrawSVG mede o comprimento real.
+    // peça ×252/188 (≈349×252) e slide ×1,4 (448×252): mesma altura, topos em y 360, base comum em y 612.
     const mk = (tag, attrs, parent) => h.svg(tag, Object.assign({ fill: 'none', stroke: P.lavender, 'stroke-width': 2, 'stroke-linecap': 'round', 'stroke-linejoin': 'round' }, attrs), parent);
+    const ILL_TOP = 360;
+    const POST_K = 252 / 188, SLIDE_K = 1.4;
+    function scaler(x0, y0, k) {                    // (x0,y0) = tl do desenho original → (x0, ILL_TOP)
+      const r2 = (v) => Math.round(v * 100) / 100;
+      const X = (x) => r2(x0 + (x - x0) * k), Y = (y) => r2(ILL_TOP + (y - y0) * k), S = (v) => r2(v * k);
+      const pts = (arr) => { const o = []; for (let i = 0; i < arr.length; i += 2) o.push(`${X(arr[i])},${Y(arr[i + 1])}`); return o.join(' '); };
+      // caminho com comandos absolutos M/L/C/Z: [cmd, x, y, x, y, ...]
+      const path = (arr) => { let s = '', i = 0; while (i < arr.length) { if (typeof arr[i] === 'string') { s += (s ? ' ' : '') + arr[i++]; continue; } s += ` ${X(arr[i])} ${Y(arr[i + 1])}`; i += 2; } return s; };
+      const box = (x, y, w, hh, r) => rr(X(x), Y(y), S(w), S(hh), S(r));
+      return { X, Y, S, pts, path, box };
+    }
     function buildPost(g) {
+      const s = scaler(240, 372, POST_K);
       return [
-        mk('path', { d: rr(240, 372, 260, 188, 14) }, g),
-        mk('path', { d: rr(256, 388, 228, 112, 8) }, g),
-        mk('polyline', { points: '257,486 316,434 350,466 394,422 483,492' }, g),
-        mk('circle', { cx: 446, cy: 414, r: 12 }, g),
-        mk('line', { x1: 256, y1: 524, x2: 436, y2: 524, 'stroke-width': 1.5 }, g),
-        mk('line', { x1: 256, y1: 544, x2: 376, y2: 544, 'stroke-width': 1.5 }, g),
-        mk('path', { d: 'M470 543 C461 537 459 530 463 526.5 C466 524 469 525.5 470 528 C471 525.5 474 524 477 526.5 C481 530 479 537 470 543 Z', 'stroke-width': 1.6 }, g),
+        mk('path', { d: s.box(240, 372, 260, 188, 14) }, g),
+        mk('path', { d: s.box(256, 388, 228, 112, 8) }, g),
+        mk('polyline', { points: s.pts([257, 486, 316, 434, 350, 466, 394, 422, 483, 492]) }, g),
+        mk('circle', { cx: s.X(446), cy: s.Y(414), r: s.S(12) }, g),
+        mk('line', { x1: s.X(256), y1: s.Y(524), x2: s.X(436), y2: s.Y(524), 'stroke-width': 1.5 }, g),
+        mk('line', { x1: s.X(256), y1: s.Y(544), x2: s.X(376), y2: s.Y(544), 'stroke-width': 1.5 }, g),
+        mk('path', { d: s.path(['M', 470, 543, 'C', 461, 537, 459, 530, 463, 526.5, 'C', 466, 524, 469, 525.5, 470, 528, 'C', 471, 525.5, 474, 524, 477, 526.5, 'C', 481, 530, 479, 537, 470, 543, 'Z']), 'stroke-width': 1.6 }, g),
       ];
     }
     function buildSlide(g) {
+      const s = scaler(1020, 372, SLIDE_K);
       return [
-        mk('path', { d: rr(1020, 372, 320, 180, 10) }, g),
-        mk('line', { x1: 1044, y1: 400, x2: 1134, y2: 400, 'stroke-width': 1.5 }, g),
-        mk('line', { x1: 1044, y1: 530, x2: 1316, y2: 530, 'stroke-width': 1.5, opacity: 0.6 }, g),
-        mk('path', { d: rr(1066, 482, 36, 48, 3) }, g),
-        mk('path', { d: rr(1122, 448, 36, 82, 3) }, g),
-        mk('path', { d: rr(1178, 410, 36, 120, 3) }, g),
-        mk('polyline', { points: '1046,485 1084,462 1140,428 1196,390 1248,400 1300,386', 'stroke-width': 1.5 }, g),
-        mk('path', { d: 'M1288.7 381.9 L1300 386 L1292.3 395.2', 'stroke-width': 1.5 }, g),
+        mk('path', { d: s.box(1020, 372, 320, 180, 10) }, g),
+        mk('line', { x1: s.X(1044), y1: s.Y(400), x2: s.X(1134), y2: s.Y(400), 'stroke-width': 1.5 }, g),
+        mk('line', { x1: s.X(1044), y1: s.Y(530), x2: s.X(1316), y2: s.Y(530), 'stroke-width': 1.5, opacity: 0.6 }, g),
+        mk('path', { d: s.box(1066, 482, 36, 48, 3) }, g),
+        mk('path', { d: s.box(1122, 448, 36, 82, 3) }, g),
+        mk('path', { d: s.box(1178, 410, 36, 120, 3) }, g),
+        mk('polyline', { points: s.pts([1046, 485, 1084, 462, 1140, 428, 1196, 390, 1248, 400, 1300, 386]), 'stroke-width': 1.5 }, g),
+        mk('path', { d: s.path(['M', 1288.7, 381.9, 'L', 1300, 386, 'L', 1292.3, 395.2]), 'stroke-width': 1.5 }, g),
       ];
     }
     function makeIllu(builder, bb, seed) {
@@ -173,8 +203,9 @@ MECCA.scene({
       }
       return { outer, float, orig, els, strips };
     }
-    const POST = makeIllu(buildPost, { x: 236, y: 368, w: 268, h: 196 }, 31);
-    const SLIDE = makeIllu(buildSlide, { x: 1016, y: 368, w: 328, h: 188 }, 57);
+    const illBB = (x0, w, hh, k) => ({ x: x0 - 4, y: ILL_TOP - 4, w: w * k + 8, h: hh * k + 8 });
+    const POST = makeIllu(buildPost, illBB(240, 260, 188, POST_K), 31);
+    const SLIDE = makeIllu(buildSlide, illBB(1020, 320, 180, SLIDE_K), 57);
 
     // ------------------------------------------------------------------ textos dos cards
     // CW  = contêiner recortado (clip-path) pelo retângulo que colapsa — o texto NÃO é escalado junto com a caixa.
@@ -226,34 +257,38 @@ MECCA.scene({
     [root, ...root.querySelectorAll('*')].forEach(el => { if (el instanceof HTMLElement && el.tagName !== 'STYLE') gsap.getProperty(el, 'x'); });
 
     // ================================================================== COREOGRAFIA
-    // 0,0 — slam de T1 (máscara, 0,5 s, mecca.out, stagger .12)
-    tl.fromTo([A.inner, B.inner], { yPercent: 110 }, { yPercent: 0, duration: 0.5, ease: 'mecca.out', stagger: 0.12 }, 0);
+    // 0,0 — SLAM de T1: 'duas caixas.' primeiro (o golpe cai no 1º quadro depois do corte), escala 1,08→1 em torno
+    // do Ponto (o '.' de 'caixas.' não sai de baixo dele) e tremor curto. O quadro 0 continua = último da S02.
+    tl.fromTo([B.inner, A.inner], { yPercent: Y_IN }, { yPercent: 0, duration: 0.18, ease: 'expo.out', stagger: 0.03 }, 0);
+    gsap.set(GS, { transformOrigin: `${P0.x}px ${P0.y}px` });
+    tl.fromTo(GS, { scale: 1.08 }, { scale: 1, duration: 0.25, ease: 'expo.out' }, 0);
+    h.shake(tl, root, 0, { amp: 4, n: 5, dur: 0.2, seed: 301 });
+    // os tracejados dos cards recuam (α .3 → .12) enquanto T1 ocupa a tela; voltam em 1,0
+    tl.to([C1.st, C2.st], { sa: 0.12, duration: 0.2, ease: 'power2.out' }, 0);
+    tl.to(C2.st, { sa: 0.3, duration: 0.3, ease: 'power2.out' }, 1.0);   // (o C1 sobe direto para .5 no openBox)
 
-    // 1,0–1,5 — FLIP para o header (mecca.inOut) + crossfade
-    gsap.set([A.outer, B.outer], { transformOrigin: '0px 0px' });
-    const sA = 44 / 96, sB = 44 / 260;
-    // 'O mercado te dá' decola já no 1º quadro (expo.out em x/y): sai da zona da ilustração/label do card 1
-    // antes de o traço começar, para o card 1 poder entrar inteiro em 1,0 (na batida)
-    tl.to(A.outer, { x: hA.x - A.left, duration: 0.5, ease: 'expo.out' }, 1.0);
-    tl.to(A.outer, { y: 196 - A.top - sA * A.b, duration: 0.5, ease: 'expo.out' }, 1.0);
-    tl.to(A.outer, { scale: sA, duration: 0.5, ease: 'power3.out' }, 1.0);
-    // 'duas caixas.' encolhe e desliza para a direita antes de subir: assim não atravessa 'O mercado te dá'
-    const FB = { dx: hB.x - B.left, dy: 196 - B.top - sB * B.b, ex: 'expo.out', ey: 'power2.inOut', es: 'power3.out' };
-    tl.to(B.outer, { x: FB.dx, duration: 0.5, ease: FB.ex }, 1.0);
-    tl.to(B.outer, { y: FB.dy, duration: 0.5, ease: FB.ey }, 1.0);
-    tl.to(B.outer, { scale: sB, duration: 0.5, ease: FB.es }, 1.0);
-    tl.to([A.outer, B.outer], { autoAlpha: 0, duration: 0.06, ease: 'none' }, 1.47);
-    tl.fromTo(HD.outer, { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.06, ease: 'none' }, 1.47);
+    // 0,75–1,1 — FLIP em GRUPO para o header (mecca.inOut): uma só transformação para as duas linhas.
+    // 'duas caixas.' pousa exatamente sobre o do header; 'O mercado te dá' dissolve no caminho e o do header surge.
+    gsap.set(GF, { transformOrigin: '0px 0px' });
+    const FD = FLIP.t1 - FLIP.t0;
+    tl.to(GF, { x: FLIP.x, y: FLIP.y, scale: FLIP.s, duration: FD, ease: 'mecca.inOut' }, FLIP.t0);
+    tl.to(A.outer, { autoAlpha: 0, duration: 0.2, ease: 'sine.in' }, FLIP.t0);
+    tl.fromTo(hAel, { autoAlpha: 0 }, { autoAlpha: 1, duration: FLIP.t1 - 0.93, ease: 'power1.out' }, 0.93);
+    // troca seca (sem crossfade, sem queda de brilho): no quadro de 1,1 o grupo já está na pose final
+    tl.set(hBel, { autoAlpha: 0 }, 0);
+    tl.set(hBel, { autoAlpha: 1 }, FLIP.t1 - 0.01);
+    tl.set(B.outer, { autoAlpha: 0 }, FLIP.t1 - 0.01);
     gsap.set(HD.outer, { transformOrigin: '50% 50%' });
-    tl.to(HD.outer, { scale: 1 + PUSH_H, duration: 4.0, ease: 'none' }, 1.5);
+    tl.to(HD.outer, { scale: 1 + PUSH_H, duration: 5.5 - FLIP.t1, ease: 'none' }, FLIP.t1);
     // 5,5–5,8 — header sai
-    tl.to(HD.inner, { yPercent: -110, duration: 0.3, ease: 'mecca.in' }, 5.5);
+    tl.to(HD.inner, { yPercent: Y_OUT, duration: 0.3, ease: 'mecca.in' }, 5.5);
 
-    // caixas: solidificam (1,0 / 1,5)
-    function openBox(C, X, LB, t1, t2, ILL, at, closeAt) {
+    // caixas: solidificam. Caixa 1: a borda fica sólida no clique de 1,0 e o conteúdo (fill, label, traço, títulos)
+    // entra em 1,1, depois que o FLIP do header terminou. Caixa 2: tudo em 1,5.
+    function openBox(C, X, LB, t1, t2, ILL, at, closeAt, borderAt = at) {
       tl.to(C.st, { fill: 0.9, duration: 0.3, ease: 'power2.out' }, at);
-      tl.to(C.st, { gap: 0, duration: 0.45, ease: 'mecca.out' }, at);
-      tl.to(C.st, { sa: 0.5, duration: 0.3, ease: 'power2.out' }, at);
+      tl.to(C.st, { gap: 0, duration: 0.45, ease: 'mecca.out' }, borderAt);
+      tl.to(C.st, { sa: 0.5, duration: 0.3, ease: 'power2.out' }, borderAt);
       tl.to(C.st, { beam: 1, duration: 0.6, ease: 'power1.inOut' }, at + 0.5);
       // label digitado (0,3 s): o char k aparece em at + k·0,3/n; o cursor (x no onFrame) fica logo depois do último visível
       const n = LB.chars.length;
@@ -265,13 +300,13 @@ MECCA.scene({
       // ilustração: DrawSVG 0→100% (0,5 s)
       tl.fromTo(ILL.els, { drawSVG: '0%', autoAlpha: 0 }, { drawSVG: '100%', autoAlpha: 1, duration: 0.5, ease: 'mecca.out', stagger: 0.035 }, at);
       // títulos por máscara (stagger .12) — 'e ' e 'some.' são duas linhas que entram juntas
-      tl.fromTo(t1.inner, { yPercent: 110 }, { yPercent: 0, duration: 0.5, ease: 'mecca.out' }, at);
-      tl.fromTo([t2.a.inner, t2.b.inner], { yPercent: 110 }, { yPercent: 0, duration: 0.5, ease: 'mecca.out' }, at + 0.12);
+      tl.fromTo(t1.inner, { yPercent: Y_IN }, { yPercent: 0, duration: 0.5, ease: 'mecca.out' }, at);
+      tl.fromTo([t2.a.inner, t2.b.inner], { yPercent: Y_IN }, { yPercent: 0, duration: 0.5, ease: 'mecca.out' }, at + 0.12);
       // push lento do conteúdo textual (1→1,02 até o fechamento, continuando no mesmo ritmo durante a saída)
       const k = (closeAt + 0.45 - at) / (closeAt - at);
       tl.fromTo([X.PW, X.PS], { scale: 1 }, { scale: 1 + 0.02 * k, duration: closeAt + 0.45 - at, ease: 'none' }, at);
     }
-    openBox(C1, X1, LB1, T11, T12, POST, 1.0, 4.5);
+    openBox(C1, X1, LB1, T11, T12, POST, FLIP.t1, 4.5, 1.0);
     openBox(C2, X2, LB2, T21, T22, SLIDE, 1.5, 5.0);
 
     // 'e some.' pisca em steps (1→.3→1→.3→1, 0,3 s)
@@ -284,19 +319,20 @@ MECCA.scene({
     blink([T12.a.inner, T12.b.inner], 3.0);
     blink([T22.a.inner, T22.b.inner], 3.5);
 
-    // fechamento das caixas (4,5 / 5,0) — só o retângulo escala; o texto é RECORTADO por ele (clip-path no onFrame)
+    // fechamento das caixas (4,5 / 5,0) — só o retângulo escala; o texto é RECORTADO por ele (clip-path no onFrame).
+    // O achatamento NASCE no clique (power3.out, 0,18 s) e a linha recolhe logo em seguida (0,12 s).
     function closeBox(C, X, LB, t1, t2, ILL, at) {
       tl.to(C.st, { beam: 0, duration: 0.25, ease: 'power1.in' }, at - 0.25);
-      tl.to(C.g, { scaleY: 0.01, duration: 0.3, ease: 'mecca.in' }, at);
-      tl.to(C.st, { sa: 0.95, duration: 0.3, ease: 'mecca.in' }, at);
-      tl.to(C.g, { scaleX: 0, duration: 0.15, ease: 'mecca.in' }, at + 0.3);
+      tl.to(C.g, { scaleY: 0.01, duration: 0.18, ease: 'power3.out' }, at);
+      tl.to(C.st, { sa: 0.95, duration: 0.18, ease: 'power3.out' }, at);
+      tl.to(C.g, { scaleX: 0, duration: 0.12, ease: 'mecca.in' }, at + 0.18);
       // 'some.' evapora para fora da caixa (a máscara da linha é liberada para o blur/subida não serem cortados)
       gsap.set(t2.chars, { filter: 'blur(0px)' });
       tl.set(t2.b.outer, { overflow: 'visible' }, at);
       tl.to(t2.chars, { y: -24, filter: 'blur(6px)', autoAlpha: 0, duration: 0.3, ease: 'power2.out', stagger: 0.03 }, at);
       // o resto sai por máscara
-      tl.to(t1.inner, { yPercent: -110, duration: 0.3, ease: 'mecca.in' }, at);
-      tl.to(t2.a.inner, { yPercent: -110, duration: 0.3, ease: 'mecca.in' }, at + 0.04);
+      tl.to(t1.inner, { yPercent: Y_OUT, duration: 0.3, ease: 'mecca.in' }, at);
+      tl.to(t2.a.inner, { yPercent: Y_OUT, duration: 0.3, ease: 'mecca.in' }, at + 0.04);
       // label se apaga de trás para frente
       tl.to(LB.chars.slice().reverse(), { autoAlpha: 0, duration: 0.001, stagger: 0.012 }, at);
       // a ilustração fica sozinha e sobe 16 px
@@ -321,14 +357,16 @@ MECCA.scene({
     slice(SLIDE, 5.5, 9);
 
     // 6,0 — SLAM de T2 + shake
-    tl.fromTo([L1.inner, L2.inner], { yPercent: 100 }, { yPercent: 0, duration: 0.35, ease: 'expo.out', stagger: 0.1 }, 6.0);
+    tl.fromTo([L1.inner, L2.inner], { yPercent: Y_IN }, { yPercent: 0, duration: 0.35, ease: 'expo.out', stagger: 0.1 }, 6.0);
     h.shake(tl, root, 6.0, { amp: 6, n: 8, dur: 0.4, seed: 603 });
     tl.fromTo(w2, { scale: 1 }, { scale: 1.03, duration: 3.5, ease: 'none' }, 6.0);
     // 9,5–9,85 — 'somem' some letra por letra; 9,6–9,9 o resto sai
     gsap.set(somem, { transformOrigin: '50% 62%' });
     tl.to(somem, { scaleY: 0, duration: 0.15, ease: 'mecca.in', stagger: 0.07 }, 9.5);
-    tl.to(L1.inner.querySelector('.r'), { autoAlpha: 0, y: -10, duration: 0.3, ease: 'mecca.in' }, 9.6);
-    tl.to(L2.inner.querySelector('.r'), { autoAlpha: 0, y: -10, duration: 0.3, ease: 'mecca.in' }, 9.6);
+    // (y em mecca.in; a opacidade em power1.in e 0,28 s: o último quadro visível, 9,867, fica abaixo de 10 %, sem pop)
+    const rest2 = [L1.inner.querySelector('.r'), L2.inner.querySelector('.r')];
+    tl.to(rest2, { y: -10, duration: 0.3, ease: 'mecca.in' }, 9.6);
+    tl.to(rest2, { autoAlpha: 0, duration: 0.28, ease: 'power1.in' }, 9.6);
 
     // eyebrow sai junto com T2 (9,5–9,8): apaga de trás para frente e o traço recolhe
     tl.fromTo(ebLbl, { clipPath: 'inset(-12px 0px -12px -12px)' }, { clipPath: `inset(-12px ${ebW.toFixed(2)}px -12px -12px)`, duration: 0.02 * ebN, ease: `steps(${ebN})`, immediateRender: false }, 9.5);
@@ -339,7 +377,7 @@ MECCA.scene({
     tl.to(bg, { dim: 0.5, vignette: 0.75, glowA: 0.6, glowB: 0.6, particles: 0.5, duration: 0.9, ease: 'power2.inOut' }, 9.0);
 
     // ================================================================== PONTO (função pura do tempo)
-    const FX = gsap.parseEase(FB.ex), FY = gsap.parseEase(FB.ey), FS = gsap.parseEase(FB.es);
+    const E_FLIP = gsap.parseEase('mecca.inOut');
     const E_FLY = gsap.parseEase('power3.inOut');
     const HE = { x: HC.x + (PH.x - HC.x) * (1 + PUSH_H), y: HC.y + (PH.y - HC.y) * (1 + PUSH_H) };  // '.' do header ao fim do push
     // solta-se do header caindo reto (sem raspar no 's'), contorna o slide pela esquerda e pousa no '.' de 'H.'

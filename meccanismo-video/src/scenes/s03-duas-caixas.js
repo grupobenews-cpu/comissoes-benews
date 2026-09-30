@@ -274,7 +274,8 @@ MECCA.scene({
     gsap.set(GF, { transformOrigin: `${O0.x}px ${O0.y}px` });
     tl.to(GF, { x: O1.x - O0.x, scale: FLIP.s, duration: FLIP.tx1 - FLIP.t0, ease: 'mecca.inOut' }, FLIP.t0);
     tl.to(GF, { y: O1.y - O0.y, duration: FLIP.t1 - FLIP.ty0, ease: 'mecca.inOut' }, FLIP.ty0);
-    tl.to(A.outer, { autoAlpha: 0, duration: 0.18, ease: 'sine.in' }, FLIP.t0);
+    // (sine.in, 0,75→0,98: o fim cai logo depois do quadro 0,967, que fica abaixo de 10 % — sem pop de ~30 %→0)
+    tl.to(A.outer, { autoAlpha: 0, duration: 0.23, ease: 'sine.in' }, FLIP.t0);
     tl.fromTo(hAel, { autoAlpha: 0 }, { autoAlpha: 1, duration: FLIP.t1 - 0.93, ease: 'power1.out' }, 0.93);
     // troca seca (sem crossfade, sem queda de brilho): no quadro de 1,1 o grupo já está na pose final
     tl.set(hBel, { autoAlpha: 0 }, 0);
@@ -425,23 +426,45 @@ MECCA.scene({
       c.closePath();
       c.fillStyle = fill; c.fill();
     }
-    function drawTrail(c, t, p, amount) {
+    // enquanto o Ponto é glifo de 'caixas.' (FLIP a 6–9 mil px/s), o rastro é só um fio curto e discreto: raio ≤ 3 px,
+    // comprimento = o percurso dos últimos 0,02 s, no máximo GLYPH_L px (medido ao longo do caminho, afunilando até 0),
+    // e alfa baixo — sem a risca de ~400 px pendurada sob o '.' na área ainda vazia da caixa 2; ao desacelerar no
+    // header o fio encolhe junto e não desce mais pela borda da caixa 2
+    const GLYPH_L = 56, GLYPH_DT = 0.02, GLYPH_A = 0.32;
+    function drawTrail(c, t, p, amount, speed) {
       const WIN = 8 / 60, N = 48;
       const t0 = Math.max(t - WIN, segStart(t));
       if (t - t0 < 1 / 240) return;
-      // enquanto o Ponto é glifo de 'caixas.' (FLIP), o rastro é só um fio discreto (raio ≤ 3 px)
       const glyph = t < FLIP.t1 + 0.1;
-      const pts = [], ws = [];
+      let pts = [], us = [];
       for (let j = 0; j <= N; j++) {
         const tt = t0 + ((t - t0) * j) / N;
-        const q = j === N ? p : pontoPos(tt);
-        const u = 1 - (t - tt) / WIN;                // 0 = ponta da cauda (8/60 s atrás), 1 = núcleo
-        pts.push(q);
-        ws.push(Math.min(q.r * 0.8, glyph ? 3 : 99) * Math.pow(clamp(u), 0.85));
+        pts.push(j === N ? p : pontoPos(tt));
+        us.push(1 - (t - tt) / WIN);                 // 0 = ponta da cauda (8/60 s atrás), 1 = núcleo
       }
-      const tail = pts[0], uT = clamp(1 - (t - t0) / WIN);
+      if (glyph) {
+        const GL = Math.min(GLYPH_L, speed * GLYPH_DT);
+        if (GL < 2) return;
+        const arc = new Array(N + 1).fill(0);
+        let i = N - 1;
+        for (; i >= 0; i--) {
+          arc[i] = arc[i + 1] + Math.hypot(pts[i + 1].x - pts[i].x, pts[i + 1].y - pts[i].y);
+          if (arc[i] >= GL) break;
+        }
+        if (i >= 0) {                                 // corta exatamente em GL (interpola entre i+1 e i)
+          const f = (GL - arc[i + 1]) / Math.max(1e-6, arc[i] - arc[i + 1]);
+          const a = pts[i + 1], b = pts[i];
+          pts[i] = { x: lerp(a.x, b.x, f), y: lerp(a.y, b.y, f), r: lerp(a.r, b.r, f) };
+          us[i] = lerp(us[i + 1], us[i], f); arc[i] = GL;
+          pts = pts.slice(i); us = us.slice(i);
+          arc.splice(0, i);
+        }
+        us = us.map((u, j) => Math.min(u, 1 - arc[j] / GL));
+      }
+      const ws = pts.map((q, j) => Math.min(q.r * 0.8, glyph ? 3 : 99) * Math.pow(clamp(us[j]), 0.85));
+      const tail = pts[0], uT = clamp(us[0]);
       if (Math.hypot(p.x - tail.x, p.y - tail.y) < 2) return;
-      const k = amount * (glyph ? 0.55 : 1);
+      const k = amount * (glyph ? GLYPH_A : 1);
       const mk = (a0, a1, c0, c1) => {
         const g = c.createLinearGradient(tail.x, tail.y, p.x, p.y);
         g.addColorStop(0, hexA(mixHex(c0, c1, uT), a0 * uT * k));
@@ -465,7 +488,7 @@ MECCA.scene({
       const q = pontoPos(Math.max(segStart(t), t - dt));
       const speed = Math.hypot(p.x - q.x, p.y - q.y) / Math.max(1e-6, t - Math.max(segStart(t), t - dt));
       const trail = h.smooth(600, 1000, speed);
-      if (trail > 0) drawTrail(c, t, p, trail);
+      if (trail > 0) drawTrail(c, t, p, trail, speed);
       h.glowDot(c, p.x, p.y, r, P.lavender, clamp(0.6 * glow, 0, 1));
       c.fillStyle = P.ink;
       c.beginPath(); c.arc(p.x, p.y, r, 0, TAU); c.fill();
@@ -479,7 +502,6 @@ MECCA.scene({
       }
     }
 
-    window.__s03dbg = { pontoPos, O0, O1, PH, P0, GF, B };
     // ================================================================== onFrame
     const f4 = (v) => v.toFixed(3);
     function applyCard(C, lt, t0) {
@@ -549,7 +571,8 @@ MECCA.scene({
     // ================================================================== som
     cue(0, 'impact', 'slam T1', 0.7);
     cue(1, 'click', 'caixa 1', 0.5);
-    cue(1, 'whoosh', 'caixa 1 (FLIP do header)', 0.35);
+    // whoosh no CENTRO do FLIP (0,75–1,1): picos de velocidade em 0,90 (x/escala) e 0,967 (y); média ponderada 0,938
+    cue(0.935, 'whoosh', 'caixa 1 (FLIP do header)', 0.35);
     cue(1.5, 'click', 'caixa 2', 0.5);
     cue(3, 'glitch', 'pisca', 0.15);
     cue(3.5, 'glitch', 'pisca', 0.15);

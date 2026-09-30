@@ -114,17 +114,20 @@ MECCA.scene({
     const giramChars = [...lA1.querySelectorAll('.s02-giram .char')];   // g i r a m
     const rangeChars = [...lA2.querySelectorAll('.s02-range .char')];   // r a n g e
     const mc = document.createElement('canvas').getContext('2d');
-    // órbita de 'giram': centro no bbox (tinta) da palavra, rx = largura/2 + 16, ry ≈ 100, −6°
+    // órbita de 'giram': centro no bbox (tinta) da palavra, rx = largura/2 + 16, ry 108, −6°
     // (revisão: com rx = largura/2 + 48 / ry 78 as pontas pousavam no ';' e logo depois de 'Algumas' → 'giram;:' /
     //  'Algumas.'). Mais alta e mais estreita: a metade da frente passa abaixo das descendentes, a de trás acima do pingo do 'i'.
-    const ORB_RY = 100;
-    let ORB = { cx: 1002, cy: 391, rx: 209, ry: ORB_RY };
+    // 2ª revisão: com centro no bbox e ry 100 o arco de cima (baixado à esquerda pela rotação de −6°) passava a 5–7 px do
+    // pingo do 'i' (≈1,83–1,90: 'gïram'). Centro 8 px acima e ry +8: o ponto mais baixo da elipse não muda (folga de
+    // 'range' e das descendentes igual), o arco de cima sobe 16 px → ≥ 18 px de folga (borda a borda) do pingo do 'i'.
+    const ORB_RY = 108, ORB_DY = 8;
+    let ORB = { cx: 1002, cy: 391 - ORB_DY, rx: 209, ry: ORB_RY };
     try {
       const u = union(giramChars);
       mc.font = '700 150px "Space Grotesk"';
       const m = mc.measureText('giram');
       const cy = 430 + (m.actualBoundingBoxDescent - m.actualBoundingBoxAscent) / 2;
-      if (isFinite(u.x) && u.w > 100 && isFinite(cy)) ORB = { cx: u.x + u.w / 2, cy, rx: u.w / 2 + 16, ry: ORB_RY };
+      if (isFinite(u.x) && u.w > 100 && isFinite(cy)) ORB = { cx: u.x + u.w / 2, cy: cy - ORB_DY, rx: u.w / 2 + 16, ry: ORB_RY };
     } catch (e) { /* fallback */ }
     const ROT = -6 * DEG;
     // Oclusor = a linha 'Algumas giram;' como uma placa: caixas de TINTA de cada glifo (+ o vão entre palavras, na
@@ -529,7 +532,11 @@ MECCA.scene({
       }
       return Math.max(0, best) * s;
     }
-    const OCC_FADE = 22;                                            // px: o Ponto some ao encostar na linha de texto
+    // px: o Ponto some ao encostar na linha de texto. À esquerda (entrada sob o 'g', vão depois de 'Algumas') fade 0–22 px.
+    // À direita o vizinho é o ';': o fade começa mais longe e zera 6 px antes de encostar (6–30 px), para não sobrar um
+    // quadro de Ponto semitransparente colado sob a perna do 'm' (≈0,97 / 2,97). A mistura esquerda→direita (por x, em
+    // volta do centro da órbita) só acontece longe da linha de texto (folga ≥ 30 px), onde os dois fades valem 1.
+    const OCC_FADE = 22, OCC_FADE_R = 30, OCC_DEAD_R = 6;
     const occW = (lt) => 1 - sm(T_FALL, T_FALL + 0.2, lt);          // o oclusor deixa de valer quando as letras desabam
     const dotAt = (lt) => { const s = pushB(lt); return { x: PUSHB_O.x + s * (DOT.x - PUSHB_O.x), y: PUSHB_O.y + s * (DOT.y - PUSHB_O.y) }; };
     const quad = (a, c, b, u) => ({ x: (1 - u) * (1 - u) * a.x + 2 * (1 - u) * u * c.x + u * u * b.x, y: (1 - u) * (1 - u) * a.y + 2 * (1 - u) * u * c.y + u * u * b.y });
@@ -580,7 +587,11 @@ MECCA.scene({
         const ad = d >= 0 ? 1 : lerp(1, 0.55, sm(0, 0.35, -d));
         const w = occW(lt);
         let gap = 1e9, vis = 1;
-        if (w > 0) { gap = occGap(p.x, p.y, r, orbitAt(lt).s); vis = 1 - w * (1 - sm(0, OCC_FADE, gap)); }
+        if (w > 0) {
+          const o = orbitAt(lt), kR = sm(o.cx - 40, o.cx + 60, p.x);
+          gap = occGap(p.x, p.y, r, o.s);
+          vis = 1 - w * (1 - sm(OCC_DEAD_R * kR, lerp(OCC_FADE, OCC_FADE_R, kR), gap));
+        }
         alpha = ad * vis;
         front = d >= 0 && gap > 0.5;
       }

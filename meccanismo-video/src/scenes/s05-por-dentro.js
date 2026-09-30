@@ -32,12 +32,11 @@ MECCA.scene({
       text: `
 ${SEL} .s5-layer { position:absolute; left:0; top:0; width:1920px; height:1080px; }
 ${SEL} .s5-abs { position:absolute; white-space:nowrap; }
-${SEL} .s5-mask { overflow:hidden; padding:.14em .12em .16em; margin:-.14em -.12em -.16em; }
+${SEL} .s5-mask { overflow:hidden; padding:.12em .12em .28em; margin:-.12em -.12em -.28em; }
 ${SEL} .s5-txt { line-height:1.2; white-space:nowrap; }
 ${SEL} .s5-probe { display:inline-block; width:0; height:0; vertical-align:baseline; }
-${SEL} .s5-txt em { background:linear-gradient(90deg,#C026D3,#7C3AED); -webkit-background-clip:text; background-clip:text; color:transparent; }
+${SEL} .s5-txt em { --g0:#C026D3; --g1:#7C3AED; background:linear-gradient(90deg,var(--g0),var(--g1)); -webkit-background-clip:text; background-clip:text; color:transparent; }
 ${SEL} .eyebrow { letter-spacing:.22em; }
-${SEL} .chip { font-size:20px; }
 `,
     }, root);
 
@@ -52,13 +51,14 @@ ${SEL} .chip { font-size:20px; }
     // ================================================================== TEXTO
     const pushW = h.el('div', { cls: 's5-layer' }, textL);   // push lento 1 → 1,02
     const titleW = h.el('div', { cls: 's5-layer' }, pushW);  // saída x −40 + fade
-    const blocks = [0, 1, 2].map(() => h.el('div', { cls: 's5-layer' }, titleW));
+    const blocks = [0, 1, 2, 3].map(() => h.el('div', { cls: 's5-layer' }, titleW));
 
-    function line(parent, html, baseline) {
+    function line(parent, html, baseline, size = 60, weight = 700) {
       const wrap = h.el('div', { cls: 's5-abs' }, parent);
-      wrap.style.left = '192px'; wrap.style.top = '0px'; wrap.style.fontSize = '60px';
+      wrap.style.left = '192px'; wrap.style.top = '0px'; wrap.style.fontSize = size + 'px';
       const mask = h.el('div', { cls: 's5-mask' }, wrap);
       const txt = h.el('div', { cls: 't-display s5-txt', html }, mask);
+      txt.style.fontWeight = String(weight);
       const probe = h.el('span', { cls: 's5-probe' }, txt);
       const off = h.rect(probe).y - h.rect(wrap).y;
       probe.remove();
@@ -71,19 +71,20 @@ ${SEL} .chip { font-size:20px; }
       [2, 'e <em>fica operando</em> o motor', 630], [2, 'com você.', 700],
     ].map(([b, html, base]) => Object.assign(line(blocks[b], html, base), { b }));
 
+    // máscara ampliada (.12em em cima, .28em embaixo): o texto parte de 1,2em + .28em = 123 % abaixo → 130 % (nada aparece antes da entrada)
+    const MASK_Y0 = 130;
     const BT = [0.5, 2.0, 4.0];
     LINES.forEach((L, i) => {
-      tl.fromTo(L.txt, { yPercent: 110 }, { yPercent: 0, duration: 0.6, ease: 'mecca.out' }, BT[L.b] + (i % 2) * 0.08);
+      tl.fromTo(L.txt, { yPercent: MASK_Y0 }, { yPercent: 0, duration: 0.6, ease: 'mecca.out' }, BT[L.b] + (i % 2) * 0.08);
     });
-    tl.to(blocks[0], { opacity: 0.5, duration: 0.3, ease: 'power2.out' }, 2.0);
-    tl.to(blocks[1], { opacity: 0.5, duration: 0.3, ease: 'power2.out' }, 4.0);
+    // escurecimento das linhas lidas: α .7 (não .5) e os <em> trocam o gradiente por #C4B5FD (0,3 s) — ver onFrame
+    const DIM = [[blocks[0], 2.0], [blocks[1], 4.0]];
+    DIM.forEach(([b, t0]) => tl.to(b, { opacity: 0.7, duration: 0.3, ease: 'power2.out' }, t0));
+    const DIM_EM = DIM.map(([b, t0]) => ({ ems: [...b.querySelectorAll('em')], t0 }));
 
-    // chip (pop em 5,0)
-    const chip = h.chip('TIME EMBARCADO · OS MECCA', { x: 192, y: 760, size: 20, parent: titleW });
-    const pip = chip.querySelector('.pip');
-    gsap.set(chip, { transformOrigin: '50% 50%', opacity: 0, scale: 0.85 });
-    tl.to(chip, { opacity: 1, duration: 0.3, ease: 'power2.out' }, 5.0);
-    tl.fromTo(chip, { scale: 0.85 }, { scale: 1, duration: 0.3, ease: 'mecca.back', immediateRender: false }, 5.0);
+    // 'Time embarcado: os mecca.' — apresenta o termo (Space Grotesk 600, 44 px, baseline 790), máscara 0,4 s em 5,0
+    const TEAM = line(blocks[3], 'Time embarcado: <em>os mecca</em>.', 790, 44, 600);
+    tl.fromTo(TEAM.txt, { yPercent: MASK_Y0 }, { yPercent: 0, duration: 0.4, ease: 'mecca.out' }, 5.0);
 
     // eyebrow digitado (0,025 s/char) e apagado de trás para frente
     const eb = h.eyebrow('ENGENHARIA DE CRESCIMENTO', { x: 192, y: 120, anchor: 'cl', size: 22, parent: textL });   // fixo em (192,120): fora do push
@@ -100,7 +101,7 @@ ${SEL} .chip { font-size:20px; }
     gsap.set(pushW, { transformOrigin: '192px 495px' });
     tl.fromTo(pushW, { scale: 1 }, { scale: 1.02, duration: 6.5, ease: 'none', immediateRender: false }, 1.0);
     tl.to(titleW, { x: -40, duration: 0.3, ease: 'mecca.in' }, 7.5);
-    tl.to(titleW, { opacity: 0, duration: 0.2, ease: 'power1.out' }, 7.5);   // 7,5–7,7: some antes de os mecca cruzarem a coluna (~7,66)
+    tl.to(titleW, { opacity: 0, duration: 0.2, ease: 'sine.inOut' }, 7.5);   // 7,5–7,7: some antes de os mecca cruzarem a coluna (~7,66); sem salto no início nem no fim
 
     // ================================================================== MÁQUINA (geometria)
     const DEPTH = 18;                                    // altura de dente comum (0,2 · 90)
@@ -290,7 +291,7 @@ ${SEL} .chip { font-size:20px; }
     const MX0 = 7.45, MX1 = 7.9;                        // recuo de saída
     function machineT(t) {
       const u = seg(t, MX0, MX1);
-      const ks = eIO(u), ka = u * u * u;                 // escala 1 → .5 (mecca.inOut) · alfa 1 → 0 (power2.in)
+      const ks = eIO(u), ka = u * u;                     // escala 1 → .5 (mecca.inOut) · alfa 1 → 0 (power1.in: sem salto no fim)
       let dx = 0, dy = 0;
       if (t >= 4.0 && t < 4.45) {
         const u = t - 4.0, env = Math.exp(-u * 10) * (1 - seg(t, 4.3, 4.45));
@@ -335,6 +336,7 @@ ${SEL} .chip { font-size:20px; }
       const c = t < T ? meccaRaw(MK[key], t) : seat(key);
       return { x: c.x, y: c.y, s: Math.max(0.001, e), o: clamp(e * 6), ang: G.th - 90 * (1 - e) + KW[key] * A };
     }
+    const EM_DIM = P.lilac;                           // #C4B5FD
     const hex2rgb = (hex) => { const n = parseInt(hex.slice(1), 16); return [(n >> 16) & 255, (n >> 8) & 255, n & 255]; };
     const mixHex = (a, b, k) => {
       const A = hex2rgb(a), B = hex2rgb(b);
@@ -689,13 +691,12 @@ ${SEL} .chip { font-size:20px; }
       drawPonto(lt);
       drawMeccas(lt);
 
-      // pip do chip pulsa na batida
-      if (lt >= 5.0) {
-        const ph = ((lt - 5.0) % 0.5) / 0.5;
-        const k = Math.exp(-ph * 5);
-        pip.style.transform = `scale(${(1 + 0.4 * k).toFixed(3)})`;
-        pip.style.boxShadow = `0 0 ${(6 + 10 * k).toFixed(1)}px rgba(167,139,250,${(0.35 + 0.5 * k).toFixed(3)})`;
-      } else { pip.style.transform = 'scale(1)'; pip.style.boxShadow = 'none'; }
+      // <em> das linhas escurecidas: gradiente #C026D3→#7C3AED → #C4B5FD sólido (0,3 s, power2.out)
+      for (const D of DIM_EM) {
+        const k = eP2o(seg(lt, D.t0, D.t0 + 0.3));
+        const g0 = mixHex(P.magenta, EM_DIM, k), g1 = mixHex(P.violet, EM_DIM, k);
+        for (const e of D.ems) { e.style.setProperty('--g0', g0); e.style.setProperty('--g1', g1); }
+      }
     });
 
     // ================================================================== SOM (tempo local)
@@ -709,13 +710,13 @@ ${SEL} .chip { font-size:20px; }
     cue(3.5, 'click', 'engrenagem montada', 0.7);
     cue(4, 'impact', 'motor liga', 0.8);
     cue(4, 'sub-drop', 'motor liga', 0.4);
-    cue(5, 'click', 'chip', 0.4);
+    cue(5, 'click', 'chip', 0.4);   // entrada de 'Time embarcado: os mecca.' (nota mantida igual à versão vertical)
     cue(7.75, 'whoosh', 'máquina recua, órbita vira plano de voo', 0.5);
 
     // medidas para revisão
     root.dataset.s5 = JSON.stringify({
       rights: LINES.map((L) => Math.round(h.rect(L.txt).right)),
-      chipRight: Math.round(h.rect(chip).right), chipBottom: Math.round(h.rect(chip).bottom),
+      team: (() => { const r = h.rect(TEAM.txt); return [Math.round(r.x), Math.round(r.right), Math.round(r.bottom)]; })(),
       gd: [Math.round(GD.d.x * 10) / 10, Math.round(GD.d.y * 10) / 10],
       phases: CHAIN.map((k) => Math.round(GD[k].th * 10) / 10),
     });

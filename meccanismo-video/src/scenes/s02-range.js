@@ -43,11 +43,19 @@ MECCA.scene({
       [data-scene="${SID}"] .s02-layer { position:absolute; left:0; top:0; width:1920px; height:1080px; }
       [data-scene="${SID}"] .s02-giram { color: #C4B5FD; }
       [data-scene="${SID}"] .s02-range { color: #E249B0; }
+      /* máscaras ampliadas embaixo (.28em): descendentes/cedilhas (g, ç, ';') não são cortadas enquanto a entrada
+         desacelera nem quando 'range' treme. Sem acentos em caixa alta nesta cena: o topo fica como está (as saídas
+         para cima continuam escondendo tudo com −110 %). */
+      [data-scene="${SID}"] .line-mask { padding-bottom: 0.28em; margin-bottom: -0.28em; }
     `,
     }, root);
+    // Deslocamento inicial que esconde o texto por inteiro abaixo da máscara ampliada:
+    //  palavras (altura .98em): topo da tinta ≥ .12em abaixo do topo da linha → (0,98 + 0,28 − 0,12)/0,98 = 116 % → 125 %
+    //  chars de <em> (altura .98em + padding .08em = 1,06em): (1,26 − 0,12)/1,06 = 108 % → 120 %
+    const Y_IN = 125, Y_IN_EM = 120;
 
     // ------------------------------------------------------------------ camadas
-    const back = h.canvas(root);                                     // metade de trás da órbita / Ponto atrás de 'giram'
+    const back = h.canvas(root);                                     // metade de trás da órbita / Ponto atrás de 'giram' / rastro
     const svg = h.svg('svg', { class: 'fill', viewBox: '0 0 1920 1080', width: 1920, height: 1080 }, root);
     const textLayer = h.el('div', { cls: 's02-layer' }, root);
     const front = h.canvas(root);                                    // metade da frente, faíscas, Ponto
@@ -106,16 +114,40 @@ MECCA.scene({
     const giramChars = [...lA1.querySelectorAll('.s02-giram .char')];   // g i r a m
     const rangeChars = [...lA2.querySelectorAll('.s02-range .char')];   // r a n g e
     const mc = document.createElement('canvas').getContext('2d');
-    // órbita de 'giram': centro no bbox (tinta) da palavra, rx = largura/2 + 48, ry 78, −6°
-    let ORB = { cx: 1045, cy: 391, rx: 239, ry: 78 };
+    // órbita de 'giram': centro no bbox (tinta) da palavra, rx = largura/2 + 16, ry ≈ 100, −6°
+    // (revisão: com rx = largura/2 + 48 / ry 78 as pontas pousavam no ';' e logo depois de 'Algumas' → 'giram;:' /
+    //  'Algumas.'). Mais alta e mais estreita: a metade da frente passa abaixo das descendentes, a de trás acima do pingo do 'i'.
+    const ORB_RY = 100;
+    let ORB = { cx: 1002, cy: 391, rx: 209, ry: ORB_RY };
     try {
       const u = union(giramChars);
       mc.font = '700 150px "Space Grotesk"';
       const m = mc.measureText('giram');
       const cy = 430 + (m.actualBoundingBoxDescent - m.actualBoundingBoxAscent) / 2;
-      if (isFinite(u.x) && u.w > 100 && isFinite(cy)) ORB = { cx: u.x + u.w / 2, cy, rx: u.w / 2 + 48, ry: 78 };
+      if (isFinite(u.x) && u.w > 100 && isFinite(cy)) ORB = { cx: u.x + u.w / 2, cy, rx: u.w / 2 + 16, ry: ORB_RY };
     } catch (e) { /* fallback */ }
     const ROT = -6 * DEG;
+    // Oclusor = a linha 'Algumas giram;' como uma placa: caixas de TINTA de cada glifo (+ o vão entre palavras, na
+    // altura-x). Com o ';' colado ao 'm', as pontas da elipse cruzam a linha de texto de qualquer jeito: nessas
+    // passagens o Ponto vai POR TRÁS da linha (canvas de trás, com fade), nunca vira pontuação ao lado de um glifo.
+    // Coordenadas sem o push (o Ponto é levado de volta ao espaço sem escala antes do teste).
+    const OCC = [];
+    try {
+      mc.font = '700 150px "Space Grotesk"';
+      const xh = mc.measureText('x').actualBoundingBoxAscent;
+      let prev = null;
+      spA1.chars.forEach((c) => {
+        const ch = c.textContent;
+        if (!ch.trim()) return;
+        const rc = h.rect(c), m = mc.measureText(ch);
+        // o pingo do 'i' não conta: é uma marca pequena e solta que o Ponto só sobrevoa (contá-lo fazia o Ponto piscar)
+        const asc = /[ij]/.test(ch) ? xh : m.actualBoundingBoxAscent;
+        const b = { x0: rc.x - m.actualBoundingBoxLeft, x1: rc.x + m.actualBoundingBoxRight, y0: 430 - asc, y1: 430 + m.actualBoundingBoxDescent };
+        if (!(isFinite(b.x0) && isFinite(b.x1) && isFinite(b.y0) && isFinite(b.y1))) return;
+        if (prev && b.x0 - prev.x1 > 6) OCC.push({ x0: prev.x1, x1: b.x0, y0: 430 - xh, y1: 430 });   // espaço entre palavras
+        OCC.push(b); prev = b;
+      });
+    } catch (e) { /* sem oclusor: o Ponto só usa a profundidade */ }
 
     // '.' de 'engenharia.' é transparente: o Ponto ocupa o lugar dele
     const dotChar = spB3.chars[spB3.chars.length - 1];
@@ -158,8 +190,8 @@ MECCA.scene({
     // pontuação solta (';' '.') vira "palavra" própria no split: entra junto com a palavra anterior
     const wordGroups = (words) => { let g = -1; return words.map((w) => { if (!/^[;.,:!?]+$/.test(w.textContent.trim())) g++; return Math.max(0, g); }); };
     const gA1 = wordGroups(spA1.words), gA2 = wordGroups(spA2.words);
-    tl.fromTo(spA1.words, { yPercent: 110 }, { yPercent: 0, duration: 0.5, ease: 'mecca.out', stagger: (i) => 0.08 * gA1[i] }, 0);
-    tl.fromTo(spA2.words, { yPercent: 110 }, { yPercent: 0, duration: 0.25, ease: 'expo.out', stagger: (i) => 0.03 * gA2[i] }, T_LOCK);
+    tl.fromTo(spA1.words, { yPercent: Y_IN }, { yPercent: 0, duration: 0.5, ease: 'mecca.out', stagger: (i) => 0.08 * gA1[i] }, 0);
+    tl.fromTo(spA2.words, { yPercent: Y_IN }, { yPercent: 0, duration: 0.25, ease: 'expo.out', stagger: (i) => 0.03 * gA2[i] }, T_LOCK);
     // opacidade curta no começo da máscara: o pingo do 'i' de 'giram' (acima da altura-x, sem ascendentes
     // vizinhos) nunca aparece sozinho sob a linha. (Linha 2, expo.out, passa por essa janela em < ½ quadro.)
     tl.fromTo(spA1.words, { opacity: 0 }, { opacity: 1, duration: 0.12, ease: 'power2.in', stagger: (i) => 0.08 * gA1[i] }, 0);
@@ -197,12 +229,12 @@ MECCA.scene({
     }
 
     // ------------------------------------------------------------------ BLOCO B
-    tl.fromTo(spB1.words, { yPercent: 110 }, { yPercent: 0, duration: 0.4, ease: 'mecca.out', stagger: 0.04 }, T_JOLT);
-    tl.fromTo(spB2.words, { yPercent: 110 }, { yPercent: 0, duration: 0.4, ease: 'mecca.out' }, T_LAND);
+    tl.fromTo(spB1.words, { yPercent: Y_IN }, { yPercent: 0, duration: 0.4, ease: 'mecca.out', stagger: 0.04 }, T_JOLT);
+    tl.fromTo(spB2.words, { yPercent: Y_IN }, { yPercent: 0, duration: 0.4, ease: 'mecca.out' }, T_LAND);
     // 'engenharia.' nasce do '.' para a esquerda: o 'a' vizinho do Ponto sobe no pouso (4,5) e a onda corre até o 'e'
     // (o '.' é transparente e fica fora da onda)
     const engChars = spB3.chars.filter(c => c !== dotChar);
-    tl.fromTo(engChars, { yPercent: 110 }, { yPercent: 0, duration: 0.35, ease: 'expo.out', stagger: { each: 0.02, from: 'end' } }, T_LAND);
+    tl.fromTo(engChars, { yPercent: Y_IN_EM }, { yPercent: 0, duration: 0.35, ease: 'expo.out', stagger: { each: 0.02, from: 'end' } }, T_LAND);
     tl.fromTo(engChars, { opacity: 0 }, { opacity: 1, duration: 0.06, ease: 'power2.in', stagger: { each: 0.02, from: 'end' } }, T_LAND);
     tl.fromTo(blockB, { scale: 1, transformOrigin: `${PUSHB_O.x}px ${PUSHB_O.y}px` }, { scale: 1.02, duration: T_PUSHB1 - T_PUSHB0, ease: 'none' }, T_PUSHB0);
     tl.fromTo(emEl, { '--s02sh': `${-SHW - 40}px` }, { '--s02sh': `${emW + 40}px`, duration: 1.3, ease: 'sine.inOut', immediateRender: false }, 6.0);
@@ -473,14 +505,32 @@ MECCA.scene({
 
     // ------------------------------------------------------------------ órbita de 'giram' + o Ponto (função pura de lt)
     const START = { x: 1000, y: 540 }, HOVER = { x: 1100, y: 640 }, END = { x: 1625, y: 690 };
-    const A0 = 150 * DEG, OMEGA = -Math.PI;         // período 2 s
+    // período 2 s. Ângulo com velocidade NÃO uniforme: φ = θ + (K/2)·sen 2θ, θ = Θ0 − π·lt. Mais rápido nas pontas
+    // (onde ele passa por trás da linha de texto) e mais lento em cima/embaixo: velocidade na tela quase constante
+    // (sem "estacionar" nas pontas, que era o que criava a pontuação falsa). Θ0: em 0,6 o Ponto chega à órbita pela
+    // frente, embaixo (φ ≈ 1,75), já andando para a direita sob 'giram' (a entrada nunca raspa no 'g').
+    const ORB_K = 0.35, TH0 = 3.7246, OMEGA = -Math.PI;
     const T_ENTER = 0.6, T_COL = 0.32, T_DEP = 0.45;
     const orbitAt = (lt) => {
       const s = pushA(Math.min(lt, T_FALL));
       const k = 1 - p3In(seg(lt, T_FALL, T_FALL + T_COL));
-      return { cx: PUSHA_O.x + (ORB.cx - PUSHA_O.x) * s, cy: PUSHA_O.y + (ORB.cy - PUSHA_O.y) * s, rx: ORB.rx * s * k, ry: ORB.ry * s * k };
+      return { cx: PUSHA_O.x + (ORB.cx - PUSHA_O.x) * s, cy: PUSHA_O.y + (ORB.cy - PUSHA_O.y) * s, rx: ORB.rx * s * k, ry: ORB.ry * s * k, s };
     };
-    const orbAng = (lt) => A0 + OMEGA * lt;
+    const orbAng = (lt) => { const th = TH0 + OMEGA * lt; return th + 0.5 * ORB_K * Math.sin(2 * th); };
+    // distância da borda de um disco (x, y, r) — em coordenadas do palco, com o push s em torno de PUSHA_O — ao oclusor
+    function occGap(x, y, r, s) {
+      if (!OCC.length) return 1e9;
+      const ux = PUSHA_O.x + (x - PUSHA_O.x) / s, uy = PUSHA_O.y + (y - PUSHA_O.y) / s, ur = r / s;
+      let best = 1e9;
+      for (const b of OCC) {
+        const dx = Math.max(b.x0 - ux, 0, ux - b.x1), dy = Math.max(b.y0 - uy, 0, uy - b.y1);
+        const d = Math.hypot(dx, dy) - ur;
+        if (d < best) best = d;
+      }
+      return Math.max(0, best) * s;
+    }
+    const OCC_FADE = 22;                                            // px: o Ponto some ao encostar na linha de texto
+    const occW = (lt) => 1 - sm(T_FALL, T_FALL + 0.2, lt);          // o oclusor deixa de valer quando as letras desabam
     const dotAt = (lt) => { const s = pushB(lt); return { x: PUSHB_O.x + s * (DOT.x - PUSHB_O.x), y: PUSHB_O.y + s * (DOT.y - PUSHB_O.y) }; };
     const quad = (a, c, b, u) => ({ x: (1 - u) * (1 - u) * a.x + 2 * (1 - u) * u * c.x + u * u * b.x, y: (1 - u) * (1 - u) * a.y + 2 * (1 - u) * u * c.y + u * u * b.y });
     const T_FLY0 = 4.1;
@@ -510,7 +560,7 @@ MECCA.scene({
     const BEATS = [5.0, 5.5, 6.0, 6.5, 7.0];
     function pontoState(lt) {
       const p = pontoPos(lt);
-      let r = 10, sx = 1, sy = 1, glow = 1;
+      let r = 10, sx = 1, sy = 1, glow = 1, alpha = 1, front = true;
       if (lt < T_FLY0) {
         r = 10 * (1 + 0.12 * p.depth);
         const u = seg(lt, T_JOLT, T_JOLT + 0.3);
@@ -523,14 +573,72 @@ MECCA.scene({
         sx = lerp(1.5, 1, e); sy = lerp(0.6, 1, e);
         if (lt < T_OUT) for (const b of BEATS) if (lt >= b && lt < b + 0.4) { const w = Math.sin(Math.PI * (lt - b) / 0.4); r *= 1 + 0.05 * w; glow += 0.5 * w; }
       }
-      return { x: p.x, y: p.y, depth: p.depth, r, sx, sy, glow, t: lt };
+      // órbita de 'giram': metade de trás (sen φ < 0) no canvas de trás, abaixo do texto, com α ×.55; nas pontas o
+      // Ponto passa POR TRÁS da linha de texto (some ao encostar no oclusor — nunca fica ao lado de um glifo)
+      if (lt < T_FALL + T_DEP) {
+        const d = p.depth;
+        const ad = d >= 0 ? 1 : lerp(1, 0.55, sm(0, 0.35, -d));
+        const w = occW(lt);
+        let gap = 1e9, vis = 1;
+        if (w > 0) { gap = occGap(p.x, p.y, r, orbitAt(lt).s); vis = 1 - w * (1 - sm(0, OCC_FADE, gap)); }
+        alpha = ad * vis;
+        front = d >= 0 && gap > 0.5;
+      }
+      return { x: p.x, y: p.y, depth: p.depth, r, sx, sy, glow, alpha, front, t: lt };
     }
-    function mixHex(a, b, k) {
-      const A = parseInt(a.slice(1), 16), B = parseInt(b.slice(1), 16);
-      const ch = (sh) => Math.round(lerp((A >> sh) & 255, (B >> sh) & 255, k));
-      return '#' + [16, 8, 0].map(sh => ch(sh).toString(16).padStart(2, '0')).join('');
+
+    // Rastro = o MESMO cometa da S01 (fita contínua, sem contas): janela de 8 quadros a 30 fps.
+    // 1) amostra densa no TEMPO (160 pontos) → 2) reamostra por COMPRIMENTO DE ARCO (1 carimbo a cada 3 px)
+    // → 3) carimba discos translúcidos de raio e α decrescentes (cabeça ≈ 0,6·r → 0 na cauda), cor #C026D3 → #7C3AED.
+    // O espaçamento de 3 px é muito menor que o raio: o perfil é contínuo, sem segmentos visíveis.
+    const TR_M = 160, TR_WIN = 8 / 30, TR_STEP = 3, TR_MAX = 700;
+    const trX = new Float64Array(TR_M + 1), trY = new Float64Array(TR_M + 1), trC = new Float64Array(TR_M + 1);
+    const stX = new Float64Array(TR_MAX + 1), stY = new Float64Array(TR_MAX + 1);
+    const rgbOf = (hex) => [1, 3, 5].map(i => parseInt(hex.slice(i, i + 2), 16));
+    const TR_HEAD = rgbOf('#C026D3'), TR_TAIL = rgbOf('#7C3AED'), TR_HOT = rgbOf('#E249B0');
+    const rgba = (c0, c1, u, a) => `rgba(${Math.round(lerp(c0[0], c1[0], u))},${Math.round(lerp(c0[1], c1[1], u))},${Math.round(lerp(c0[2], c1[2], u))},${a.toFixed(4)})`;
+    function drawTrail(c, t, rr, amt) {
+      for (let i = 0; i <= TR_M; i++) {
+        const q = pontoPos(Math.max(0, t - (i / TR_M) * TR_WIN));
+        trX[i] = q.x; trY[i] = q.y;
+        trC[i] = i ? trC[i - 1] + Math.hypot(q.x - trX[i - 1], q.y - trY[i - 1]) : 0;
+      }
+      const Ltot = trC[TR_M];
+      if (Ltot < 4) return;
+      const n = Math.min(TR_MAX, Math.ceil(Ltot / TR_STEP));
+      let j = 0;
+      for (let k = 0; k <= n; k++) {
+        const sArc = Ltot * k / n;
+        while (j < TR_M - 1 && trC[j + 1] < sArc) j++;
+        const sl = trC[j + 1] - trC[j];
+        const f = sl > 1e-9 ? (sArc - trC[j]) / sl : 0;
+        stX[k] = trX[j] + (trX[j + 1] - trX[j]) * f;
+        stY[k] = trY[j] + (trY[j + 1] - trY[j]) * f;
+      }
+      const w0 = rr * 0.6;
+      // passada larga: halo de α baixo (borda suave em volta do traço)
+      for (let k = n; k >= 0; k -= 2) {
+        const u = k / n, w = w0 * Math.pow(1 - u, 0.8);
+        if (w < 0.3) continue;
+        c.fillStyle = rgba(TR_HEAD, TR_TAIL, u, 0.045 * amt * (1 - u));
+        c.beginPath(); c.arc(stX[k], stY[k], w * 2.3 + 2, 0, TAU); c.fill();
+      }
+      // miolo: carimbos densos que afinam e esmaecem até a cauda
+      for (let k = n; k >= 0; k--) {
+        const u = k / n, w = w0 * Math.pow(1 - u, 0.85);
+        if (w < 0.3) continue;
+        c.fillStyle = rgba(TR_HEAD, TR_TAIL, Math.pow(u, 0.8), 0.11 * amt * Math.pow(1 - u, 0.6));
+        c.beginPath(); c.arc(stX[k], stY[k], w, 0, TAU); c.fill();
+      }
+      // fio quente perto da cabeça (rosa → magenta)
+      for (let k = Math.floor(n * 0.5); k >= 0; k--) {
+        const u = k / n, v = u / 0.5, w = w0 * 0.34 * (1 - v);
+        if (w < 0.3) continue;
+        c.fillStyle = rgba(TR_HOT, TR_HEAD, v, 0.09 * amt * (1 - v));
+        c.beginPath(); c.arc(stX[k], stY[k], w, 0, TAU); c.fill();
+      }
     }
-    // mesmo desenho do Ponto da S01: glowDot lavanda + núcleo #FBF8FF; rastro acima de 600 px/s
+    // mesmo desenho do Ponto da S01: glowDot lavanda + núcleo #FBF8FF; rastro (canvas de TRÁS, abaixo do texto) acima de 600 px/s
     function drawPonto(c, s, alpha) {
       const rr = s.r;
       if (rr < 0.05 || alpha <= 0.001) return;
@@ -539,18 +647,11 @@ MECCA.scene({
       const vx = (s.x - q.x) / dt, vy = (s.y - q.y) / dt;
       const speed = Math.hypot(vx, vy);
       const trail = h.smooth(600, 1000, speed);
-      c.save();
-      c.globalAlpha = alpha;
-      if (trail > 0) {
-        for (let k = 8; k >= 1; k--) {
-          const pk = pontoPos(Math.max(0, s.t - k / 60));
-          const f = k / 8;
-          c.fillStyle = hexA(mixHex('#C026D3', '#7C3AED', f), 0.55 * (1 - f * 0.92) * trail);
-          c.beginPath(); c.arc(pk.x, pk.y, rr * (1 - 0.085 * k), 0, TAU); c.fill();
-        }
-      }
+      if (trail > 0) { cb.save(); cb.globalAlpha = alpha; drawTrail(cb, s.t, rr, trail); cb.restore(); }
       const stretch = 1 + clamp(speed / 7000, 0, 0.35);
       const rot = speed > 40 ? Math.atan2(vy, vx) : 0;
+      c.save();
+      c.globalAlpha = alpha;
       c.translate(s.x, s.y);
       c.rotate(rot);
       c.scale(s.sx * stretch, s.sy / stretch);
@@ -560,15 +661,30 @@ MECCA.scene({
       c.restore();
     }
 
-    // órbita: metade da frente (sen θ > 0) no canvas da frente; metade de trás no de trás com α ×.5
+    // órbita (hairline α .3): arco da frente no canvas da frente SÓ onde passa livre da linha de texto; o resto
+    // (inclusive os trechos das pontas que cruzam 'g'/';') no canvas de trás, abaixo do texto. Metade de trás com
+    // α ×.5 (transição suave pela profundidade). Desenhada em trechos contíguos agrupados por (canvas, α).
+    const ORB_SEG = 144;
     function drawOrbit(lt) {
       if (lt >= T_FALL + T_COL) return;
       const o = orbitAt(lt);
       if (o.rx < 0.5) return;
       const a = 0.3 * sm(0.15, 0.65, lt) * (1 - sm(T_FALL + 0.1, T_FALL + T_COL, lt));
       if (a <= 0.001) return;
-      h.orbit(cf, { cx: o.cx, cy: o.cy, rx: o.rx, ry: o.ry, rot: ROT, color: P.lavender, alpha: a, lineWidth: 1.5, from: 0, to: Math.PI });
-      h.orbit(cb, { cx: o.cx, cy: o.cy, rx: o.rx, ry: o.ry, rot: ROT, color: P.lavender, alpha: a * 0.5, lineWidth: 1.5, from: Math.PI, to: TAU });
+      const w = occW(lt);
+      const runs = [];
+      for (let k = 0; k < ORB_SEG; k++) {
+        const a0 = TAU * k / ORB_SEG, a1 = TAU * (k + 1) / ORB_SEG, am = 0.5 * (a0 + a1);
+        const d = Math.sin(am);
+        const pm = h.ellipsePt(o.cx, o.cy, o.rx, o.ry, ROT, am);
+        const clear = w <= 0 || occGap(pm.x, pm.y, 1.5, o.s) > 2;
+        const fr = d > 0 && clear;
+        const al = Math.round(a * (d >= 0 ? 1 : lerp(1, 0.5, sm(0, 0.3, -d))) * 400) / 400;
+        const last = runs[runs.length - 1];
+        if (last && last.fr === fr && last.al === al) last.a1 = a1;
+        else runs.push({ fr, al, a0, a1 });
+      }
+      for (const R of runs) h.orbit(R.fr ? cf : cb, { cx: o.cx, cy: o.cy, rx: o.rx, ry: o.ry, rot: ROT, color: P.lavender, alpha: R.al, lineWidth: 1.5, from: R.a0, to: R.a1 });
     }
 
     // ponta da "caneta técnica" nos círculos primitivos enquanto desenham
@@ -621,11 +737,9 @@ MECCA.scene({
       drawSparks(cf, lt);
       drawPens(lt);
 
-      // Ponto: atrás de 'giram' quando está na metade de trás da órbita (cross-fade nas laterais)
+      // Ponto: canvas de trás (abaixo do texto) na metade de trás da órbita e ao cruzar a linha de texto
       const s = pontoState(lt);
-      const wf = s.depth >= 0 ? 1 : 1 - sm(0, 0.35, -s.depth);
-      if (wf < 1) drawPonto(cb, s, (1 - wf) * 0.6);
-      if (wf > 0) drawPonto(cf, s, wf);
+      drawPonto(s.front ? cf : cb, s, s.alpha);
     });
 
     // ------------------------------------------------------------------ som

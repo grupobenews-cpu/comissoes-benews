@@ -165,17 +165,21 @@ MECCA.scene({
     tl.fromTo(sSp.words, { yPercent: 110 }, { yPercent: 0, duration: 0.6, stagger: 0.04, ease: 'mecca.out' }, 1.0);
 
     // FLIP (2,5–3,0): cada palavra vai para o seu lugar no header "Quatro tempos" (72 px, bl 380).
-    // ADAPTAÇÃO de trajetória: em linha reta, "tempos" (que sobe 240 e anda 237 para a direita)
-    // atravessaria "Quatro" em 2,7–2,95 (sobreposição de até ~40 px). Por isso "Quatro" faz o FLIP
-    // em 0,3 s (2,5–2,8) e "tempos" desliza para a direita no mesmo 2,5–2,8, enquanto a escala e a
-    // subida de "tempos" (e o subtítulo, que fica logo abaixo dele) seguem 2,5–3,0. Tudo mecca.inOut,
-    // dentro da janela da horizontal; folga mínima medida entre as palavras ≈ 10 px.
+    // Como na horizontal, escala e subida das duas palavras (e do subtítulo) andam juntas:
+    // 2,5–3,0, 0,5 s, mecca.inOut — as linhas de base pousam juntas em 3,0.
+    // ADAPTAÇÃO de trajetória (só o x de "tempos"): em linha reta ele atravessaria "Quatro" em
+    // ≈ 2,75–2,95. O x é animado DENTRO da palavra escalada (na máscara da linha), então o
+    // deslocamento na tela é s(t)·x: com power2.out em 0,4 s "tempos" primeiro sai para a direita
+    // (ainda embaixo) e, quando sobe, já está na formação do header na escala corrente — as duas
+    // palavras encolhem como um bloco até a origem (90, bl 380). Folga mínima medida entre os
+    // glifos ≈ 14 px (final ≈ 16), borda direita de "tempos" ≤ 957.
     gsap.set(wQ, { transformOrigin: `0px ${wQOff}px` });
     gsap.set(wT, { transformOrigin: `0px ${wTOff}px` });
     gsap.set(sub, { transformOrigin: `0px ${subOff}px` });
-    tl.to(wQ, { scale: HDR_SZ / T_SZ, y: HDR_BL - T_BL[0], duration: 0.3, ease: 'mecca.inOut' }, 2.5);
-    tl.to(wT, { x: TEMPOS_X - MX, duration: 0.3, ease: 'mecca.inOut' }, 2.5);
+    const tLine = tSp.lines[0].parentNode;            // máscara da linha de "tempos" (filha de wT)
+    tl.to(wQ, { scale: HDR_SZ / T_SZ, y: HDR_BL - T_BL[0], duration: 0.5, ease: 'mecca.inOut' }, 2.5);
     tl.to(wT, { scale: HDR_SZ / T_SZ, y: HDR_BL - T_BL[1], duration: 0.5, ease: 'mecca.inOut' }, 2.5);
+    tl.fromTo(tLine, { x: 0 }, { x: (TEMPOS_X - MX) * T_SZ / HDR_SZ, duration: 0.4, ease: 'power2.out' }, 2.5);
     tl.to(sub, { scale: SUB_SZ2 / SUB_SZ, y: SUB_BL2 - SUB_BL, duration: 0.5, ease: 'mecca.inOut' }, 2.5);
 
     // ------------------------------------------------------------------ os 4 tempos

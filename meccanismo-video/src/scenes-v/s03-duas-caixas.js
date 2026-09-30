@@ -24,7 +24,7 @@ MECCA.scene({
 
     h.el('style', {
       text: `
-      ${SEL} .mk { overflow: hidden; padding: 0.1em 0.16em 0.12em 0; }
+      ${SEL} .mk { overflow: hidden; padding: 0.12em 0.16em 0.28em 0; margin-bottom: -0.28em; }
       ${SEL} .mk > .in { display: block; }
       ${SEL} .ib { display: inline-block; }
       ${SEL} .dot { color: transparent; }
@@ -46,7 +46,7 @@ MECCA.scene({
     const HB = 372;                                  // baseline do header
 
     // ------------------------------------------------------------------ camadas
-    // 'shk' = tudo o que treme no slam de 6,0 (cards, textos, Ponto). O eyebrow fica fora: com 26 px e âncora 'cl' o topo
+    // 'shk' = tudo o que treme nos slams de 0,0 e 6,0 (cards, textos, Ponto). O eyebrow fica fora: com 26 px e âncora 'cl' o topo
     // dele cai em y fracionário (252,5) e, se ele fosse deslocado pelo tremor, a rasterização do texto passaria a depender
     // da ordem das buscas (voltar de um quadro do tremor para antes de 6,0 o redesenhava 0,3 px acima).
     const shk = h.el('div', { style: { position: 'absolute', inset: '0' } }, root);
@@ -81,10 +81,18 @@ MECCA.scene({
     function setBase(L, base) { L.top = Math.round(base - L.b); L.base = L.top + L.b; L.outer.style.top = L.top + 'px'; }
     const dotCenter = (L) => { const d = L.inner.querySelector('.dot'); const ink = dotInk(L.size); return { x: h.rect(d).x + ink.cx, y: L.base + ink.cy }; };
 
+    // Máscaras (iguais às da horizontal): a caixa .mk tem .28em livres embaixo (descendentes/cedilhas não são cortadas
+    // enquanto a entrada desacelera) e .12em em cima (acentos). Deslocamento que esconde o texto por inteiro abaixo da
+    // máscara ampliada: (1,2 + 0,28)/1,2 = 123,3 % → 125 %. Para cima, (1,2 + 0,12)/1,2 = 110 %.
+    const Y_IN = 125, Y_OUT = -110;
+
     // ------------------------------------------------------------------ T1: "O mercado te dá / duas caixas."
+    // GF = grupo do FLIP (as duas linhas viajam JUNTAS, com a mesma transformação); GS = grupo do slam (escala em torno do Ponto)
     const P0 = { x: 912.5, y: 757.5 };               // Ponto herdado da S02 (corte 14,0)
-    const A = line('O mercado te dá', { x: 90, base: 600, size: 96 });
-    const B = line('<span class="lil">duas</span> caixas<span class="dot">.</span>', { x: 90, base: 770, size: 150 });
+    const GF = h.el('div', { style: { position: 'absolute', inset: '0' } }, txt);
+    const GS = h.el('div', { style: { position: 'absolute', inset: '0' } }, GF);
+    const A = line('O mercado te dá', { x: 90, base: 600, size: 96, parent: GS });
+    const B = line('<span class="lil">duas</span> caixas<span class="dot">.</span>', { x: 90, base: 770, size: 150, parent: GS });
     {
       // alinha o '.' de 'caixas.' exatamente sob o Ponto (ajuste de poucos px; vale a posição da tabela)
       const d = dotCenter(B);
@@ -95,12 +103,18 @@ MECCA.scene({
     // header de uma linha: 60 px, centrado em x 540, baseline 372 (x 145–935)
     const HD = line('<span class="hA">O mercado te dá</span> <span class="hB"><span class="lil">duas</span> caixas<span class="dot">.</span></span>', { x: 0, base: HB, size: 60 });
     setLeft(HD, Math.round(CX - h.rect(HD.inner).w / 2));
-    const hA = h.rect(HD.inner.querySelector('.hA'));
-    const hB = h.rect(HD.inner.querySelector('.hB'));
+    const hAel = HD.inner.querySelector('.hA'), hBel = HD.inner.querySelector('.hB');
+    const hB = h.rect(hBel);
     const PH = dotCenter(HD);                         // Ponto no header (r 5)
     const HR = h.rect(HD.outer);
     const HC = { x: HR.cx, y: HR.cy };               // origem do push do header
     const PUSH_H = 0.02;
+    // FLIP em grupo (tempos da horizontal): uma única semelhança (escala 60/150 em torno do início da baseline de
+    // 'duas caixas.' + translação) leva 'duas caixas.' EXATAMENTE sobre o 'duas caixas.' do header. 'O mercado te dá'
+    // viaja no mesmo grupo e dissolve; o do header surge. x/escala adiantam-se ao y (arco): o grupo chega por BAIXO do
+    // seu lugar, sem raspar no 'dá' do header que está surgindo.
+    const FLIP = { t0: 0.75, t1: 1.1, tx1: 1.05, ty0: 0.83, s: 60 / 150 };
+    const O0 = { x: B.left, y: B.base }, O1 = { x: hB.x, y: HD.base };
 
     // ------------------------------------------------------------------ T2: "As duas / somem / na hora H." (ADAPTAÇÃO: 3 linhas)
     // (sem nós de texto soltos ao lado de elementos com tween)
@@ -217,8 +231,9 @@ MECCA.scene({
       const e = h.text(text, { x, y, size: 26, cls: 't-mono', ls: '0.2em', lh: 1, nowrap: true, color: P.lavender, parent });
       const r = h.rect(e);
       const sp = h.split(e, { type: 'chars' });
-      // posição do cursor depois de k chars digitados: logo após a caixa do char k−1 (que já inclui o tracking) + folga
-      const stops = [0, ...sp.chars.map(ch => h.rect(ch).right - r.x + 4)];
+      // posição do cursor depois de k chars digitados: logo após a caixa do char k−1, que já inclui o tracking de .2em
+      // (≈ 5 px de folga). Sem o +4 da horizontal: no card 2 o cursor final ficaria a 8 px do slide (tl x 610).
+      const stops = [0, ...sp.chars.map(ch => h.rect(ch).right - r.x)];
       const caret = h.el('div', { cls: 'caret', style: { left: x + 'px', top: (y - 2) + 'px' } }, parent);
       return { e, chars: sp.chars, caret, w: r.w, stops };
     }
@@ -249,39 +264,40 @@ MECCA.scene({
     [root, ...root.querySelectorAll('*')].forEach(el => { if (el instanceof HTMLElement && el.tagName !== 'STYLE') gsap.getProperty(el, 'x'); });
 
     // ================================================================== COREOGRAFIA
-    // 0,0 — slam de T1 (máscara, 0,5 s, mecca.out, stagger .12)
-    tl.fromTo([A.inner, B.inner], { yPercent: 110 }, { yPercent: 0, duration: 0.5, ease: 'mecca.out', stagger: 0.12 }, 0);
+    // 0,0 — SLAM de T1: 'duas caixas.' primeiro (o golpe cai no 1º quadro depois do corte), escala 1,08→1 em torno
+    // do Ponto (o '.' de 'caixas.' não sai de baixo dele) e tremor curto. O quadro 0 continua = último da S02.
+    tl.fromTo([B.inner, A.inner], { yPercent: Y_IN }, { yPercent: 0, duration: 0.18, ease: 'expo.out', stagger: 0.03 }, 0);
+    gsap.set(GS, { transformOrigin: `${P0.x}px ${P0.y}px` });
+    tl.fromTo(GS, { scale: 1.08 }, { scale: 1, duration: 0.25, ease: 'expo.out' }, 0);
+    // tremor no wrapper 'shk' (não no root: o eyebrow fica parado, ver 'camadas'). Em 0,001 e não em 0: o motor busca
+    // t + 0,1 ms; um tremor já iniciado deslocaria o quadro 0 em centésimos de px. No quadro seguinte o 1º golpe já está completo.
+    h.shake(tl, shk, 0.001, { amp: 4, n: 5, dur: 0.2, seed: 301 });
+    // os tracejados dos cards recuam (α .3 → .12) enquanto T1 ocupa a tela; voltam em 1,0
+    tl.to([C1.st, C2.st], { sa: 0.12, duration: 0.2, ease: 'power2.out' }, 0);
+    tl.to(C2.st, { sa: 0.3, duration: 0.3, ease: 'power2.out' }, 1.0);   // (o C1 sobe direto para .5 no openBox)
 
-    // 1,0–1,5 — FLIP para o header + crossfade em 1,47
-    gsap.set([A.outer, B.outer], { transformOrigin: '0px 0px' });
-    const sA = 60 / 96, sB = 60 / 150;
-    // 'O mercado te dá' decola já no 1º quadro (expo.out em x/y, como na horizontal) e libera a faixa do label/ilustração.
-    tl.to(A.outer, { x: hA.x - A.left, duration: 0.5, ease: 'expo.out' }, 1.0);
-    tl.to(A.outer, { y: HB - A.top - sA * A.b, duration: 0.5, ease: 'expo.out' }, 1.0);
-    tl.to(A.outer, { scale: sA, duration: 0.5, ease: 'power3.out' }, 1.0);
-    // ADAPTAÇÃO (cards empilhados): 'duas caixas.' encolhe rápido junto à margem (fica abaixo de 'O mercado te dá' e acima do
-    // título do card 1), sobe na diagonal pela folga entre o label e a ilustração (o cruzamento da faixa do label dura um
-    // quadro) e encaixa por baixo, à direita de 'dá': o x corre em 1,13–1,37, antes de o y entrar na faixa do header, e as
-    // duas metades nunca se tocam. Com as eases da horizontal (x expo.out) ela sairia pela direita (x > 1060) e
-    // atravessaria a ilustração do card 1 por 6 quadros. O FLIP continua em 1,0–1,5 (y e escala) com crossfade em 1,47.
-    const FB = { dx: hB.x - B.left, dy: HB - B.top - sB * B.b, ex: 'power2.inOut', ey: 'power2.inOut', es: 'expo.out', x0: 1.13, xd: 0.24 };
-    tl.to(B.outer, { x: FB.dx, duration: FB.xd, ease: FB.ex }, FB.x0);
-    tl.to(B.outer, { y: FB.dy, duration: 0.5, ease: FB.ey }, 1.0);
-    tl.to(B.outer, { scale: sB, duration: 0.5, ease: FB.es }, 1.0);
-    // troca pelo header nativo em 1,47–1,53 sem "mergulho" de brilho no quadro do meio: o header chega a α 1 em 1,5
-    // (quando o FLIP já pousou exatamente sobre ele) e só então as linhas escaladas saem
-    tl.to([A.outer, B.outer], { autoAlpha: 0, duration: 0.03, ease: 'none' }, 1.5);
-    tl.fromTo(HD.outer, { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.03, ease: 'none' }, 1.47);
+    // 0,75–1,1 — FLIP em GRUPO para o header (mecca.inOut): uma só transformação para as duas linhas.
+    // 'duas caixas.' pousa exatamente sobre o do header; 'O mercado te dá' dissolve no caminho e o do header surge.
+    gsap.set(GF, { transformOrigin: `${O0.x}px ${O0.y}px` });
+    tl.to(GF, { x: O1.x - O0.x, scale: FLIP.s, duration: FLIP.tx1 - FLIP.t0, ease: 'mecca.inOut' }, FLIP.t0);
+    tl.to(GF, { y: O1.y - O0.y, duration: FLIP.t1 - FLIP.ty0, ease: 'mecca.inOut' }, FLIP.ty0);
+    tl.to(A.outer, { autoAlpha: 0, duration: 0.18, ease: 'sine.in' }, FLIP.t0);
+    tl.fromTo(hAel, { autoAlpha: 0 }, { autoAlpha: 1, duration: FLIP.t1 - 0.93, ease: 'power1.out' }, 0.93);
+    // troca seca (sem crossfade, sem queda de brilho): no quadro de 1,1 o grupo já está na pose final
+    tl.set(hBel, { autoAlpha: 0 }, 0);
+    tl.set(hBel, { autoAlpha: 1 }, FLIP.t1 - 0.01);
+    tl.set(B.outer, { autoAlpha: 0 }, FLIP.t1 - 0.01);
     gsap.set(HD.outer, { transformOrigin: '50% 50%' });
-    tl.to(HD.outer, { scale: 1 + PUSH_H, duration: 4.0, ease: 'none' }, 1.5);
+    tl.to(HD.outer, { scale: 1 + PUSH_H, duration: 5.5 - FLIP.t1, ease: 'none' }, FLIP.t1);
     // 5,5–5,8 — header sai
-    tl.to(HD.inner, { yPercent: -110, duration: 0.3, ease: 'mecca.in' }, 5.5);
+    tl.to(HD.inner, { yPercent: Y_OUT, duration: 0.3, ease: 'mecca.in' }, 5.5);
 
-    // caixas: solidificam (1,0 / 1,5)
-    function openBox(C, X, LB, t1, t2, ILL, at, closeAt) {
+    // caixas: solidificam. Caixa 1: a borda fica sólida no clique de 1,0 e o conteúdo (fill, label, traço, títulos)
+    // entra em 1,1, depois que o FLIP do header terminou. Caixa 2: tudo em 1,5.
+    function openBox(C, X, LB, t1, t2, ILL, at, closeAt, borderAt = at) {
       tl.to(C.st, { fill: 0.9, duration: 0.3, ease: 'power2.out' }, at);
-      tl.to(C.st, { gap: 0, duration: 0.45, ease: 'mecca.out' }, at);
-      tl.to(C.st, { sa: 0.5, duration: 0.3, ease: 'power2.out' }, at);
+      tl.to(C.st, { gap: 0, duration: 0.45, ease: 'mecca.out' }, borderAt);
+      tl.to(C.st, { sa: 0.5, duration: 0.3, ease: 'power2.out' }, borderAt);
       tl.to(C.st, { beam: 1, duration: 0.6, ease: 'power1.inOut' }, at + 0.5);
       // label digitado (0,3 s): o char k aparece em at + k·0,3/n; o cursor (x no onFrame) fica logo depois do último visível
       const n = LB.chars.length;
@@ -293,13 +309,13 @@ MECCA.scene({
       // ilustração: DrawSVG 0→100% (0,5 s)
       tl.fromTo(ILL.els, { drawSVG: '0%', autoAlpha: 0 }, { drawSVG: '100%', autoAlpha: 1, duration: 0.5, ease: 'mecca.out', stagger: 0.035 }, at);
       // títulos por máscara (stagger .12) — 'e ' e 'some.' são duas linhas que entram juntas
-      tl.fromTo(t1.inner, { yPercent: 110 }, { yPercent: 0, duration: 0.5, ease: 'mecca.out' }, at);
-      tl.fromTo([t2.a.inner, t2.b.inner], { yPercent: 110 }, { yPercent: 0, duration: 0.5, ease: 'mecca.out' }, at + 0.12);
+      tl.fromTo(t1.inner, { yPercent: Y_IN }, { yPercent: 0, duration: 0.5, ease: 'mecca.out' }, at);
+      tl.fromTo([t2.a.inner, t2.b.inner], { yPercent: Y_IN }, { yPercent: 0, duration: 0.5, ease: 'mecca.out' }, at + 0.12);
       // push lento do conteúdo textual (1→1,02 até o fechamento, continuando no mesmo ritmo durante a saída)
       const k = (closeAt + 0.45 - at) / (closeAt - at);
       tl.fromTo([X.PW, X.PS], { scale: 1 }, { scale: 1 + 0.02 * k, duration: closeAt + 0.45 - at, ease: 'none' }, at);
     }
-    openBox(C1, X1, LB1, T11, T12, POST, 1.0, 4.5);
+    openBox(C1, X1, LB1, T11, T12, POST, FLIP.t1, 4.5, 1.0);
     openBox(C2, X2, LB2, T21, T22, SLIDE, 1.5, 5.0);
 
     // 'e some.' pisca em steps (1→.3→1→.3→1, 0,3 s)
@@ -312,19 +328,20 @@ MECCA.scene({
     blink([T12.a.inner, T12.b.inner], 3.0);
     blink([T22.a.inner, T22.b.inner], 3.5);
 
-    // fechamento das caixas (4,5 / 5,0) — só o retângulo escala; o texto é RECORTADO por ele (clip-path no onFrame)
+    // fechamento das caixas (4,5 / 5,0) — só o retângulo escala; o texto é RECORTADO por ele (clip-path no onFrame).
+    // O achatamento NASCE no clique (power3.out, 0,18 s) e a linha recolhe logo em seguida (0,12 s).
     function closeBox(C, X, LB, t1, t2, ILL, at) {
       tl.to(C.st, { beam: 0, duration: 0.25, ease: 'power1.in' }, at - 0.25);
-      tl.to(C.g, { scaleY: 0.01, duration: 0.3, ease: 'mecca.in' }, at);
-      tl.to(C.st, { sa: 0.95, duration: 0.3, ease: 'mecca.in' }, at);
-      tl.to(C.g, { scaleX: 0, duration: 0.15, ease: 'mecca.in' }, at + 0.3);
+      tl.to(C.g, { scaleY: 0.01, duration: 0.18, ease: 'power3.out' }, at);
+      tl.to(C.st, { sa: 0.95, duration: 0.18, ease: 'power3.out' }, at);
+      tl.to(C.g, { scaleX: 0, duration: 0.12, ease: 'mecca.in' }, at + 0.18);
       // 'some.' evapora para fora da caixa (a máscara da linha é liberada para o blur/subida não serem cortados)
       gsap.set(t2.chars, { filter: 'blur(0px)' });
       tl.set(t2.b.outer, { overflow: 'visible' }, at);
       tl.to(t2.chars, { y: -24, filter: 'blur(6px)', autoAlpha: 0, duration: 0.3, ease: 'power2.out', stagger: 0.03 }, at);
       // o resto sai por máscara
-      tl.to(t1.inner, { yPercent: -110, duration: 0.3, ease: 'mecca.in' }, at);
-      tl.to(t2.a.inner, { yPercent: -110, duration: 0.3, ease: 'mecca.in' }, at + 0.04);
+      tl.to(t1.inner, { yPercent: Y_OUT, duration: 0.3, ease: 'mecca.in' }, at);
+      tl.to(t2.a.inner, { yPercent: Y_OUT, duration: 0.3, ease: 'mecca.in' }, at + 0.04);
       // label se apaga de trás para frente
       tl.to(LB.chars.slice().reverse(), { autoAlpha: 0, duration: 0.001, stagger: 0.012 }, at);
       // a ilustração fica sozinha e sobe 16 px
@@ -350,16 +367,16 @@ MECCA.scene({
 
     // 6,0 — SLAM de T2 + shake. As duas linhas que eram "As duas somem" entram juntas (stagger .05);
     // "na hora H." entra em 6,1, como a 2ª linha da horizontal.
-    tl.fromTo([L1.inner, L2.inner, L3.inner], { yPercent: 100 }, { yPercent: 0, duration: 0.35, ease: 'expo.out', stagger: 0.05 }, 6.0);
+    tl.fromTo([L1.inner, L2.inner, L3.inner], { yPercent: Y_IN }, { yPercent: 0, duration: 0.35, ease: 'expo.out', stagger: 0.05 }, 6.0);
     h.shake(tl, shk, 6.0, { amp: 6, n: 8, dur: 0.4, seed: 603 });
     tl.fromTo(w2, { scale: 1 }, { scale: 1.03, duration: 3.5, ease: 'none' }, 6.0);
     // 9,5–9,85 — 'somem' some letra por letra; 9,6–9,9 o resto sai
     gsap.set(somem, { transformOrigin: '50% 62%' });
     tl.to(somem, { scaleY: 0, duration: 0.15, ease: 'mecca.in', stagger: 0.07 }, 9.5);
-    // (mecca.in só no y; a opacidade usa power1.in para o último quadro visível não "estourar" de ~55 % para 0)
+    // (y em mecca.in; a opacidade em power1.in e 0,28 s: o último quadro visível, 9,867, fica abaixo de 10 %, sem pop)
     const T2r = [L1.inner.querySelector('.r'), L3.inner.querySelector('.r')];
     tl.to(T2r, { y: -10, duration: 0.3, ease: 'mecca.in' }, 9.6);
-    tl.to(T2r, { autoAlpha: 0, duration: 0.3, ease: 'power1.in' }, 9.6);
+    tl.to(T2r, { autoAlpha: 0, duration: 0.28, ease: 'power1.in' }, 9.6);
 
     // eyebrow sai junto com T2 (9,5–9,8): apaga de trás para frente (clip-path em degraus de 0,02 s/char, no onFrame —
     // antes de 9,5 o label fica SEM clip-path em qualquer ordem de busca, idêntico ao da S02 no corte) e o traço recolhe
@@ -370,7 +387,7 @@ MECCA.scene({
     tl.to(bg, { dim: 0.5, vignette: 0.75, glowA: 0.6, glowB: 0.6, particles: 0.5, duration: 0.9, ease: 'power2.inOut' }, 9.0);
 
     // ================================================================== PONTO (função pura do tempo)
-    const FX = gsap.parseEase(FB.ex), FY = gsap.parseEase(FB.ey), FS = gsap.parseEase(FB.es);
+    const E_FLIP = gsap.parseEase('mecca.inOut');
     const E_FLY = gsap.parseEase('power3.inOut');
     const HE = { x: HC.x + (PH.x - HC.x) * (1 + PUSH_H), y: HC.y + (PH.y - HC.y) * (1 + PUSH_H) };  // '.' do header ao fim do push
     const cb = (a, c1, c2, b, k) => { const u = 1 - k; return u * u * u * a + 3 * u * u * k * c1 + 3 * u * k * k * c2 + k * k * k * b; };
@@ -399,16 +416,17 @@ MECCA.scene({
       };
     })();
     function pontoPos(t) {
-      if (t < 1.0) return { x: P0.x, y: P0.y, r: 10 };
-      if (t < 1.5) {
-        // acompanha exatamente o '.' de 'caixas.' durante o FLIP (mesmas eases de x, y e escala)
-        const u = (t - 1.0) / 0.5, ks = FS(u), sc = 1 + (sB - 1) * ks;
-        const x = B.left + FB.dx * FX(clamp((t - FB.x0) / FB.xd)) + (P0.x - B.left) * sc;
-        const y = B.top + FB.dy * FY(u) + (P0.y - B.top) * sc;
+      if (t < FLIP.t0) return { x: P0.x, y: P0.y, r: 10 };
+      if (t < FLIP.t1) {
+        // acompanha exatamente o '.' de 'caixas.' durante o FLIP em grupo (mesma transformação do GF)
+        const u = (t - FLIP.t0) / (FLIP.t1 - FLIP.t0);
+        const kx = E_FLIP(clamp((t - FLIP.t0) / (FLIP.tx1 - FLIP.t0))), ky = E_FLIP(clamp((t - FLIP.ty0) / (FLIP.t1 - FLIP.ty0)));
+        const s = lerp(1, FLIP.s, kx);
+        const x = lerp(O0.x, O1.x, kx) + s * (P0.x - O0.x), y = lerp(O0.y, O1.y, ky) + s * (P0.y - O0.y);
         const w = h.smooth(0.8, 1, u);              // funde nos últimos quadros com o '.' medido do header
-        return { x: lerp(x, PH.x, w), y: lerp(y, PH.y, w), r: lerp(10, 5, ks) };
+        return { x: lerp(x, PH.x, w), y: lerp(y, PH.y, w), r: lerp(10, 5, kx) };
       }
-      if (t < 5.5) { const s = 1 + PUSH_H * clamp((t - 1.5) / 4); return { x: HC.x + (PH.x - HC.x) * s, y: HC.y + (PH.y - HC.y) * s, r: 5 * s }; }
+      if (t < 5.5) { const s = 1 + PUSH_H * clamp((t - FLIP.t1) / (5.5 - FLIP.t1)); return { x: HC.x + (PH.x - HC.x) * s, y: HC.y + (PH.y - HC.y) * s, r: 5 * s }; }
       if (t < 6.0) { const k = E_FLY((t - 5.5) / 0.5); const q = flyAt(k); return { x: q.x, y: q.y, r: lerp(5 * (1 + PUSH_H), 12, k) }; }
       return { x: P2.x, y: P2.y, r: 12 };
     }
@@ -418,7 +436,7 @@ MECCA.scene({
       return '#' + [16, 8, 0].map(sh => ch(sh).toString(16).padStart(2, '0')).join('');
     }
     // início do trecho de movimento que contém t (as amostras do rastro nunca voltam antes dele)
-    const segStart = (t) => (t < 1.0 ? 0 : t < 5.5 ? 1.0 : 5.5);
+    const segStart = (t) => (t < FLIP.t0 ? 0 : t < 5.5 ? FLIP.t0 : 5.5);
     // fita afunilada (polígono contínuo) ao longo das amostras: sem discos soltos, sem "contas"
     function ribbon(c, pts, ws, fill) {
       const m = pts.length, Lp = [], Rp = [];
@@ -442,7 +460,7 @@ MECCA.scene({
       const t0 = Math.max(t - WIN, segStart(t));
       if (t - t0 < 1 / 240) return;
       // enquanto o Ponto é glifo de 'caixas.' (FLIP), o rastro é só um fio discreto (raio ≤ 3 px)
-      const glyph = t < 1.5;
+      const glyph = t < FLIP.t1 + 0.1;
       const pts = [], ws = [];
       for (let j = 0; j <= N; j++) {
         const tt = t0 + ((t - t0) * j) / N;
